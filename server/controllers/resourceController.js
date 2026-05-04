@@ -32,7 +32,7 @@ export const getNearbyCenters = async (req, res) => {
     const userLng = parseFloat(lng);
     const radiusKm = parseFloat(radius);
 
-    // Haversine formula inline in SQL — returns distance in km
+    // Fetch all centers and their resources
     let query = `
       SELECT
         rc.center_id,
@@ -42,47 +42,60 @@ export const getNearbyCenters = async (req, res) => {
         rc.longitude,
         rc.address,
         rc.contact_number,
-        ROUND(
-          6371 * ACOS(
-            COS(RADIANS(?)) * COS(RADIANS(rc.latitude)) *
-            COS(RADIANS(rc.longitude) - RADIANS(?)) +
-            SIN(RADIANS(?)) * SIN(RADIANS(rc.latitude))
-          ), 2
-        ) AS distance_km,
-        JSON_ARRAYAGG(
-          JSON_OBJECT(
-            'resource_type', r.resource_type,
-            'quantity_available', r.quantity_available
-          )
-        ) AS resources
+        r.resource_type,
+        r.quantity_available
       FROM resource_center rc
       LEFT JOIN resource r ON r.center_id = rc.center_id
     `;
 
-    const params = [userLat, userLng, userLat];
-
+    const params = [];
     if (type) {
       query += ` WHERE rc.center_type = ?`;
       params.push(type);
     }
 
-    query += `
-      GROUP BY rc.center_id
-      HAVING distance_km <= ?
-      ORDER BY distance_km ASC
-      LIMIT 20
-    `;
-    params.push(radiusKm);
-
     const [rows] = await conn.execute(query, params);
 
-    // Parse resources JSON string if needed
-    let centers = rows.map(row => ({
-      ...row,
-      resources: typeof row.resources === 'string'
-        ? JSON.parse(row.resources)
-        : row.resources,
-    }));
+    // Group resources by center and calculate distance in JS
+    const centerMap = {};
+    
+    rows.forEach(row => {
+        if (!centerMap[row.center_id]) {
+            // Calculate Haversine Distance in JS
+            const R = 6371; // Earth radius in km
+            const dLat = (row.latitude - userLat) * Math.PI / 180;
+            const dLon = (row.longitude - userLng) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(userLat * Math.PI / 180) * Math.cos(row.latitude * Math.PI / 180) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            const distance = parseFloat((R * c).toFixed(2));
+
+            centerMap[row.center_id] = {
+                center_id: row.center_id,
+                name: row.name,
+                center_type: row.center_type,
+                latitude: row.latitude,
+                longitude: row.longitude,
+                address: row.address,
+                contact_number: row.contact_number,
+                distance_km: distance,
+                resources: []
+            };
+        }
+        
+        if (row.resource_type) {
+            centerMap[row.center_id].resources.push({
+                resource_type: row.resource_type,
+                quantity_available: row.quantity_available
+            });
+        }
+    });
+
+    let centers = Object.values(centerMap)
+        .filter(c => c.distance_km <= radiusKm)
+        .sort((a, b) => a.distance_km - b.distance_km)
+        .slice(0, 20);
 
     // If type is Hospital or not specified, fetch real hospitals from Overpass API
     if (!type || type === 'Hospital') {

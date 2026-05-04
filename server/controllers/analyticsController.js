@@ -21,12 +21,13 @@ export const getIncidentDistribution = async (req, res) => {
 export const getResponseTrends = async (req, res) => {
   const conn = await pool.getConnection();
   try {
+    // SQLite version of TIMESTAMPDIFF and DATE
     const [rows] = await conn.execute(
-      `SELECT DATE(created_at) AS _id,
-              ROUND(AVG(TIMESTAMPDIFF(MINUTE, created_at, resolved_at)), 1) AS avgResponse
+      `SELECT date(created_at) AS _id,
+              ROUND(AVG((julianday(resolved_at) - julianday(created_at)) * 1440), 1) AS avgResponse
        FROM incident
        WHERE resolved_at IS NOT NULL
-       GROUP BY DATE(created_at)
+       GROUP BY date(created_at)
        ORDER BY _id ASC`
     );
     res.json(rows);
@@ -40,10 +41,11 @@ export const getResponseTrends = async (req, res) => {
 export const getIncidentTrends = async (req, res) => {
   const conn = await pool.getConnection();
   try {
+    // SQLite version of DATE_FORMAT
     const [rows] = await conn.execute(
-      `SELECT DATE_FORMAT(created_at, '%H:00') AS _id, COUNT(*) AS count
+      `SELECT strftime('%H:00', created_at) AS _id, COUNT(*) AS count
        FROM incident
-       GROUP BY DATE_FORMAT(created_at, '%H:00')
+       GROUP BY strftime('%H:00', created_at)
        ORDER BY _id ASC`
     );
     res.json(rows);

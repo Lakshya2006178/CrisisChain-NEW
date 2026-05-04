@@ -17,7 +17,7 @@ import {
   Briefcase
 } from 'lucide-react';
 
-const ROLES = ['Civilian / Victim', 'First Responder', 'Hospital representative'];
+const ROLES = ['Civilian / Victim', 'First Responder', 'Hospital representative', 'Government Official'];
 
 
 const LIVE_STATS = [
@@ -29,10 +29,8 @@ const LIVE_STATS = [
 export default function LoginPage() {
   const nav = useNavigate();
   const { login } = useDashboard();
-  const [name, setName] = useState('');
-  const [aadhar, setAadhar] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState('');
   const [showPw, setShowPw] = useState(false);
   const [remember, setRemember] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -51,18 +49,20 @@ export default function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    if (!name.trim()) { setError('Please enter your name.'); return; }
-    if (!aadhar.trim() || !/^\d{12}$/.test(aadhar.trim())) { setError('Valid 12-digit Aadhar required.'); return; }
-    if (!role) { setError('Please select your role.'); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setError('Valid email required.'); return; }
     if (!password) { setError('Please enter your password.'); return; }
     setLoading(true);
     try {
-      await login({ name, aadhar, password, role });
-      setLoading(false); 
-      nav('/alerts');
+      const user = await login({ email, password });
+      setLoading(false);
+      if (user.role === 'admin') {
+        nav('/dashboard');
+      } else {
+        nav('/alerts');
+      }
     } catch (err) {
       setLoading(false);
-      setError(err.response?.data?.error || 'Authentication Failed. Integrity Check Error.');
+      setError(err.message || 'Authentication Failed.');
     }
   };
 
@@ -144,29 +144,15 @@ export default function LoginPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-4">
               <div className="relative group">
                 <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none">
                   <Mail className="h-5 w-5 text-white/20 group-focus-within:text-[#00FFCC] transition-colors" />
                 </div>
                 <input 
-                  type="text" 
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="USERNAME"
-                  className="w-full bg-white/5 border border-white/5 backdrop-blur-xl px-14 py-5 text-white placeholder:text-white/20 focus:outline-none focus:border-[#00FFCC]/40 focus:bg-white/[0.08] transition-all font-mono text-sm tracking-widest"
-                />
-              </div>
-
-              <div className="relative group">
-                <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none">
-                  <Shield className="h-5 w-5 text-white/20 group-focus-within:text-[#00FFCC] transition-colors" />
-                </div>
-                <input 
-                  type="text" 
-                  value={aadhar}
-                  onChange={(e) => setAadhar(e.target.value)}
-                  placeholder="12-DIGIT AADHAR"
+                  type="email" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="EMAIL ADDRESS"
                   className="w-full bg-white/5 border border-white/5 backdrop-blur-xl px-14 py-5 text-white placeholder:text-white/20 focus:outline-none focus:border-[#00FFCC]/40 focus:bg-white/[0.08] transition-all font-mono text-sm tracking-widest"
                 />
               </div>
@@ -190,25 +176,6 @@ export default function LoginPage() {
                   {showPw ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
-
-              {/* Role Dropdown */}
-              <div className="relative group">
-                <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none">
-                  <Briefcase className="h-5 w-5 text-white/20 group-focus-within:text-[#00FFCC] transition-colors" />
-                </div>
-                <select
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
-                  className="w-full bg-white/5 border border-white/5 backdrop-blur-xl px-14 py-5 text-white focus:outline-none focus:border-[#00FFCC]/40 focus:bg-white/[0.08] transition-all font-mono text-sm tracking-widest appearance-none cursor-pointer"
-                >
-                  <option value="" className="bg-[#08080A]">CHOOSE ROLE</option>
-                  {ROLES.map(r => (
-                    <option key={r} value={r} className="bg-[#08080A] uppercase">{r.toUpperCase()}</option>
-                  ))}
-                </select>
-                <div className="absolute inset-y-0 right-5 flex items-center pointer-events-none text-white/20">▼</div>
-              </div>
-            </div>
 
             {error && (
               <div className="p-4 bg-red-500/10 border border-red-500/20 flex items-center gap-4 animate-fade-in">

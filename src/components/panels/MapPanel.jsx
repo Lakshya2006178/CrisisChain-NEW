@@ -37,10 +37,10 @@ function MapUpdater({ alerts }) {
 }
 
 export default function MapPanel() {
-    const { addToast, liveAlerts } = useDashboard();
+    const { addToast, alerts } = useDashboard();
 
-    // Map liveAlerts to include color for markers
-    const mapAlerts = (liveAlerts || []).map(a => ({
+    // Map alerts to include color for markers
+    const mapAlerts = (alerts || []).map(a => ({
         ...a,
         color: a.color || (a.severity === 'Critical' || a.severity === 'High' ? '#ef4444' : a.severity === 'Medium' ? '#f59e0b' : '#3b82f6')
     }));
@@ -102,8 +102,11 @@ export default function MapPanel() {
                         />
                         <MapUpdater alerts={mapAlerts} />
                         {mapAlerts.map((alert, idx) => {
-                            if (!alert.coordinates || alert.coordinates === 'N/A' || alert.coordinates === 'Pending') return null;
-                            const [lat, lng] = alert.coordinates.split(',').map(Number);
+                            if (!alert.coordinates || typeof alert.coordinates !== 'string' || alert.coordinates === 'N/A' || alert.coordinates === 'Pending') return null;
+                            const parts = alert.coordinates.split(',');
+                            if (parts.length !== 2) return null;
+                            const lat = Number(parts[0]);
+                            const lng = Number(parts[1]);
                             if (isNaN(lat) || isNaN(lng)) return null;
                             return (
                                 <Marker 

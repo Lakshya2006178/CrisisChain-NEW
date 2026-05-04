@@ -28,7 +28,7 @@ app.get('/', (req, res) => res.json({ status: 'CrisisChain API running', db: 'My
 // Test DB connection then start
 pool.getConnection()
   .then((conn) => {
-    console.log('✅ Connected to MySQL — crisischain_db');
+    console.log('✅ Connected to Database — crisischain_db');
     conn.release();
     app.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);

@@ -5,13 +5,13 @@ import * as api from '../../api/index.js';
 
 export default function LiveAlertsPanel() {
     const navigate = useNavigate();
-    const { liveAlerts, getIcon, addToast, user } = useDashboard();
+    const { alerts: rawAlerts, getIcon, addToast, user, refreshData } = useDashboard();
     
-    // Map backend liveAlerts to component state
-    const alerts = (liveAlerts || []).map(a => ({
+    // Map backend alerts to component state
+    const alerts = (rawAlerts || []).map(a => ({
         ...a,
         critical: a.severity === 'Critical' || a.severity === 'High',
-        status: a.status.toLowerCase()
+        status: (a.status || 'reported').toLowerCase()
     }));
     
     const criticalCount = alerts.filter(a => a.critical).length;
@@ -87,7 +87,12 @@ export default function LiveAlertsPanel() {
                                        <div className="flex gap-2">
                                           {alert.status === 'reported' && (
                                             <button 
-                                              onClick={async (e) => { e.stopPropagation(); await api.updateAlertStatus(alert.id, 'responding'); }}
+                                              onClick={async (e) => { 
+                                                e.stopPropagation(); 
+                                                await api.updateAlertStatus(alert.id, 'responding'); 
+                                                refreshData();
+                                                addToast('Units Dispatched', 'success');
+                                              }}
                                               className="px-3 py-1 bg-blue-600 text-white font-mono text-[8px] font-black uppercase hover:bg-blue-700"
                                             >
                                               Dispatch
@@ -95,7 +100,12 @@ export default function LiveAlertsPanel() {
                                           )}
                                           {alert.status === 'responding' && (
                                             <button 
-                                              onClick={async (e) => { e.stopPropagation(); await api.updateAlertStatus(alert.id, 'resolved'); }}
+                                              onClick={async (e) => { 
+                                                e.stopPropagation(); 
+                                                await api.updateAlertStatus(alert.id, 'resolved'); 
+                                                refreshData();
+                                                addToast('Incident Resolved', 'success');
+                                              }}
                                               className="px-3 py-1 bg-green-600 text-white font-mono text-[8px] font-black uppercase hover:bg-green-700"
                                             >
                                               Resolve

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import TopNavbar from './components/TopNavbar';
 import WorkflowPanel from './components/panels/WorkflowPanel';
@@ -11,11 +12,7 @@ import IncidentActionPanel from './components/panels/IncidentActionPanel';
 import { useDashboard } from './context/DashboardContext';
 import { Shield, Zap, Globe, Cpu, Radio, Terminal, Target, Square, Lock, Activity, Radar, Database, BarChart3, ListFilter, AlertTriangle, Clock } from 'lucide-react';
 
-export const SZ = {
-  sidebarClosed: 80,
-  sidebarOpen:   280,
-  navbarH:       72,
-};
+import { SZ } from './constants';
 
 function SystemGridOverlay({ mousePos }) {
   return (
@@ -135,18 +132,18 @@ export default function DashboardMain() {
                  <button className="px-6 py-2.5 bg-white/5 border border-white/10 hover:bg-white/10 transition-all font-mono text-[9px] font-black tracking-widest uppercase">
                     Export
                  </button>
-                 <button className="px-6 py-2.5 bg-[#00FFCC] text-black hover:brightness-110 transition-all font-mono text-[9px] font-black tracking-widest uppercase shadow-[0_0_20px_rgba(0,255,204,0.2)]">
+                 <Link to="/report" className="px-6 py-2.5 bg-[#00FFCC] text-black hover:brightness-110 transition-all font-mono text-[9px] font-black tracking-widest uppercase shadow-[0_0_20px_rgba(0,255,204,0.2)] text-center">
                     Report Incident
-                 </button>
+                 </Link>
              </div>
           </div>
 
           {/* Quick Stats Grid */}
            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10 animate-fade-in">
-             <StatCard label="Total Reports" value={stats.total} trend={12} icon={AlertTriangle} color="#ef4444" />
-             <StatCard label="Active Alerts" value={stats.active} trend={-4} icon={Database} color="#3b82f6" />
-             <StatCard label="Avg Response" value={`${stats.avgResponseTime.toFixed(1)}m`} trend={3} icon={Activity} color="#10b981" />
-             <StatCard label="Resolved" value={stats.resolved} trend={2} icon={Radio} color="#a855f7" />
+             <StatCard label="Total Reports" value={stats?.total || 0} trend={12} icon={AlertTriangle} color="#ef4444" />
+             <StatCard label="Active Alerts" value={stats?.active || 0} trend={-4} icon={Database} color="#3b82f6" />
+             <StatCard label="Avg Response" value={`${(stats?.avgResponseTime || 0).toFixed(1)}m`} trend={3} icon={Activity} color="#10b981" />
+             <StatCard label="Resolved" value={stats?.resolved || 0} trend={2} icon={Radio} color="#a855f7" />
           </div>
 
           {/* ── Main Workspace Grid ── */}

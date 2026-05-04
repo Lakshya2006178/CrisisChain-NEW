@@ -1,7 +1,6 @@
 import crypto from 'crypto';
 import pool from './db.js';
 
-// Dummy Incidents
 const dummyIncidents = [
   { type: 1, desc: 'Major structure fire at downtown block', loc: '123 Main St, Mangaluru', lat: 12.8719, lng: 74.8422, status: 'Reported', severity: 'High' },
   { type: 4, desc: 'Multiple vehicle collision on highway', loc: 'NH-66, near Pumpwell', lat: 12.8593, lng: 74.8550, status: 'InProgress', severity: 'Critical' },
@@ -12,7 +11,6 @@ const dummyIncidents = [
   { type: 5, desc: 'Cyclone alert and high winds', loc: 'Panambur Beach', lat: 12.9141, lng: 74.8105, status: 'Reported', severity: 'Medium' }
 ];
 
-// Dummy Resource Centers
 const dummyCenters = [
   { id: crypto.randomUUID(), name: "KMC Hospital Mangaluru", type: "Hospital", lat: 12.864500, lng: 74.843200, address: "Ambedkar Circle, Mangaluru", phone: "08242225533" },
   { id: crypto.randomUUID(), name: "Nitte Gajria Hospital", type: "Hospital", lat: 13.225700, lng: 75.013300, address: "Karkala Road, Udupi", phone: "08202524820" },
@@ -23,29 +21,20 @@ const dummyCenters = [
   { id: crypto.randomUUID(), name: "Mangaluru City Police HQ", type: "Police", lat: 12.866600, lng: 74.843800, address: "Balmatta, Mangaluru", phone: "08242220600" }
 ];
 
-// Dummy Resources
 const resourceTypes = ["ICU Beds", "General Beds", "Ventilators", "Ambulances"];
 
 async function seed() {
   let conn;
   try {
     conn = await pool.getConnection();
-    console.log('Connected to Database. Starting seed process...');
+    console.log('Connected to SQLite Database. Seeding...');
     
-    // Disable foreign key checks to safely clear tables
-    console.log('Clearing old dummy data...');
-    await conn.execute('SET FOREIGN_KEY_CHECKS = 0');
+    // SQLite uses different commands for clearing
+    await conn.execute('DELETE FROM incident_report_log');
+    await conn.execute('DELETE FROM incident');
+    await conn.execute('DELETE FROM resource');
+    await conn.execute('DELETE FROM resource_center');
     
-    // Truncate relevant tables
-    await conn.execute('TRUNCATE TABLE incident_report_log');
-    await conn.execute('TRUNCATE TABLE incident');
-    await conn.execute('TRUNCATE TABLE resource');
-    await conn.execute('TRUNCATE TABLE resource_center');
-    
-    await conn.execute('SET FOREIGN_KEY_CHECKS = 1');
-    
-    // 1. Seed Resource Centers & Resources
-    console.log('Seeding resource centers and resources...');
     for (const center of dummyCenters) {
       await conn.execute(
         `INSERT INTO resource_center (center_id, name, center_type, latitude, longitude, address, contact_number)
@@ -53,11 +42,9 @@ async function seed() {
         [center.id, center.name, center.type, center.lat, center.lng, center.address, center.phone]
       );
       
-      // Seed randomized resources for each center
       for (const resType of resourceTypes) {
         let maxQty = resType.includes('Beds') ? 50 : 10;
         if (center.type !== 'Hospital' && resType.includes('Beds')) continue;
-        
         const qty = Math.floor(Math.random() * maxQty);
         await conn.execute(
           `INSERT INTO resource (resource_id, center_id, resource_type, quantity_available)
@@ -67,15 +54,24 @@ async function seed() {
       }
     }
     
-    // 2. Seed Admin User
-    console.log('Seeding Admin User...');
-    await conn.execute(
-      `INSERT IGNORE INTO users (aadhar_id, full_name, email, phone_number, password_hash, role, is_verified) 
-       VALUES ('f7b11509f4d675c3c44f0dd37ca830bb02e8cfa58f04c46283c4bfcbdce1ff45', 'ADMIN_USERNAME', 'admin@crisischain.com', '0000000000', '$2a$10$B4OXDSqG1AWH5/WKI5GYfe62cqrAzO7rfkftUFYoNhvwPnktp26/y', 'admin', 1)`
-    );
+    console.log('Seeding Tactical Users...');
+    const testPasswordHash = '$2a$10$B4OXDSqG1AWH5/WKI5GYfe62cqrAzO7rfkftUFYoNhvwPnktp26/y'; // admin123
     
-    // 3. Seed Incidents
-    console.log('Seeding incidents and audit logs...');
+    const users = [
+      { aadhar: '000000000000', name: 'Admin HQ', email: 'admin@crisischain.com', role: 'admin' },
+      { aadhar: '111111111111', name: 'KMC Hospital', email: 'hospital@crisischain.com', role: 'hospital' },
+      { aadhar: '222222222222', name: 'Rescue Team Alpha', email: 'responder@crisischain.com', role: 'responder' },
+      { aadhar: '333333333333', name: 'Standard Citizen', email: 'user@crisischain.com', role: 'user' },
+    ];
+
+    for (const u of users) {
+        await conn.execute(
+          `INSERT OR IGNORE INTO users (aadhar_id, full_name, email, phone_number, password_hash, role, is_verified) 
+           VALUES (?, ?, ?, '0000000000', ?, ?, 1)`,
+          [u.aadhar, u.name, u.email, testPasswordHash, u.role]
+        );
+    }
+    
     for (const inc of dummyIncidents) {
       const id = crypto.randomUUID();
       await conn.execute(
@@ -84,7 +80,6 @@ async function seed() {
         [id, inc.type, inc.desc, inc.loc, inc.lat, inc.lng, inc.status, inc.severity]
       );
       
-      // Seed audit log
       await conn.execute(
         `INSERT INTO incident_report_log (log_id, incident_id, log_type, new_value, notes, is_system)
          VALUES (?, ?, 'SystemEvent', 'Reported', 'Dummy data automatically seeded', 1)`,
@@ -93,14 +88,9 @@ async function seed() {
     }
     
     console.log(`\n✅ Seeding Complete!`);
-    console.log(`Inserted ${dummyCenters.length} Resource Centers.`);
-    console.log(`Inserted random resources for each center.`);
-    console.log(`Inserted ${dummyIncidents.length} Incidents with Audit Logs.`);
-
   } catch (err) {
-    console.error('❌ Failed to seed the database:', err.message);
+    console.error('❌ Failed to seed:', err.message);
   } finally {
-    if (conn) conn.release();
     process.exit(0);
   }
 }

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useDashboard } from '../context/DashboardContext';
 import Sidebar from '../components/Sidebar';
 import TopNavbar from '../components/TopNavbar';
-import { SZ } from '../DashboardMain';
+import { SZ } from '../constants';
 import { 
     Settings as SettingsIcon, Users, Building2, Bell, Shield, 
     Server, Cpu, Activity, CheckCircle2, XCircle, 

@@ -69,6 +69,9 @@ const formatRelativeTime = (ts) => {
 export const createAlert = async (req, res) => {
   const conn = await pool.getConnection();
   try {
+    console.log('--- NEW INCIDENT REPORT ---');
+    console.log('Payload:', req.body);
+    
     const {
       aadhar_id,
       type_id: rawTypeId,
@@ -87,9 +90,14 @@ export const createAlert = async (req, res) => {
     const type_id = rawTypeId
       ? parseInt(rawTypeId)
       : await resolveTypeId(conn, type);
+    
+    console.log('Resolved type_id:', type_id);
 
-    const priority = priority_level || mapSeverity(severity);
+    // Map severity carefully
+    let priority = priority_level || mapSeverity(severity);
     const incident_id = uuid();
+
+    console.log('Inserting incident:', { incident_id, type_id, priority });
 
     await conn.execute(
       `INSERT INTO incident
@@ -122,9 +130,10 @@ export const createAlert = async (req, res) => {
       [incident_id]
     );
 
+    console.log('Successfully created incident:', incident.incident_id);
     res.status(201).json(formatIncident(incident));
   } catch (err) {
-    console.error('createAlert error:', err.message);
+    console.error('❌ createAlert error:', err.message);
     res.status(500).json({ error: err.message });
   } finally {
     conn.release();
@@ -190,7 +199,7 @@ export const getStats = async (req, res) => {
     const [[{ active }]]   = await conn.execute("SELECT COUNT(*) AS active FROM incident WHERE incident_status NOT IN ('Resolved','Closed')");
     const [[{ resolved }]] = await conn.execute("SELECT COUNT(*) AS resolved FROM incident WHERE incident_status = 'Resolved'");
     const [[{ avg_mins }]] = await conn.execute(
-      `SELECT ROUND(AVG(TIMESTAMPDIFF(MINUTE, created_at, resolved_at)), 1) AS avg_mins
+      `SELECT ROUND(AVG((julianday(resolved_at) - julianday(created_at)) * 1440), 1) AS avg_mins
        FROM incident WHERE resolved_at IS NOT NULL`
     );
     res.json({ total, active, resolved, avgResponseTimeMinutes: avg_mins || 0 });

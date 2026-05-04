@@ -65,12 +65,13 @@ function AppContent() {
         <Route path="/admin"    element={<GuestRoute><AdminLogin /></GuestRoute>} />
         <Route path="/register" element={<GuestRoute><SignUpPage /></GuestRoute>} />
         
-        <Route path="/" element={<ProtectedRoute><LandingPage /></ProtectedRoute>} />
+        <Route path="/" element={<LandingPage />} />
         <Route path="/dashboard" element={<AdminProtectedRoute><DashboardMain /></AdminProtectedRoute>} />
         <Route path="/resources" element={<ProtectedRoute><ResourceInventory /></ProtectedRoute>} />
-        <Route path="/report"   element={<ProtectedRoute><ReportIncident /></ProtectedRoute>} />
+        <Route path="/report"   element={<ReportIncident />} />
         <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
         <Route path="/alerts"    element={<ProtectedRoute><Alerts /></ProtectedRoute>} />
+        <Route path="/settings"  element={<ProtectedRoute><Settings /></ProtectedRoute>} />
         <Route path="/org" element={<RoleRoute allowed={['responder','admin']}><ResponderOrg /></RoleRoute>} />
         <Route path="/hospital-resources" element={<RoleRoute allowed={['hospital','admin']}><HospitalResources /></RoleRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />

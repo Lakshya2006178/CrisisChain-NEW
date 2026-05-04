@@ -7,29 +7,29 @@ import {
     Truck, Building2, ClipboardList
 } from 'lucide-react';
 
-const W_CLOSED = 80;
-const W_OPEN   = 300;
-const H_TOP    = 80;
+import { SZ } from '../constants';
+
+const W_CLOSED = SZ.sidebarClosed;
+const W_OPEN   = SZ.sidebarOpen;
+const H_TOP    = SZ.navbarH;
 
 const ALL_NAV = [
     { id: 'alerts',             icon: AlertTriangle, label: 'Emergency Alerts',    path: '/alerts',             roles: ['citizen','responder','hospital','admin'] },
     { id: 'resources',          icon: PlusSquare,    label: 'Resource Hub',         path: '/resources',          roles: ['citizen','responder','hospital','admin'] },
-    { id: 'report',             icon: ClipboardList, label: 'Report Incident',      path: '/report',             roles: ['citizen','admin'] },
+    { id: 'report',             icon: ClipboardList, label: 'Report Incident',      path: '/report',             roles: ['citizen','responder','hospital','admin'] },
     { id: 'org',                icon: Truck,         label: 'Org Management',       path: '/org',                roles: ['responder','admin'] },
     { id: 'hospital-resources', icon: Building2,     label: 'Hospital Resources',   path: '/hospital-resources', roles: ['hospital','admin'] },
     { id: 'analytics',          icon: Activity,      label: 'Analytics',            path: '/analytics',          roles: ['admin'] },
-    { id: 'dashboard',          icon: LayoutDashboard,label: 'Admin Dashboard',     path: '/dashboard',          roles: ['admin'] },
+    { id: 'dashboard',          icon: LayoutDashboard,label: 'Admin Dashboard',     path: '/dashboard',          roles: ['admin','hospital','responder'] },
+    { id: 'settings',           icon: Settings,      label: 'Control Settings',     path: '/settings',           roles: ['citizen','responder','hospital','admin'] },
 ];
 
 const getRoleKey = (role) => {
     if (!role) return 'citizen';
-    // DB-stored values (returned by backend JWT)
-    if (role === 'responder') return 'responder';
-    if (role === 'hospital')  return 'hospital';
-    if (role === 'admin')     return 'admin';
-    // Display-name fallbacks (legacy / edge cases)
-    if (role === 'First Responder')         return 'responder';
-    if (role === 'Hospital representative') return 'hospital';
+    const r = role.toLowerCase();
+    if (r.includes('admin')) return 'admin';
+    if (r.includes('hospital')) return 'hospital';
+    if (r.includes('responder')) return 'responder';
     return 'citizen';
 };
 

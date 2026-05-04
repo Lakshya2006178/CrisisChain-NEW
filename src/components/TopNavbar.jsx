@@ -3,9 +3,11 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useDashboard } from '../context/DashboardContext';
 import { Search, Bell, Menu, User, ChevronDown, Shield, Zap, Globe, Terminal, Clock, Activity, Settings, AlertTriangle, CheckCircle2, Info, LogOut } from 'lucide-react';
 
-const W_CLOSED = 80;
-const W_OPEN   = 300;
-const H_NAV    = 80;
+import { SZ } from '../constants';
+
+const W_CLOSED = SZ.sidebarClosed;
+const W_OPEN   = SZ.sidebarOpen;
+const H_NAV    = SZ.navbarH;
 
 export default function TopNavbar({ fullWidth }) {
     const [time, setTime] = useState(new Date());
@@ -131,9 +133,14 @@ export default function TopNavbar({ fullWidth }) {
                             <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
                                 {alerts.length > 0 ? (
                                     alerts.slice(0, 5).map((alert, i) => (
-                                        <div key={alert.id} className="p-5 border-b border-white/[0.03] hover:bg-white/[0.02] transition-colors group/notif cursor-pointer">
+                                        <Link 
+                                            key={alert.id} 
+                                            to="/alerts" 
+                                            onClick={() => setIsNotifOpen(false)}
+                                            className="block p-5 border-b border-white/[0.03] hover:bg-white/[0.02] transition-colors group/notif cursor-pointer"
+                                        >
                                             <div className="flex gap-4">
-                                                <div className={`mt-1 w-8 h-8 flex-shrink-0 flex items-center justify-center border ${alert.critical ? 'border-red-500/20 text-red-500 bg-red-500/5' : 'border-blue-500/20 text-blue-500 bg-blue-500/5'}`}>
+                                                <div className={`mt-1 w-8 h-8 flex-shrink-0 flex items-center justify-center border ${alert.severity === 'Critical' || alert.severity === 'High' ? 'border-red-500/20 text-red-500 bg-red-500/5' : 'border-blue-500/20 text-blue-500 bg-blue-500/5'}`}>
                                                     <AlertTriangle size={14} />
                                                 </div>
                                                 <div className="flex-1 space-y-1">
@@ -146,7 +153,7 @@ export default function TopNavbar({ fullWidth }) {
                                                     </p>
                                                 </div>
                                             </div>
-                                        </div>
+                                        </Link>
                                     ))
                                 ) : (
                                      <div className="p-12 text-center text-[10px] font-mono text-white/10 uppercase tracking-[0.5em]">

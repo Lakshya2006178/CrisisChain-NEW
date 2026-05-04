@@ -277,7 +277,7 @@ function NewEmergencyModal({ alert, onClose }) {
 }
 
 function AlertsContent() {
-    const { isSidebarOpen, addToast, liveAlerts, fetchLiveAlerts } = useDashboard();
+    const { isSidebarOpen, addToast, alerts: liveAlerts, fetchLiveAlerts } = useDashboard();
     const [selectedAlert, setSelectedAlert] = useState(null);
     const [filterType, setFilterType] = useState('All');
     const [isBroadcastOpen, setIsBroadcastOpen] = useState(false);

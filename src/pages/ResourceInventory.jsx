@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useDashboard } from '../context/DashboardContext';
 import Sidebar from '../components/Sidebar';
 import TopNavbar from '../components/TopNavbar';
-import { SZ } from '../DashboardMain';
+import { SZ } from '../constants';
 import {
     Search, Plus, Package, MapPin, Database, Hospital,
     AlertCircle, CheckCircle2, ChevronRight, Pill,
@@ -89,7 +89,7 @@ export default function ResourceInventory() {
 
     // Citizen/victim only sees the hospitals tab
     const isCivilian = !user?.role || user.role === 'citizen' || user.role === 'Civilian / Victim';
-    const [activeTab, setActiveTab] = useState(isCivilian ? 'hospitals' : 'hospitals');
+    const [activeTab, setActiveTab] = useState(isCivilian ? 'hospitals' : 'supplies');
 
     useEffect(() => {
         const handleMouseMove = (e) => setMousePos({ x: e.clientX, y: e.clientY });
@@ -144,17 +144,29 @@ export default function ResourceInventory() {
             setLocationStatus('error');
             return;
         }
+
+        const options = {
+            enableHighAccuracy: true,
+            timeout: 15000,
+            maximumAge: 0
+        };
+
         navigator.geolocation.getCurrentPosition(
             (pos) => {
-                const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                const { latitude: lat, longitude: lng } = pos.coords;
+                const coords = { lat, lng };
                 setUserCoords(coords);
-                fetchNearbyCenters(coords.lat, coords.lng, radiusKm, centerTypeFilter);
+                fetchNearbyCenters(lat, lng, radiusKm, centerTypeFilter);
             },
             (err) => {
-                setLocationError(err.code === 1 ? 'Location access denied. Enable it in browser settings.' : 'Unable to retrieve your location.');
+                let msg = 'Unable to retrieve your location.';
+                if (err.code === 1) msg = 'Location access denied. Enable it in browser settings.';
+                else if (err.code === 3) msg = 'GPS signal timeout. Try moving to an open area.';
+                
+                setLocationError(msg);
                 setLocationStatus('denied');
             },
-            { enableHighAccuracy: true, timeout: 10000 }
+            options
         );
     };
 

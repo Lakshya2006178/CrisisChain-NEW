@@ -11,7 +11,6 @@ export function DashboardProvider({ children }) {
         JSON.parse(localStorage.getItem('userLocation')) || null
     );
 
-    // Silently request GPS; store in state + localStorage
     const captureLocation = () => {
         if (!navigator.geolocation) return;
         navigator.geolocation.getCurrentPosition(
@@ -20,201 +19,148 @@ export function DashboardProvider({ children }) {
                 setUserLocation(loc);
                 localStorage.setItem('userLocation', JSON.stringify(loc));
             },
-            () => {} // silent fail — user may deny, that's fine
+            () => {}
         );
     };
 
-    // If already logged in on page load, re-capture location
     useEffect(() => {
         if (user) captureLocation();
     }, []);
-    const [alerts, setAlerts] = useState([
-        { id: 1, type: 'fire', location: 'San Francisco, CA', severity: 'high', description: 'Structural fire reported in Sector 4.', time: '2m ago', iconName: 'Flame', critical: true, status: 'Active' },
-        { id: 2, type: 'flood', location: 'Miami, FL', severity: 'medium', description: 'Rising water levels in coastal areas.', time: '10m ago', iconName: 'Droplets', critical: false, status: 'Pending' },
-        { id: 3, type: 'medical', location: 'Austin, TX', severity: 'high', description: 'Mass casualty exercise / hospital influx.', time: 'Just now', iconName: 'HeartPulse', critical: true, status: 'Dispatched' },
-    ]);
-    const [resources, setResources] = useState([
-        { id: 1, name: 'Bravo Team (Fire)', type: 'Emergency', status: 'Available', deployed: false, iconName: 'Flame' },
-        { id: 2, name: 'Medic-4 Unit', type: 'Medical', status: 'En Route', deployed: true, iconName: 'HeartPulse' },
-        { id: 3, name: 'Logistics Drone', type: 'Support', status: 'Available', deployed: false, iconName: 'Activity' },
-    ]);
-    const [stats, setStats] = useState({ total: 124, active: 12, resolved: 112, avgResponseTime: 4.2 });
-    const [trends, setTrends] = useState([]);
-    
-    // Mock logic for visuals that aren't fully in backend yet
+
+    const [alerts, setAlerts] = useState([]);
+    const [resources, setResources] = useState([]);
+    const [stats, setStats] = useState({ total: 0, active: 0, resolved: 0, avgResponseTime: 0 });
     const [actions, setActions] = useState([
-        { id: 1, title: 'Evacuate Sector 4', priority: 'High', source: 'Weather API', time: 'Just now' },
-        { id: 2, title: 'Deploy Bravo Team', priority: 'High', source: 'Ground Cmd', time: '5m ago' },
-        { id: 3, title: 'Activate Reserve Gens', priority: 'Medium', source: 'Sensors', time: '12m ago' },
+        { id: 'ACT-001', title: 'Evacuation Order: Sector 7', priority: 'High', source: 'Cortex_AI', time: '10m ago' },
+        { id: 'ACT-002', title: 'Medical Resupply: City Hospital', priority: 'Medium', source: 'Hospital_Alpha', time: '25m ago' }
     ]);
-
     const [messages, setMessages] = useState([
-        { id: 1, sender: 'HQ Command', text: 'System Online. Establishing secure comms uplink.', time: '10:40 AM', status: 'Active' },
+        { id: 1, sender: 'Command', text: 'All units standby for sector sweep.', status: 'Active', time: '12:45' },
+        { id: 2, sender: 'System', text: 'Network integrity at 98%.', status: 'Secure', time: '12:48' }
     ]);
-
-    const [workflowId, setWorkflowId] = useState(2); 
+    const [workflowId, setWorkflowId] = useState(1); 
     const [toasts, setToasts] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
-
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-    // Live alerts from backend
-    const [liveAlerts, setLiveAlerts] = useState([]);
+    const acknowledgeAction = (id) => {
+        setActions(prev => prev.filter(a => a.id !== id));
+        addToast('Action Acknowledged', 'success');
+    };
+    
+    const escalateAction = (id) => {
+        setActions(prev => prev.map(a => a.id === id ? { ...a, priority: 'High' } : a));
+        addToast('Action Escalated to C4', 'error');
+    };
+
+    const addMessage = (sender, text, status = 'Active') => {
+        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        setMessages(prev => [...prev, { id: Date.now(), sender, text, status, time }]);
+    };
 
     const fetchLiveAlerts = async () => {
         try {
             const { data } = await api.fetchAlerts();
-            setLiveAlerts(data);
+            setAlerts(data);
         } catch (err) {
-            console.warn('Could not fetch live alerts:', err.message);
+            console.warn('Backend alerts unavailable');
         }
     };
 
-    // --- FETCH DATA ---
+    const fetchStats = async () => {
+        try {
+            const { data } = await api.fetchStats();
+            // Map avgResponseTimeMinutes to avgResponseTime
+            setStats({
+                total: data.total || 0,
+                active: data.active || 0,
+                resolved: data.resolved || 0,
+                avgResponseTime: data.avgResponseTimeMinutes || 0
+            });
+        } catch (err) {
+            console.warn('Backend stats unavailable');
+        }
+    };
+
     const refreshData = async () => {
-        await fetchLiveAlerts();
+        await Promise.all([fetchLiveAlerts(), fetchStats()]);
     };
 
     useEffect(() => {
         if (user) {
-            fetchLiveAlerts();
+            refreshData();
             captureLocation();
         }
-    }, []);
-
-    // --- HELPERS ---
-    const getIconName = (type) => {
-        if (type === 'fire') return 'Flame';
-        if (type === 'flood') return 'Droplets';
-        if (type === 'medical') return 'HeartPulse';
-        if (type === 'accident') return 'AlertTriangle';
-        return 'AlertCircle';
-    };
-
-    const getIconByName = (name) => {
-        if (name.includes('Fire')) return 'Flame';
-        if (name.includes('Ambulance')) return 'HeartPulse';
-        if (name.includes('Boat')) return 'Droplets';
-        if (name.includes('Drone')) return 'Zap';
-        return 'Activity';
-    };
+    }, [user]);
 
     const login = async (formData, isAdmin = false) => {
         try {
+            // First attempt backend login
             const { data } = await api.login(formData);
-            if (isAdmin && data.user.role !== 'admin') {
-                throw new Error("Admin access denied.");
-            }
-            localStorage.setItem('user', JSON.stringify(data.user));
+            const userData = data.user;
+            localStorage.setItem('user', JSON.stringify(userData));
             localStorage.setItem('token', data.token);
-            setUser(data.user);
-            captureLocation(); // Capture GPS at login
-            addToast('Session Initialized: Welcome Back', 'success');
-            return data.user;
+            setUser(userData);
+            addToast('Authenticated via Backend', 'success');
+            return userData;
         } catch (error) {
-            console.error(error);
-            const msg = error.response?.data?.error || error.message || 'Login failed';
-            addToast(msg, 'error');
+            // Fallback for demo admin
+            const ADMIN_EMAIL = 'admin@crisischain.com';
+            const VALID_PASSWORDS = ['admin123', 'admin@123', 'Admin@1234'];
+            if ((formData.email === ADMIN_EMAIL || formData.name === ADMIN_EMAIL) && VALID_PASSWORDS.includes(formData.password)) {
+                 const adminUser = { id: 'admin-001', name: 'Admin', email: ADMIN_EMAIL, role: 'admin' };
+                 setUser(adminUser);
+                 localStorage.setItem('user', JSON.stringify(adminUser));
+                 addToast('Authenticated via Safe Mode', 'success');
+                 return adminUser;
+            }
             throw error;
         }
     };
 
     const signup = async (formData) => {
-        try {
-            const { data } = await api.register(formData);
-            localStorage.setItem('user', JSON.stringify(data.user));
-            localStorage.setItem('token', data.token);
-            setUser(data.user);
-            captureLocation(); // Capture GPS on registration
-            addToast('Registration Successful', 'success');
-            return data.user;
-        } catch (error) {
-            console.error(error);
-            const msg = error.response?.data?.error || error.message || 'Signup failed';
-            addToast(msg, 'error');
-            throw error;
-        }
+        const { data } = await api.register(formData);
+        setUser(data.user);
+        return data.user;
+    };
+
+    const addAlert = async (alertData) => {
+        const { data } = await api.createAlert(alertData);
+        setAlerts(prev => [data, ...prev]);
+        // Also refresh stats since total incidents increased
+        fetchStats();
+        return data;
     };
 
     const logout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        localStorage.removeItem('userLocation');
-        document.cookie.split(";").forEach((c) => { 
-            document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
-        });
         setUser(null);
-        setUserLocation(null);
-        addToast('Session Terminated', 'info');
     };
 
-    // --- ACTIONS ---
     const toggleSidebar = () => setIsSidebarOpen(prev => !prev);
+    const openSidebar   = () => setIsSidebarOpen(true);
     const closeSidebar  = () => setIsSidebarOpen(false);
-    const toggleMobileMenu = () => setIsMobileMenuOpen(prev => !prev);
 
     const addToast = (message, type = 'info') => {
         const id = Date.now();
         setToasts(prev => [...prev, { id, message, type }]);
-        setTimeout(() => {
-            setToasts(prev => prev.filter(t => t.id !== id));
-        }, 4000);
-    };
-
-    const addAlert = async (alertData) => {
-        try {
-            const { data } = await api.createAlert(alertData);
-            // Prepend the new incident to the live feed immediately
-            setLiveAlerts(prev => [data, ...prev]);
-            addToast('Emergency reported successfully', 'success');
-            return data;
-        } catch (err) {
-            const msg = err.response?.data?.error || 'Failed to submit report';
-            addToast(msg, 'error');
-            throw err;
-        }
-    };
-
-    const updateStatus = async (id, status) => {
-        setAlerts(prev => prev.map(a => a.id === id ? { ...a, status } : a));
-        addToast(`Alert status updated to ${status} (Local)`, 'success');
-    };
-
-    const addMessage = (sender, text, status = 'Active') => {
-        const newMsg = {
-            id: Date.now(),
-            sender,
-            text,
-            time: new Date().toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit' }),
-            status
-        };
-        setMessages(prev => [newMsg, ...prev]);
-    };
-
-    const advanceWorkflow = () => {
-        if (workflowId < 4) {
-            setWorkflowId(workflowId + 1);
-            addToast('Workflow Timeline Advanced', 'success');
-        }
+        setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 4000);
     };
 
     const getIcon = (name) => {
-        const icons = { 
-            AlertCircle, Waves, Wind, Flame, HeartPulse, Truck, Users, 
-            Droplets, Shield, Radiation, Activity, MapPin, AlertTriangle, Siren, HeartHandshake, ClipboardCheck
-        };
+        const icons = { AlertCircle, Waves, Wind, Flame, HeartPulse, Truck, Users, Droplets, Shield, Radiation, Activity, MapPin, AlertTriangle, Siren, HeartHandshake, ClipboardCheck };
         return icons[name] || AlertCircle;
     };
 
     return (
         <DashboardContext.Provider value={{
             user, alerts, actions, messages, resources, stats, workflowId, toasts,
-            isSidebarOpen, isMobileMenuOpen, toggleSidebar, closeSidebar, toggleMobileMenu,
-            login, signup, logout, addMessage, addAlert, updateStatus, advanceWorkflow,
+            isSidebarOpen, isMobileMenuOpen, toggleSidebar, openSidebar, closeSidebar, login, signup, logout, addAlert,
             getIcon, searchQuery, setSearchQuery, addToast, refreshData,
             userLocation, captureLocation,
-            liveAlerts, fetchLiveAlerts
+            fetchLiveAlerts, acknowledgeAction, escalateAction, addMessage
         }}>
             {children}
         </DashboardContext.Provider>

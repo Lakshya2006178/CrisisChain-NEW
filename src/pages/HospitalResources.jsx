@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useDashboard } from '../context/DashboardContext';
 import Sidebar from '../components/Sidebar';
 import TopNavbar from '../components/TopNavbar';
-import { SZ } from '../DashboardMain';
+import { SZ } from '../constants';
 import {
     BedDouble, Ambulance, Package, Users,
     Plus, Trash2, Search, X, Clock, MapPin
@@ -283,8 +283,10 @@ export default function HospitalResources() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filtered.kits.map(k => {
-                                        const expiring = new Date(k.expiry) < new Date(Date.now() + 90 * 86400000);
+                                    {(() => {
+                                        const threshold = new Date(Date.now() + 90 * 86400000);
+                                        return filtered.kits.map(k => {
+                                            const expiring = new Date(k.expiry) < threshold;
                                         return (
                                             <tr key={k.id} className="border-b border-white/[0.03] hover:bg-white/[0.03] transition-all">
                                                 <td className="px-6 py-5 font-outfit font-black text-white uppercase">{k.name}</td>
@@ -297,7 +299,8 @@ export default function HospitalResources() {
                                                 <td className="px-6 py-5"><button onClick={() => removeItem('kits', k.id)}><Trash2 className="w-4 h-4 text-white/10 hover:text-red-500 transition-colors" /></button></td>
                                             </tr>
                                         );
-                                    })}
+                                        });
+                                    })()}
                                 </tbody>
                             </table>
                         </div>

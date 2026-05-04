@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useDashboard } from '../context/DashboardContext';
 import Sidebar from '../components/Sidebar';
 import TopNavbar from '../components/TopNavbar';
-import { SZ } from '../DashboardMain';
+import { SZ } from '../constants';
 import {
     Truck, Wrench, Users, ClipboardList, Plus, Trash2,
     CheckCircle2, AlertCircle, Clock, MapPin, Search, X

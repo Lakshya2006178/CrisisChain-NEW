@@ -51,9 +51,9 @@ const LandingPage = () => {
   const [incidents, setIncidents] = useState([
     { coords: [-74.006, 40.7128], type: 'CRITICAL', label: 'Cyclone - Coastal Zone 4', time: '2 min ago', color: '#ef4444' },
     { coords: [139.6917, 35.6895], type: 'DISPATCHED', label: 'Fire - Industrial Sector B', time: '5 min ago', color: '#3b82f6' },
-    { coords: [31.2357, 30.0444], type: 'LIVE', label: 'Flood – River Valley', time: '1 min ago', color: '#ef4444' },
-    { coords: [-43.1729, -22.9068], type: 'CRITICAL', label: 'Tectonic Alert – Sector G', time: '12 min ago', color: '#ef4444' },
-    { coords: [77.2090, 28.6139], type: 'MONITORING', label: 'Heatwave – Central Hub', time: 'Just now', color: '#3b82f6' },
+    { coords: [31.2357, 30.0444], type: 'LIVE', label: 'Flood ??? River Valley', time: '1 min ago', color: '#ef4444' },
+    { coords: [-43.1729, -22.9068], type: 'CRITICAL', label: 'Tectonic Alert ??? Sector G', time: '12 min ago', color: '#ef4444' },
+    { coords: [77.2090, 28.6139], type: 'MONITORING', label: 'Heatwave ??? Central Hub', time: 'Just now', color: '#3b82f6' },
   ]);
 
   const scrollToSection = (id) => {
@@ -103,7 +103,7 @@ const LandingPage = () => {
   return (
     <div className="min-h-screen bg-[#08080A] text-[#E5E5E7] font-inter overflow-x-hidden selection:bg-[#00FFCC] selection:text-black">
 
-      {/* ── AMBIENT MESH BACKGROUND ── */}
+      {/* ?????? AMBIENT MESH BACKGROUND ?????? */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         <div 
           className="absolute w-[800px] h-[800px] rounded-full blur-[160px] opacity-[0.1] bg-blue-500 transition-transform duration-1000 ease-out"
@@ -118,7 +118,7 @@ const LandingPage = () => {
         <div className="absolute inset-0 opacity-[0.03] contrast-150 brightness-150 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
       </div>
 
-      {/* ── MOBILE MENU OVERLAY ── */}
+      {/* ?????? MOBILE MENU OVERLAY ?????? */}
       <div className={`
         fixed inset-0 z-[100] bg-black/95 backdrop-blur-2xl transition-all duration-500 lg:hidden
         ${mobileMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-full pointer-events-none'}
@@ -174,7 +174,7 @@ const LandingPage = () => {
         </div>
       </div>
 
-      {/* ── NAV BAR (GLASS) ── */}
+      {/* ?????? NAV BAR (GLASS) ?????? */}
       <nav 
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-700 ${
           scrolled ? 'bg-black/20 backdrop-blur-3xl border-b border-white/5 py-4' : 'bg-transparent py-8'
@@ -279,7 +279,7 @@ const LandingPage = () => {
         </div>
       </nav>
 
-      {/* ── ASYMMETRIC HERO SECTION ── */}
+      {/* ?????? ASYMMETRIC HERO SECTION ?????? */}
       <section className="relative min-h-screen flex items-center pt-32 pb-20 px-8 z-10">
         <div className="max-w-[1400px] mx-auto w-full grid lg:grid-cols-12 gap-8 items-start">
           
@@ -305,7 +305,7 @@ const LandingPage = () => {
                   <AlertTriangle className="w-6 h-6 text-red-500 animate-pulse" />
                   <div className="flex flex-col items-start text-left">
                     <span className="text-[8px] font-mono text-white/60 uppercase">CRITICAL PRIORITY</span>
-                    <span className="text-xl font-outfit font-black uppercase tracking-tight">🚨 Report Emergency</span>
+                    <span className="text-xl font-outfit font-black uppercase tracking-tight">???? Report Emergency</span>
                   </div>
                 </Link>
             </div>
@@ -432,7 +432,7 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* ── EDITORIAL INTEL SECTION ── */}
+      {/* ?????? EDITORIAL INTEL SECTION ?????? */}
       <section id="intel" className="py-40 px-8 relative z-10">
         <div className="max-w-[1400px] mx-auto">
           <div className="mb-32 max-w-4xl">
@@ -472,7 +472,7 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* ── ASYMMETRIC STATS LAYER ── */}
+      {/* ?????? ASYMMETRIC STATS LAYER ?????? */}
       <section id="nodes" className="py-40 relative px-8 bg-white/[0.01]">
          <div className="max-w-[1400px] mx-auto grid lg:grid-cols-2 gap-24 items-center">
             <div className="relative">
@@ -503,7 +503,7 @@ const LandingPage = () => {
          </div>
       </section>
 
-      {/* ── THE CALL TO ACTION VOID ── */}
+      {/* ?????? THE CALL TO ACTION VOID ?????? */}
       <section id="join" className="py-60 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#00FFCC]/5 to-transparent opacity-40 pointer-events-none" />
         <div className="max-w-4xl mx-auto px-8 text-center relative z-10">
@@ -522,7 +522,7 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* ── MINIMALIST CYBER FOOTER ── */}
+      {/* ?????? MINIMALIST CYBER FOOTER ?????? */}
       <footer className="py-20 px-8 border-t border-white/5 relative z-10 bg-[#08080A]">
         <div className="max-w-[1400px] mx-auto">
           <div className="grid md:grid-cols-4 gap-16 mb-20">
@@ -557,7 +557,7 @@ const LandingPage = () => {
           
           <div className="h-[1px] w-full bg-white/5 mb-8" />
           <div className="text-[8px] font-mono text-white/10 uppercase tracking-[0.8em] text-center">
-             © 2026 CrisisChain // THE_SOVEREIGN_OBSERVER
+             ?? 2026 CrisisChain // THE_SOVEREIGN_OBSERVER
           </div>
         </div>
       </footer>

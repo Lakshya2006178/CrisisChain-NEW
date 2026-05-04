@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { 
   Shield, 
@@ -49,6 +49,7 @@ export default function ReportIncident() {
   const [errors, setErrors] = useState({});
   const [success, setSuccess] = useState(false);
   const [locLoading, setLocLoading] = useState(false);
+  const [coords, setCoords] = useState(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const { addAlert, addToast } = useDashboard();
 
@@ -67,32 +68,67 @@ export default function ReportIncident() {
   };
 
   const fetchGPSLocation = () => {
-    if (!navigator.geolocation) { set('location', 'Geolocation not supported'); return; }
+    if (!navigator.geolocation) { 
+      set('location', 'Geolocation not supported'); 
+      addToast('Geolocation is not supported by your browser.', 'error');
+      return; 
+    }
+    
     setLocLoading(true);
+    
+    // Use high accuracy and reasonable timeout
+    const options = {
+      enableHighAccuracy: true,
+      timeout: 15000,
+      maximumAge: 0
+    };
+
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
-        const { latitude: lat, longitude: lng } = pos.coords;
+        const { latitude: lat, longitude: lng, accuracy } = pos.coords;
+        console.log(`GPS Location captured: ${lat}, ${lng} (Accuracy: ${accuracy}m)`);
+        
+        setCoords({ lat, lng });
+
         let placeName = '';
         try {
-          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+          // Attempt reverse geocoding with a timeout
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 8000);
+          
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`,
+            { signal: controller.signal }
+          );
+          clearTimeout(timeoutId);
+          
           const data = await res.json();
           if (data && data.display_name) {
-            // Take the most relevant parts of the address for brevity
             const parts = data.display_name.split(', ');
             placeName = parts.slice(0, 3).join(', ');
           }
         } catch (error) {
-          console.error("Reverse geocoding failed", error);
+          console.warn("Reverse geocoding failed or timed out, using coordinates only", error);
         }
         
-        if (placeName) {
-          set('location', `${placeName} (${lat.toFixed(5)}, ${lng.toFixed(5)})`);
-        } else {
-          set('location', `${lat.toFixed(5)}, ${lng.toFixed(5)}`);
-        }
+        const finalLocString = placeName 
+          ? `${placeName} (${lat.toFixed(6)}, ${lng.toFixed(6)})`
+          : `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+          
+        set('location', finalLocString);
         setLocLoading(false);
+        addToast('GPS Location Verified', 'success');
       },
-      () => { set('location', 'Unable to retrieve location'); setLocLoading(false); }
+      (err) => { 
+        let errMsg = 'Unable to retrieve location';
+        if (err.code === 1) errMsg = 'Location access denied. Please enable GPS permissions.';
+        else if (err.code === 3) errMsg = 'GPS signal timeout. Try moving to an open area.';
+        
+        set('location', errMsg); 
+        setLocLoading(false);
+        addToast(errMsg, 'error');
+      },
+      options
     );
   };
 
@@ -113,23 +149,32 @@ export default function ReportIncident() {
     setLoading(true);
     
     try {
-      const isCritical = form.severity === 'critical' || form.severity === 'high';
+      const isCritical = form.severity === 'critical';
+      const isHigh = form.severity === 'high';
       
       const payload = {
         type: form.disasterType,
         location: form.location,
-        severity: isCritical ? 'high' : (form.severity === 'medium' ? 'medium' : 'low'),
-        description: form.description
+        severity: form.severity, // Send original ID, backend mapSeverity will handle it
+        description: form.description,
+        latitude: coords?.lat || null,
+        longitude: coords?.lng || null
       };
       
-      await addAlert(payload);
+      console.log('Submitting emergency report:', payload);
+      const res = await addAlert(payload);
+      console.log('Report confirmed by backend:', res);
+      
       setLoading(false); 
       setSuccess(true); 
     } catch (e) {
+      console.error('FAILED TO DELIVER REPORT:', e);
       setLoading(false);
-      addToast('System Error. Report not delivered.', 'error');
+      addToast(`Uplink Failed: ${e.response?.data?.error || e.message}`, 'error');
     }
   };
+
+  const reportId = useMemo(() => `#RI-${Math.random().toString(36).substr(2, 6).toUpperCase()}`, []);
 
   if (success) return (
     <div className="min-h-screen bg-[#08080A] text-[#E5E5E7] font-inter flex items-center justify-center p-8 overflow-hidden relative">
@@ -142,13 +187,13 @@ export default function ReportIncident() {
         <h2 className="font-outfit text-5xl font-black tracking-tighter uppercase mb-8">REPORT RECEIVED</h2>
         <p className="text-white/40 font-light text-lg mb-12">
           Your emergency report has been sent to the nearest rescue teams. They are being notified right now.
-          Report ID: <span className="text-[#00FFCC] font-mono">#RI-{Date.now().toString().slice(-6)}</span>
+          Report ID: <span className="text-[#00FFCC] font-mono">{reportId}</span>
         </p>
         <div className="flex flex-col sm:flex-row gap-6 justify-center">
           <button onClick={() => nav('/dashboard')} className="px-10 py-5 bg-[#00FFCC] text-black font-outfit font-black uppercase tracking-widest hover:brightness-110 transition-all">
             View Updates
           </button>
-          <button onClick={() => { setSuccess(false); setForm({ location: '', disasterType: '', severity: '', description: '' }); setFiles([]); }} className="px-10 py-5 bg-white/5 border border-white/10 text-white font-outfit font-black uppercase tracking-widest hover:bg-white/10 transition-all">
+          <button onClick={() => { setSuccess(false); setForm({ location: '', disasterType: '', severity: '', description: '' }); setFiles([]); setCoords(null); }} className="px-10 py-5 bg-white/5 border border-white/10 text-white font-outfit font-black uppercase tracking-widest hover:bg-white/10 transition-all">
             Report Another Emergency
           </button>
         </div>

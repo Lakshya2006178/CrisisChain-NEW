@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useDashboard } from '../context/DashboardContext';
 import Sidebar from '../components/Sidebar';
 import TopNavbar from '../components/TopNavbar';
-import { SZ } from '../DashboardMain';
+import { SZ } from '../constants';
 import {
     Activity, TrendingUp, AlertTriangle, CheckCircle2, 
     Clock, Gauge, Globe, Zap, Database, BarChart3, 
