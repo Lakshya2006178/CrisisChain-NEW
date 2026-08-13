@@ -14,7 +14,7 @@
     "@react-three/fiber": "^9.5.0",
     "@supabase/supabase-js": "^2.105.1",
     "@tailwindcss/vite": "^4.2.2",
-    "axios": "^1.16.0",
+    "axios": "^1.19.0",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.577.0",
     "prop-types": "^15.8.1",

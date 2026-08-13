@@ -1,57 +1,48 @@
-import pool from '../db.js';
+// MOCK: Hardcoded data for analytics charts
+// TODO (DBMS Project): Replace these with SQL GROUP BY and date-aggregation queries
 
 export const getIncidentDistribution = async (req, res) => {
-  const conn = await pool.getConnection();
-  try {
-    const [rows] = await conn.execute(
-      `SELECT it.type_name AS _id, COUNT(*) AS count
-       FROM incident i
-       JOIN incident_type it ON i.type_id = it.type_id
-       GROUP BY it.type_name
-       ORDER BY count DESC`
-    );
-    res.json(rows);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  } finally {
-    conn.release();
-  }
-};
-
-export const getResponseTrends = async (req, res) => {
-  const conn = await pool.getConnection();
-  try {
-    // SQLite version of TIMESTAMPDIFF and DATE
-    const [rows] = await conn.execute(
-      `SELECT date(created_at) AS _id,
-              ROUND(AVG((julianday(resolved_at) - julianday(created_at)) * 1440), 1) AS avgResponse
-       FROM incident
-       WHERE resolved_at IS NOT NULL
-       GROUP BY date(created_at)
-       ORDER BY _id ASC`
-    );
-    res.json(rows);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  } finally {
-    conn.release();
-  }
+    try {
+        const mockDistribution = [
+            { type_name: 'Fire', count: 45 },
+            { type_name: 'Flood', count: 30 },
+            { type_name: 'Medical Emergency', count: 52 },
+            { type_name: 'Road Accident', count: 15 }
+        ];
+        res.json(mockDistribution);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 };
 
 export const getIncidentTrends = async (req, res) => {
-  const conn = await pool.getConnection();
-  try {
-    // SQLite version of DATE_FORMAT
-    const [rows] = await conn.execute(
-      `SELECT strftime('%H:00', created_at) AS _id, COUNT(*) AS count
-       FROM incident
-       GROUP BY strftime('%H:00', created_at)
-       ORDER BY _id ASC`
-    );
-    res.json(rows);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  } finally {
-    conn.release();
-  }
+    try {
+        const mockTrends = [
+            { date: '2024-01-01', count: 5 },
+            { date: '2024-01-02', count: 12 },
+            { date: '2024-01-03', count: 8 },
+            { date: '2024-01-04', count: 15 },
+            { date: '2024-01-05', count: 3 },
+            { date: '2024-01-06', count: 7 }
+        ];
+        res.json(mockTrends);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+export const getResponseTrends = async (req, res) => {
+    try {
+        const mockResponseTrends = [
+            { date: '2024-01-01', avg_time: 15.2 },
+            { date: '2024-01-02', avg_time: 18.5 },
+            { date: '2024-01-03', avg_time: 14.1 },
+            { date: '2024-01-04', avg_time: 12.0 },
+            { date: '2024-01-05', avg_time: 13.5 },
+            { date: '2024-01-06', avg_time: 11.2 }
+        ];
+        res.json(mockResponseTrends);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 };

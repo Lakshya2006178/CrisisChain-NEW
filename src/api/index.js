@@ -18,7 +18,7 @@ export const register = (formData) => API.post('/auth/register', formData);
 // Alerts
 export const fetchAlerts = () => API.get('/alerts');
 export const createAlert = (newAlert) => API.post('/alerts', newAlert);
-export const updateAlertStatus = (id, status) => API.patch(`/alerts/${id}`, { status });
+export const updateAlertStatus = (id, status) => API.patch(`/alerts/${id}/status`, { status });
 export const fetchStats = () => API.get('/alerts/stats');
 
 // Resources

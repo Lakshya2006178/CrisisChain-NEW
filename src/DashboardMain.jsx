@@ -96,16 +96,16 @@ export default function DashboardMain() {
   }, []);
 
   useEffect(() => {
-    closeSidebar();
     const injected = document.getElementById('cc-v5');
     if (injected) injected.remove();
-  }, [closeSidebar]);
+  }, []);
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-[#08080A] text-[#E5E5E7] font-inter">
       
       <SystemGridOverlay mousePos={mousePos} />
 
+      <Sidebar />
       <TopNavbar fullWidth />
 
       {/* ── PROPER DASHBOARD GRID ── */}
@@ -113,6 +113,7 @@ export default function DashboardMain() {
         className="flex-1 overflow-y-auto overflow-x-hidden transition-all duration-500 relative z-10 custom-scrollbar will-change-transform w-full"
         style={{
           marginTop: SZ.navbarH,
+          marginLeft: ml,
           height: `calc(100vh - ${SZ.navbarH}px)`,
         }}
       >

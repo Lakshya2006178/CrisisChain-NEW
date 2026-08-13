@@ -25,6 +25,7 @@ const getDb = async () => {
                 password_hash TEXT NOT NULL,
                 role TEXT CHECK(role IN ('citizen','responder','hospital','admin')) NOT NULL DEFAULT 'citizen',
                 is_verified INTEGER NOT NULL DEFAULT 0,
+                is_active INTEGER NOT NULL DEFAULT 1,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             );
 
@@ -46,6 +47,7 @@ const getDb = async () => {
                 incident_status TEXT CHECK(incident_status IN ('Reported','Assigned','InProgress','Resolved','Closed')) DEFAULT 'Reported',
                 priority_level TEXT CHECK(priority_level IN ('Low','Medium','High','Critical')) DEFAULT 'Medium',
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                resolved_at DATETIME,
                 FOREIGN KEY (aadhar_id) REFERENCES users(aadhar_id),
                 FOREIGN KEY (type_id) REFERENCES incident_type(type_id)
             );

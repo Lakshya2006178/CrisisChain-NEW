@@ -1,191 +1,171 @@
-import pool from '../db.js';
+import crypto from 'crypto';
 
-// ─── GET ALL RESOURCES ────────────────────────────────────────
-export const getResources = async (req, res) => {
-  const conn = await pool.getConnection();
-  try {
-    const [rows] = await conn.execute(
-      `SELECT r.*, rc.name AS center_name, rc.center_type, rc.latitude, rc.longitude
-       FROM resource r
-       JOIN resource_center rc ON r.center_id = rc.center_id
-       ORDER BY rc.name, r.resource_type`
-    );
-    res.json(rows);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  } finally {
-    conn.release();
-  }
-};
+const uuid = () => crypto.randomUUID();
 
-// ─── GET NEARBY RESOURCE CENTERS (Haversine distance) ────────
-// GET /api/resources/nearby?lat=XX&lng=YY&radius=10&type=Hospital
+// MOCK: In-memory resources array
+// TODO (DBMS Project): Replace with SELECT * FROM resource_center ...
+let mockCenters = [
+    {
+        center_id: 'C-01',
+        center_type: 'Hospital',
+        name: 'KMC Hospital Mangaluru',
+        address: 'Ambedkar Circle, Mangaluru',
+        contact_number: '08242225533',
+        latitude: 12.864500,
+        longitude: 74.843200,
+        distance_km: 2.3,
+        resources: [
+            { resource_type: 'ICU Beds', quantity_available: 45 },
+            { resource_type: 'Ventilators', quantity_available: 12 },
+            { resource_type: 'Ambulances', quantity_available: 5 }
+        ]
+    },
+    {
+        center_id: 'C-02',
+        center_type: 'Hospital',
+        name: 'Nitte Gajria Hospital',
+        address: 'Karkala Road, Udupi',
+        contact_number: '08202524820',
+        latitude: 13.225700,
+        longitude: 75.013300,
+        distance_km: 4.1,
+        resources: [
+            { resource_type: 'ICU Beds', quantity_available: 20 },
+            { resource_type: 'Ventilators', quantity_available: 8 },
+            { resource_type: 'Ambulances', quantity_available: 3 }
+        ]
+    },
+    {
+        center_id: 'C-03',
+        center_type: 'Hospital',
+        name: 'Government Hospital Mangaluru',
+        address: 'Lalbagh, Mangaluru',
+        contact_number: '08242220223',
+        latitude: 12.867800,
+        longitude: 74.843000,
+        distance_km: 1.8,
+        resources: [
+            { resource_type: 'General Beds', quantity_available: 80 },
+            { resource_type: 'Ambulances', quantity_available: 8 }
+        ]
+    },
+    {
+        center_id: 'C-04',
+        center_type: 'Hospital',
+        name: 'Dr.T.M.A. Pai Rotary Hospital',
+        address: 'Manipal, Udupi',
+        contact_number: '08202922217',
+        latitude: 13.223500,
+        longitude: 74.977400,
+        distance_km: 7.2,
+        resources: [
+            { resource_type: 'ICU Beds', quantity_available: 35 },
+            { resource_type: 'Ventilators', quantity_available: 15 }
+        ]
+    },
+    {
+        center_id: 'C-05',
+        center_type: 'Hospital',
+        name: 'Father Muller Medical College',
+        address: 'Kankanady, Mangaluru',
+        contact_number: '08242238000',
+        latitude: 12.914100,
+        longitude: 74.856000,
+        distance_km: 3.5,
+        resources: [
+            { resource_type: 'ICU Beds', quantity_available: 60 },
+            { resource_type: 'Ambulances', quantity_available: 10 }
+        ]
+    },
+    {
+        center_id: 'C-06',
+        center_type: 'FireStation',
+        name: 'Mangaluru Fire Station',
+        address: 'Hampankatta, Mangaluru',
+        contact_number: '08242231414',
+        latitude: 12.871900,
+        longitude: 74.842200,
+        distance_km: 2.1,
+        resources: [
+            { resource_type: 'Fire Engines', quantity_available: 6 },
+            { resource_type: 'Rescue Teams', quantity_available: 4 }
+        ]
+    },
+    {
+        center_id: 'C-07',
+        center_type: 'Police',
+        name: 'Mangaluru City Police HQ',
+        address: 'Balmatta, Mangaluru',
+        contact_number: '08242220600',
+        latitude: 12.866600,
+        longitude: 74.843800,
+        distance_km: 1.5,
+        resources: [
+            { resource_type: 'Patrol Cars', quantity_available: 15 },
+            { resource_type: 'Officers', quantity_available: 50 }
+        ]
+    }
+];
+
+// Helper to calculate distance
+function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
+    var R = 6371; // Radius of the earth in km
+    var dLat = (lat2 - lat1) * (Math.PI / 180);
+    var dLon = (lon2 - lon1) * (Math.PI / 180);
+    var a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c; 
+}
+
 export const getNearbyCenters = async (req, res) => {
-  const conn = await pool.getConnection();
-  try {
-    const { lat, lng, radius = 20, type } = req.query;
-    if (!lat || !lng) {
-      return res.status(400).json({ error: 'lat and lng query parameters are required.' });
-    }
-
-    const userLat = parseFloat(lat);
-    const userLng = parseFloat(lng);
-    const radiusKm = parseFloat(radius);
-
-    // Fetch all centers and their resources
-    let query = `
-      SELECT
-        rc.center_id,
-        rc.name,
-        rc.center_type,
-        rc.latitude,
-        rc.longitude,
-        rc.address,
-        rc.contact_number,
-        r.resource_type,
-        r.quantity_available
-      FROM resource_center rc
-      LEFT JOIN resource r ON r.center_id = rc.center_id
-    `;
-
-    const params = [];
-    if (type) {
-      query += ` WHERE rc.center_type = ?`;
-      params.push(type);
-    }
-
-    const [rows] = await conn.execute(query, params);
-
-    // Group resources by center and calculate distance in JS
-    const centerMap = {};
-    
-    rows.forEach(row => {
-        if (!centerMap[row.center_id]) {
-            // Calculate Haversine Distance in JS
-            const R = 6371; // Earth radius in km
-            const dLat = (row.latitude - userLat) * Math.PI / 180;
-            const dLon = (row.longitude - userLng) * Math.PI / 180;
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                      Math.cos(userLat * Math.PI / 180) * Math.cos(row.latitude * Math.PI / 180) *
-                      Math.sin(dLon/2) * Math.sin(dLon/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            const distance = parseFloat((R * c).toFixed(2));
-
-            centerMap[row.center_id] = {
-                center_id: row.center_id,
-                name: row.name,
-                center_type: row.center_type,
-                latitude: row.latitude,
-                longitude: row.longitude,
-                address: row.address,
-                contact_number: row.contact_number,
-                distance_km: distance,
-                resources: []
-            };
-        }
+    try {
+        const { lat, lng, radius, type } = req.query;
         
-        if (row.resource_type) {
-            centerMap[row.center_id].resources.push({
-                resource_type: row.resource_type,
-                quantity_available: row.quantity_available
-            });
+        if (!lat || !lng) {
+            return res.status(400).json({ error: 'lat and lng are required' });
         }
-    });
 
-    let centers = Object.values(centerMap)
-        .filter(c => c.distance_km <= radiusKm)
-        .sort((a, b) => a.distance_km - b.distance_km)
-        .slice(0, 20);
+        const maxDist = radius ? parseFloat(radius) : 50;
 
-    // If type is Hospital or not specified, fetch real hospitals from Overpass API
-    if (!type || type === 'Hospital') {
-        try {
-            const overpassQuery = `[out:json];(node["amenity"="hospital"](around:${radiusKm * 1000},${userLat},${userLng});way["amenity"="hospital"](around:${radiusKm * 1000},${userLat},${userLng});relation["amenity"="hospital"](around:${radiusKm * 1000},${userLat},${userLng}););out center;`;
-            const overpassRes = await fetch('https://overpass-api.de/api/interpreter', {
-                method: 'POST',
-                body: overpassQuery,
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-            });
-            
-            if (overpassRes.ok) {
-                const data = await overpassRes.json();
-                
-                // Map overpass data to our center format
-                const realHospitals = data.elements.map(el => {
-                    const lat = el.lat || el.center?.lat;
-                    const lon = el.lon || el.center?.lon;
-                    
-                    // Basic Haversine to calculate precise distance from user
-                    const R = 6371; // km
-                    const dLat = (lat - userLat) * Math.PI / 180;
-                    const dLon = (lon - userLng) * Math.PI / 180;
-                    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                              Math.cos(userLat * Math.PI / 180) * Math.cos(lat * Math.PI / 180) *
-                              Math.sin(dLon/2) * Math.sin(dLon/2);
-                    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-                    const distance = parseFloat((R * c).toFixed(2));
+        // MOCK: Calculate distance dynamically based on input instead of SQL spatial queries
+        let results = mockCenters.map(center => {
+            const distance_km = getDistanceFromLatLonInKm(
+                parseFloat(lat), parseFloat(lng), 
+                center.latitude, center.longitude
+            );
+            return { ...center, distance_km: Math.round(distance_km * 10) / 10 };
+        });
 
-                    return {
-                        center_id: `osm-${el.id}`,
-                        name: el.tags?.name || 'Local Hospital',
-                        center_type: 'Hospital',
-                        latitude: lat,
-                        longitude: lon,
-                        address: el.tags?.['addr:full'] || el.tags?.['addr:street'] || 'Location mapped via Satellite',
-                        contact_number: el.tags?.phone || null,
-                        distance_km: distance,
-                        resources: [
-                            { resource_type: 'Emergency Beds', quantity_available: Math.floor(Math.random() * 50) + 10 },
-                            { resource_type: 'Trauma Kits', quantity_available: Math.floor(Math.random() * 20) + 5 }
-                        ]
-                    };
-                });
-                
-                // Combine and re-sort by distance (deduplicate by name to prevent overlap with dummy db records)
-                const existingNames = new Set(centers.map(c => c.name.toLowerCase()));
-                for (const rh of realHospitals) {
-                    if (!existingNames.has(rh.name.toLowerCase())) {
-                        centers.push(rh);
-                        existingNames.add(rh.name.toLowerCase());
-                    }
-                }
-                centers.sort((a, b) => a.distance_km - b.distance_km);
-            }
-        } catch (fetchErr) {
-            console.error('Overpass fetch failed:', fetchErr);
-            // Non-fatal, just fallback to dummy centers
+        // Filter by radius and type
+        results = results.filter(c => c.distance_km <= maxDist);
+        if (type) {
+            results = results.filter(c => c.center_type === type);
         }
+
+        res.json(results);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
-
-    res.json(centers);
-  } catch (err) {
-    console.error('getNearbyCenters error:', err.message);
-    res.status(500).json({ error: err.message });
-  } finally {
-    conn.release();
-  }
 };
 
-// ─── UPDATE RESOURCE QUANTITY ─────────────────────────────────
+export const getResources = async (req, res) => {
+    try {
+        res.json(mockCenters);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
 export const updateResourceStatus = async (req, res) => {
-  const conn = await pool.getConnection();
-  try {
-    const { quantity_available } = req.body;
-    const { id: resource_id } = req.params;
-
-    const [[existing]] = await conn.execute(
-      'SELECT resource_id FROM resource WHERE resource_id = ?', [resource_id]
-    );
-    if (!existing) return res.status(404).json({ error: 'Resource not found.' });
-
-    await conn.execute(
-      'UPDATE resource SET quantity_available = ? WHERE resource_id = ?',
-      [quantity_available, resource_id]
-    );
-    res.json({ success: true, resource_id, quantity_available });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  } finally {
-    conn.release();
-  }
+    try {
+        const { id } = req.params;
+        const { deployed } = req.body;
+        // Mock update
+        res.json({ success: true, id, deployed });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 };

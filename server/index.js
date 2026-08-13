@@ -23,19 +23,10 @@ app.use('/api/resources', resourceRoutes);
 app.use('/api/analytics', analyticsRoutes);
 
 // Health check
-app.get('/', (req, res) => res.json({ status: 'CrisisChain API running', db: 'MySQL' }));
+app.get('/', (req, res) => res.json({ status: 'CrisisChain API running', db: 'SQLite' }));
 
-// Test DB connection then start
-pool.getConnection()
-  .then((conn) => {
-    console.log('✅ Connected to Database — crisischain_db');
-    conn.release();
-    app.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`);
-      console.log(`🌐 API: http://localhost:${PORT}/api`);
-    });
-  })
-  .catch((err) => {
-    console.error('❌ MySQL connection failed:', err.message);
-    process.exit(1);
-  });
+// Mock Mode: Start server directly without requiring DB connection
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT} (MOCK MODE)`);
+  console.log(`🌐 API: http://localhost:${PORT}/api`);
+});

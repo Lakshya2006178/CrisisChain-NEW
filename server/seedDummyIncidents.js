@@ -65,10 +65,11 @@ async function seed() {
     ];
 
     for (const u of users) {
+        const aadhar_id = crypto.createHash('sha256').update(u.aadhar.trim()).digest('hex');
         await conn.execute(
-          `INSERT OR IGNORE INTO users (aadhar_id, full_name, email, phone_number, password_hash, role, is_verified) 
-           VALUES (?, ?, ?, '0000000000', ?, ?, 1)`,
-          [u.aadhar, u.name, u.email, testPasswordHash, u.role]
+          `INSERT OR IGNORE INTO users (aadhar_id, full_name, email, phone_number, password_hash, role, is_verified, is_active) 
+           VALUES (?, ?, ?, '0000000000', ?, ?, 1, 1)`,
+          [aadhar_id, u.name, u.email, testPasswordHash, u.role]
         );
     }
     

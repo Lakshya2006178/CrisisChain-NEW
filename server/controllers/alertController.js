@@ -1,211 +1,192 @@
 import crypto from 'crypto';
-import pool from '../db.js';
 
 const uuid = () => crypto.randomUUID();
 
-// Map form type strings to existing incident_type rows (case-insensitive partial match)
-const resolveTypeId = async (conn, typeName) => {
-  if (!typeName) return 1; // Default: Fire fallback
-  const [rows] = await conn.execute(
-    'SELECT type_id FROM incident_type WHERE LOWER(type_name) LIKE ? LIMIT 1',
-    [`%${typeName.toLowerCase()}%`]
-  );
-  if (rows.length > 0) return rows[0].type_id;
+// In-Memory Mock Data (Replace with DB queries later)
+let mockIncidents = [
+    {
+        id: 'AL-1001',
+        incident_id: 'AL-1001',
+        type: 'Fire',
+        title: 'Major structure fire at downtown block',
+        location: '123 Main St, Mangaluru',
+        severity: 'High',
+        status: 'Reported',
+        description: 'Major structure fire at downtown block',
+        time: '1 hr ago',
+        timestamp: new Date(Date.now() - 3600000).toISOString(),
+        iconName: 'Flame',
+        color: '#ef4444',
+        coordinates: '12.8719, 74.8422',
+        resources: 'Dispatch Pending'
+    },
+    {
+        id: 'AL-1002',
+        incident_id: 'AL-1002',
+        type: 'Road Accident',
+        title: 'Multiple vehicle collision on highway',
+        location: 'NH-66, near Pumpwell',
+        severity: 'Critical',
+        status: 'InProgress',
+        description: 'Multiple vehicle collision on highway',
+        time: '2 hrs ago',
+        timestamp: new Date(Date.now() - 7200000).toISOString(),
+        iconName: 'AlertTriangle',
+        color: '#ef4444',
+        coordinates: '12.8593, 74.8550',
+        resources: 'Dispatch Pending'
+    },
+    {
+        id: 'AL-1003',
+        incident_id: 'AL-1003',
+        type: 'Medical Emergency',
+        title: 'Mass casualty medical emergency',
+        location: 'KMC Hospital area',
+        severity: 'Critical',
+        status: 'Assigned',
+        description: 'Mass casualty medical emergency',
+        time: '3 hrs ago',
+        timestamp: new Date(Date.now() - 10800000).toISOString(),
+        iconName: 'HeartPulse',
+        color: '#ef4444',
+        coordinates: '12.8644, 74.8432',
+        resources: 'Dispatch Pending'
+    },
+    {
+        id: 'AL-1004',
+        incident_id: 'AL-1004',
+        type: 'Flood',
+        title: 'Severe flash flood due to heavy rains',
+        location: 'Lower Bendoorwell',
+        severity: 'Medium',
+        status: 'Reported',
+        description: 'Severe flash flood due to heavy rains',
+        time: '4 hrs ago',
+        timestamp: new Date(Date.now() - 14400000).toISOString(),
+        iconName: 'Droplets',
+        color: '#f59e0b',
+        coordinates: '12.8710, 74.8560',
+        resources: 'Dispatch Pending'
+    },
+    {
+        id: 'AL-1005',
+        incident_id: 'AL-1005',
+        type: 'Hazardous Material',
+        title: 'Chemical spill at industrial estate',
+        location: 'Baikampady Industrial Estate',
+        severity: 'Critical',
+        status: 'InProgress',
+        description: 'Chemical spill at industrial estate',
+        time: '5 hrs ago',
+        timestamp: new Date(Date.now() - 18000000).toISOString(),
+        iconName: 'Radiation',
+        color: '#ef4444',
+        coordinates: '12.9340, 74.8142',
+        resources: 'Dispatch Pending'
+    },
+    {
+        id: 'AL-1006',
+        incident_id: 'AL-1006',
+        type: 'Structural Collapse',
+        title: 'Old building collapse',
+        location: 'Bunder area',
+        severity: 'Medium',
+        status: 'Resolved',
+        description: 'Old building collapse',
+        time: '6 hrs ago',
+        timestamp: new Date(Date.now() - 21600000).toISOString(),
+        iconName: 'Building',
+        color: '#10b981',
+        coordinates: '12.8655, 74.8360',
+        resources: 'Dispatch Pending'
+    },
+    {
+        id: 'AL-1007',
+        incident_id: 'AL-1007',
+        type: 'Natural Disaster',
+        title: 'Cyclone alert and high winds',
+        location: 'Panambur Beach',
+        severity: 'Medium',
+        status: 'Reported',
+        description: 'Cyclone alert and high winds',
+        time: '7 hrs ago',
+        timestamp: new Date(Date.now() - 25200000).toISOString(),
+        iconName: 'Wind',
+        color: '#f59e0b',
+        coordinates: '12.9141, 74.8105',
+        resources: 'Dispatch Pending'
+    }
+];
 
-  // Fallback mapping for common form values
-  const map = {
-    flood: 2, cyclone: 5, wildfire: 1, earthquake: 5,
-    collapse: 6, chemical: 7, hazmat: 7, medical: 3, accident: 4, other: 4,
-  };
-  return map[typeName.toLowerCase()] || 4;
-};
-
-// Map form severity strings → DB ENUM values
-const mapSeverity = (s) => {
-  if (!s) return 'Medium';
-  const l = s.toLowerCase();
-  if (l === 'critical') return 'Critical';
-  if (l === 'high')     return 'High';
-  if (l === 'medium' || l === 'moderate') return 'Medium';
-  return 'Low';
-};
-
-// Convert DB row into the shape the Alerts.jsx frontend expects
-const formatIncident = (row) => {
-  const typeIconMap = {
-    Fire: 'Flame', Flood: 'Droplets', 'Medical Emergency': 'HeartPulse',
-    'Road Accident': 'AlertTriangle', 'Natural Disaster': 'Wind',
-    'Structural Collapse': 'Shield', 'Hazardous Material': 'Radiation',
-  };
-  const severityColor = { Critical: '#ef4444', High: '#ef4444', Medium: '#f59e0b', Low: '#3b82f6' };
-
-  return {
-    id:          row.incident_id,
-    incident_id: row.incident_id,
-    type:        row.type_name,
-    title:       `${row.type_name} — ${row.location_text || 'Unknown Location'}`,
-    location:    row.location_text || `${row.latitude}, ${row.longitude}`,
-    severity:    row.priority_level,
-    status:      row.incident_status,
-    description: row.description || '',
-    time:        formatRelativeTime(row.created_at),
-    timestamp:   row.created_at,
-    iconName:    row.icon_name || typeIconMap[row.type_name] || 'AlertTriangle',
-    color:       severityColor[row.priority_level] || '#f59e0b',
-    coordinates: row.latitude ? `${row.latitude}, ${row.longitude}` : 'N/A',
-    resources:   'Dispatch Pending',
-  };
-};
-
-const formatRelativeTime = (ts) => {
-  if (!ts) return 'Just now';
-  const diff = Math.floor((Date.now() - new Date(ts).getTime()) / 1000);
-  if (diff < 60)  return `${diff}s ago`;
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-  return `${Math.floor(diff / 3600)}h ago`;
-};
-
-// ─── CREATE INCIDENT ─────────────────────────────────────────
-export const createAlert = async (req, res) => {
-  const conn = await pool.getConnection();
-  try {
-    console.log('--- NEW INCIDENT REPORT ---');
-    console.log('Payload:', req.body);
-    
-    const {
-      aadhar_id,
-      type_id: rawTypeId,
-      type,
-      location,
-      description,
-      severity,
-      priority_level,
-      latitude,
-      longitude,
-    } = req.body;
-
-    const reporterId = aadhar_id || req.user?.aadhar_id || null;
-
-    // Resolve type_id: use supplied int, or look up by name
-    const type_id = rawTypeId
-      ? parseInt(rawTypeId)
-      : await resolveTypeId(conn, type);
-    
-    console.log('Resolved type_id:', type_id);
-
-    // Map severity carefully
-    let priority = priority_level || mapSeverity(severity);
-    const incident_id = uuid();
-
-    console.log('Inserting incident:', { incident_id, type_id, priority });
-
-    await conn.execute(
-      `INSERT INTO incident
-         (incident_id, aadhar_id, type_id, description, location_text, latitude, longitude, priority_level)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        incident_id,
-        reporterId,
-        type_id,
-        description || null,
-        location    || null,
-        latitude    || null,
-        longitude   || null,
-        priority,
-      ]
-    );
-
-    // Immutable audit log entry
-    await conn.execute(
-      `INSERT INTO incident_report_log (log_id, incident_id, log_type, new_value, notes, is_system)
-       VALUES (?, ?, 'SystemEvent', 'Reported', 'Incident created via report form.', 1)`,
-      [uuid(), incident_id]
-    );
-
-    const [[incident]] = await conn.execute(
-      `SELECT i.*, it.type_name, it.icon_name
-       FROM incident i
-       JOIN incident_type it ON i.type_id = it.type_id
-       WHERE i.incident_id = ?`,
-      [incident_id]
-    );
-
-    console.log('Successfully created incident:', incident.incident_id);
-    res.status(201).json(formatIncident(incident));
-  } catch (err) {
-    console.error('❌ createAlert error:', err.message);
-    res.status(500).json({ error: err.message });
-  } finally {
-    conn.release();
-  }
-};
-
-// ─── GET ALL INCIDENTS ────────────────────────────────────────
 export const getAlerts = async (req, res) => {
-  const conn = await pool.getConnection();
-  try {
-    const [rows] = await conn.execute(
-      `SELECT i.*, it.type_name, it.icon_name
-       FROM incident i
-       JOIN incident_type it ON i.type_id = it.type_id
-       ORDER BY i.created_at DESC`
-    );
-    res.json(rows.map(formatIncident));
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  } finally {
-    conn.release();
-  }
+    try {
+        // MOCK: Return in-memory array
+        // TODO (DBMS Project): Replace with SELECT * FROM incident JOIN incident_type...
+        res.json(mockIncidents);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 };
 
-// ─── UPDATE INCIDENT STATUS ───────────────────────────────────
+export const createAlert = async (req, res) => {
+    try {
+        const { type, location, description, severity, latitude, longitude } = req.body;
+        
+        const newIncident = {
+            id: 'AL-' + Math.floor(Math.random() * 10000),
+            incident_id: 'AL-' + Math.floor(Math.random() * 10000),
+            type: type || 'Emergency',
+            title: `${type || 'Emergency'} - ${location || 'Unknown'}`,
+            location: location || 'Unknown Location',
+            severity: severity || 'Warning',
+            status: 'Reported',
+            description: description || '',
+            time: 'Just now',
+            timestamp: new Date().toISOString(),
+            iconName: type === 'Fire' ? 'Flame' : type === 'Flood' ? 'Droplets' : 'AlertTriangle',
+            color: severity === 'Critical' ? '#ef4444' : severity === 'Warning' ? '#f59e0b' : '#3b82f6',
+            coordinates: (latitude && longitude) ? `${latitude}, ${longitude}` : '28.6139, 77.2090',
+            resources: 'Dispatch Pending'
+        };
+
+        // MOCK: Push to in-memory array
+        // TODO (DBMS Project): Replace with INSERT INTO incident...
+        mockIncidents.unshift(newIncident);
+
+        res.status(201).json(newIncident);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
 export const updateAlertStatus = async (req, res) => {
-  const conn = await pool.getConnection();
-  try {
-    const { status } = req.body;
-    const { id: incident_id } = req.params;
+    try {
+        const { status } = req.body;
+        const { id } = req.params;
 
-    const [[current]] = await conn.execute(
-      'SELECT incident_status FROM incident WHERE incident_id = ?', [incident_id]
-    );
-    if (!current) return res.status(404).json({ error: 'Incident not found.' });
+        // MOCK: Update in-memory array
+        // TODO (DBMS Project): Replace with UPDATE incident SET status = ? WHERE id = ?
+        const incident = mockIncidents.find(i => i.id === id || i.incident_id === id);
+        if (incident) {
+            incident.status = status;
+        }
 
-    const resolved_at = status === 'Resolved' ? new Date() : null;
-    await conn.execute(
-      `UPDATE incident SET incident_status = ?, resolved_at = COALESCE(?, resolved_at)
-       WHERE incident_id = ?`,
-      [status, resolved_at, incident_id]
-    );
-
-    await conn.execute(
-      `INSERT INTO incident_report_log (log_id, incident_id, log_type, old_value, new_value, is_system)
-       VALUES (?, ?, 'StatusChange', ?, ?, 1)`,
-      [uuid(), incident_id, current.incident_status, status]
-    );
-
-    res.json({ success: true, incident_id, new_status: status });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  } finally {
-    conn.release();
-  }
+        res.json({ success: true, incident_id: id, new_status: status });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 };
 
-// ─── STATS ────────────────────────────────────────────────────
 export const getStats = async (req, res) => {
-  const conn = await pool.getConnection();
-  try {
-    const [[{ total }]]    = await conn.execute('SELECT COUNT(*) AS total FROM incident');
-    const [[{ active }]]   = await conn.execute("SELECT COUNT(*) AS active FROM incident WHERE incident_status NOT IN ('Resolved','Closed')");
-    const [[{ resolved }]] = await conn.execute("SELECT COUNT(*) AS resolved FROM incident WHERE incident_status = 'Resolved'");
-    const [[{ avg_mins }]] = await conn.execute(
-      `SELECT ROUND(AVG((julianday(resolved_at) - julianday(created_at)) * 1440), 1) AS avg_mins
-       FROM incident WHERE resolved_at IS NOT NULL`
-    );
-    res.json({ total, active, resolved, avgResponseTimeMinutes: avg_mins || 0 });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  } finally {
-    conn.release();
-  }
+    try {
+        // MOCK: Calculate from in-memory array
+        // TODO (DBMS Project): Replace with SELECT COUNT(*) FROM incident...
+        const total = mockIncidents.length;
+        const active = mockIncidents.filter(i => i.status !== 'Resolved').length;
+        const resolved = mockIncidents.filter(i => i.status === 'Resolved').length;
+        
+        res.json({ total, active, resolved, avgResponseTimeMinutes: 14.2 });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 };

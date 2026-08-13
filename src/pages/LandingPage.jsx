@@ -51,9 +51,9 @@ const LandingPage = () => {
   const [incidents, setIncidents] = useState([
     { coords: [-74.006, 40.7128], type: 'CRITICAL', label: 'Cyclone - Coastal Zone 4', time: '2 min ago', color: '#ef4444' },
     { coords: [139.6917, 35.6895], type: 'DISPATCHED', label: 'Fire - Industrial Sector B', time: '5 min ago', color: '#3b82f6' },
-    { coords: [31.2357, 30.0444], type: 'LIVE', label: 'Flood ??? River Valley', time: '1 min ago', color: '#ef4444' },
-    { coords: [-43.1729, -22.9068], type: 'CRITICAL', label: 'Tectonic Alert ??? Sector G', time: '12 min ago', color: '#ef4444' },
-    { coords: [77.2090, 28.6139], type: 'MONITORING', label: 'Heatwave ??? Central Hub', time: 'Just now', color: '#3b82f6' },
+    { coords: [31.2357, 30.0444], type: 'LIVE', label: 'Flood - River Valley', time: '1 min ago', color: '#ef4444' },
+    { coords: [-43.1729, -22.9068], type: 'CRITICAL', label: 'Tectonic Alert - Sector G', time: '12 min ago', color: '#ef4444' },
+    { coords: [77.2090, 28.6139], type: 'MONITORING', label: 'Heatwave - Central Hub', time: 'Just now', color: '#3b82f6' },
   ]);
 
   const scrollToSection = (id) => {
@@ -304,8 +304,7 @@ const LandingPage = () => {
                 <Link to="/report" className="relative group px-10 py-5 bg-red-600/10 border border-red-500/40 hover:bg-red-600/20 transition-all duration-500 flex items-center gap-4">
                   <AlertTriangle className="w-6 h-6 text-red-500 animate-pulse" />
                   <div className="flex flex-col items-start text-left">
-                    <span className="text-[8px] font-mono text-white/60 uppercase">CRITICAL PRIORITY</span>
-                    <span className="text-xl font-outfit font-black uppercase tracking-tight">???? Report Emergency</span>
+                    <span className="text-xl font-outfit font-black uppercase tracking-tight">Report Emergency</span>
                   </div>
                 </Link>
             </div>
@@ -557,7 +556,7 @@ const LandingPage = () => {
           
           <div className="h-[1px] w-full bg-white/5 mb-8" />
           <div className="text-[8px] font-mono text-white/10 uppercase tracking-[0.8em] text-center">
-             ?? 2026 CrisisChain // THE_SOVEREIGN_OBSERVER
+             © 2026 CrisisChain // THE_SOVEREIGN_OBSERVER
           </div>
         </div>
       </footer>
