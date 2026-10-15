@@ -4,6 +4,7 @@ import { useDashboard } from '../context/DashboardContext';
 import { Search, Bell, Menu, User, ChevronDown, Shield, Zap, Globe, Terminal, Clock, Activity, Settings, AlertTriangle, CheckCircle2, Info, LogOut } from 'lucide-react';
 
 import { SZ } from '../constants';
+import { isCriticalSeverity } from '../lib/incidentTypes';
 
 const W_CLOSED = SZ.sidebarClosed;
 const W_OPEN   = SZ.sidebarOpen;
@@ -41,7 +42,7 @@ export default function TopNavbar({ fullWidth }) {
     const timeStr = time.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
     const dateStr = time.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase();
 
-    const unreadCount = alerts.filter(a => a.critical).length;
+    const unreadCount = alerts.filter(a => isCriticalSeverity(a.severity)).length;
 
     const handleLogout = () => {
         addToast('Logging out...', 'info');

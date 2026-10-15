@@ -20,7 +20,7 @@ const ALL_NAV = [
     { id: 'org',                icon: Truck,         label: 'Org Management',       path: '/org',                roles: ['responder','admin'] },
     { id: 'hospital-resources', icon: Building2,     label: 'Hospital Resources',   path: '/hospital-resources', roles: ['hospital','admin'] },
     { id: 'analytics',          icon: Activity,      label: 'Analytics',            path: '/analytics',          roles: ['admin'] },
-    { id: 'dashboard',          icon: LayoutDashboard,label: 'Admin Dashboard',     path: '/dashboard',          roles: ['admin','hospital','responder'] },
+    { id: 'dashboard',          icon: LayoutDashboard,label: 'Admin Dashboard',     path: '/dashboard',          roles: ['admin'] },
     { id: 'settings',           icon: Settings,      label: 'Control Settings',     path: '/settings',           roles: ['citizen','responder','hospital','admin'] },
 ];
 

@@ -1,40 +1,7 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useDashboard } from '../../context/DashboardContext';
-import { Map as MapIcon, Crosshair, Navigation, Target, Zap, Globe } from 'lucide-react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-
-const createNumberedIcon = (number, color) => {
-    return L.divIcon({
-        className: 'custom-numbered-icon',
-        html: `<div style="background-color: ${color}; color: #fff; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid rgba(255,255,255,0.8); box-shadow: 0 0 10px ${color}; font-size: 12px; font-family: monospace;">${number}</div>`,
-        iconSize: [24, 24],
-        iconAnchor: [12, 12],
-        popupAnchor: [0, -12]
-    });
-};
-
-function MapUpdater({ alerts }) {
-    const map = useMap();
-    useEffect(() => {
-        if (alerts && alerts.length > 0) {
-            const coords = alerts
-                .filter(a => a.coordinates && a.coordinates !== 'N/A' && a.coordinates !== 'Pending')
-                .map(a => {
-                    const [lat, lng] = a.coordinates.split(',').map(Number);
-                    return [lat, lng];
-                })
-                .filter(c => !isNaN(c[0]) && !isNaN(c[1]));
-            
-            if (coords.length > 0) {
-                const bounds = L.latLngBounds(coords);
-                map.fitBounds(bounds, { padding: [50, 50], maxZoom: 14 });
-            }
-        }
-    }, [alerts, map]);
-    return null;
-}
+import { Map as MapIcon, Crosshair, Navigation, Zap, Globe } from 'lucide-react';
+import AlertsMapView from '../AlertsMap';
 
 export default function MapPanel() {
     const { addToast, alerts } = useDashboard();
@@ -95,33 +62,7 @@ export default function MapPanel() {
 
                 {/* Leaflet Map Integration */}
                 <div className="absolute inset-0 z-0">
-                    <MapContainer center={[12.8719, 74.8422]} zoom={12} style={{ height: '100%', width: '100%', backgroundColor: '#0B1220' }}>
-                        <TileLayer
-                            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-                            attribution='&copy; <a href="https://carto.com/attributions">CARTO</a>'
-                        />
-                        <MapUpdater alerts={mapAlerts} />
-                        {mapAlerts.map((alert, idx) => {
-                            if (!alert.coordinates || typeof alert.coordinates !== 'string' || alert.coordinates === 'N/A' || alert.coordinates === 'Pending') return null;
-                            const parts = alert.coordinates.split(',');
-                            if (parts.length !== 2) return null;
-                            const lat = Number(parts[0]);
-                            const lng = Number(parts[1]);
-                            if (isNaN(lat) || isNaN(lng)) return null;
-                            return (
-                                <Marker 
-                                    key={alert.id}
-                                    position={[lat, lng]}
-                                    icon={createNumberedIcon(idx + 1, alert.color)}
-                                >
-                                    <Popup className="custom-popup">
-                                        <div className="font-poppins font-bold">{alert.title}</div>
-                                        <div className="text-xs">{alert.severity} • {alert.status}</div>
-                                    </Popup>
-                                </Marker>
-                            );
-                        })}
-                    </MapContainer>
+                    <AlertsMapView alerts={mapAlerts} />
                 </div>
 
                 {/* Legend HUD */}

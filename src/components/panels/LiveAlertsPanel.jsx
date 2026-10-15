@@ -74,7 +74,7 @@ export default function LiveAlertsPanel() {
                                 
                                 <div className="flex items-center gap-4 mt-2">
                                     <div className="px-3 py-1 bg-[#1F2937] border border-[#1F2937] font-mono text-[8px] font-black tracking-widest uppercase text-[#6B7280]">
-                                        ID: {Math.random().toString(36).substr(2, 6).toUpperCase()}
+                                        ID: {alert.id}
                                     </div>
                                     <div className={`px-3 py-1 border font-mono text-[8px] font-black tracking-widest uppercase ${alert.critical ? 'border-red-500/20 text-red-500 bg-red-500/5' : 'border-blue-500/20 text-blue-400 bg-blue-500/5'}`}>
                                         {alert.status === 'reported' ? 'ACTIVE_UNASSIGNED' : 

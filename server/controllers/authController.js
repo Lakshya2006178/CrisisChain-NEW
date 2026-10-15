@@ -15,6 +15,7 @@ let mockUsers = [
 
 export const register = async (req, res) => {
     try {
+        // eslint-disable-next-line no-unused-vars -- password not yet verified; mock auth stage (see TODOs)
         const { aadhar_id, full_name, email, phone_number, password, role } = req.body;
 
         const newUser = {
@@ -52,6 +53,7 @@ export const register = async (req, res) => {
 
 export const login = async (req, res) => {
     try {
+        // eslint-disable-next-line no-unused-vars -- password not yet verified; mock auth stage (see TODOs)
         const { email, password } = req.body;
 
         // TODO (DBMS Project): Replace with SELECT * FROM users WHERE email = ?

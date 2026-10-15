@@ -5,8 +5,9 @@ import TopNavbar from '../components/TopNavbar';
 import { SZ } from '../constants';
 import {
     BedDouble, Ambulance, Package, Users,
-    Plus, Trash2, Search, X, Clock, MapPin
+    Plus, Trash2, Search, Clock, MapPin
 } from 'lucide-react';
+import { Badge, CrudModal, STATUS_COLOR } from '../components/CrudModal';
 
 const STORAGE_KEY = 'hospital_resources_data';
 
@@ -43,57 +44,6 @@ const TABS = [
     { id: 'staff',      label: 'STAFF',       icon: Users },
 ];
 
-const STATUS_COLOR = {
-    Available: '#00FFCC', Full: '#ef4444', 'Near Capacity': '#f59e0b',
-    Dispatched: '#3b82f6', Maintenance: '#ef4444',
-    'On Duty': '#00FFCC', 'Off Duty': '#f59e0b', Leave: '#ef4444',
-};
-
-function Badge({ label }) {
-    const color = STATUS_COLOR[label] || '#ffffff40';
-    return (
-        <span className="px-3 py-1 text-[9px] font-mono font-black uppercase tracking-widest border"
-            style={{ color, borderColor: `${color}40`, background: `${color}10` }}>
-            {label}
-        </span>
-    );
-}
-
-function Modal({ title, fields, onSave, onClose }) {
-    const [form, setForm] = useState(() => Object.fromEntries(fields.map(f => [f.key, f.default || ''])));
-    return (
-        <div className="fixed inset-0 z-[300] bg-black/80 backdrop-blur-xl flex items-center justify-center p-8">
-            <div className="bg-[#08080A] border border-white/10 w-full max-w-md shadow-2xl">
-                <div className="flex items-center justify-between px-8 py-6 border-b border-white/5">
-                    <span className="font-outfit font-black text-xl text-white uppercase tracking-tight">{title}</span>
-                    <button onClick={onClose}><X className="w-5 h-5 text-white/30 hover:text-white" /></button>
-                </div>
-                <div className="p-8 space-y-5">
-                    {fields.map(f => (
-                        <div key={f.key} className="space-y-2">
-                            <label className="text-[9px] font-mono text-white/30 uppercase tracking-widest">{f.label}</label>
-                            {f.options ? (
-                                <select value={form[f.key]} onChange={e => setForm({ ...form, [f.key]: e.target.value })}
-                                    className="w-full bg-white/5 border border-white/5 px-4 py-3 font-mono text-sm text-white focus:outline-none focus:border-[#00FFCC]/40 appearance-none">
-                                    {f.options.map(o => <option key={o} value={o} className="bg-[#08080A]">{o}</option>)}
-                                </select>
-                            ) : (
-                                <input type={f.type || 'text'} value={form[f.key]}
-                                    onChange={e => setForm({ ...form, [f.key]: e.target.value })}
-                                    className="w-full bg-white/5 border border-white/5 px-4 py-3 font-mono text-sm text-white focus:outline-none focus:border-[#00FFCC]/40" />
-                            )}
-                        </div>
-                    ))}
-                    <div className="flex gap-4 pt-4">
-                        <button onClick={onClose} className="flex-1 py-3 border border-white/10 font-mono text-xs text-white/40 hover:text-white uppercase tracking-widest">Cancel</button>
-                        <button onClick={() => onSave(form)} className="flex-1 py-3 bg-[#00FFCC] text-black font-outfit font-black text-xs uppercase tracking-widest hover:brightness-110">Add</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-}
-
 export default function HospitalResources() {
     const { isSidebarOpen } = useDashboard();
     const ml = isSidebarOpen ? SZ.sidebarOpen : SZ.sidebarClosed;
@@ -109,9 +59,9 @@ export default function HospitalResources() {
 
     const addItem = (tab, item) => {
         const parsed = { ...item, id: Date.now() };
-        if (item.total) parsed.total = Number(item.total);
-        if (item.available) parsed.available = Number(item.available);
-        if (item.qty) parsed.qty = Number(item.qty);
+        if (item.total !== undefined && item.total !== '') parsed.total = Number(item.total);
+        if (item.available !== undefined && item.available !== '') parsed.available = Number(item.available);
+        if (item.qty !== undefined && item.qty !== '') parsed.qty = Number(item.qty);
         setData(prev => ({ ...prev, [tab]: [...prev[tab], parsed] }));
         setModal(null);
     };
@@ -226,7 +176,7 @@ export default function HospitalResources() {
                                 const color = STATUS_COLOR[b.status] || '#00FFCC';
                                 return (
                                     <div key={b.id} className="bg-white/5 border border-white/5 p-6 relative hover:border-white/10 transition-all group">
-                                        <button onClick={() => removeItem('beds', b.id)} className="absolute top-4 right-4 text-white/10 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
+                                        <button onClick={() => { if (window.confirm('Remove this bed record?')) removeItem('beds', b.id); }} className="absolute top-4 right-4 text-white/10 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
                                         <div className="w-12 h-12 border border-white/5 flex items-center justify-center mb-4" style={{ color }}>
                                             <BedDouble className="w-5 h-5" />
                                         </div>
@@ -250,7 +200,7 @@ export default function HospitalResources() {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {filtered.ambulances.map(a => (
                                 <div key={a.id} className="bg-white/5 border border-white/5 p-6 hover:border-white/10 transition-all relative group">
-                                    <button onClick={() => removeItem('ambulances', a.id)} className="absolute top-4 right-4 text-white/10 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
+                                    <button onClick={() => { if (window.confirm('Remove this ambulance?')) removeItem('ambulances', a.id); }} className="absolute top-4 right-4 text-white/10 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
                                     <div className="flex items-center gap-4 mb-5">
                                         <div className="w-12 h-12 bg-white/5 border border-white/5 flex items-center justify-center text-[#00FFCC]">
                                             <Ambulance className="w-5 h-5" />
@@ -296,7 +246,7 @@ export default function HospitalResources() {
                                                     {expiring && <span className="ml-2 text-[8px] font-mono text-red-500 uppercase">⚠ Expiring Soon</span>}
                                                 </td>
                                                 <td className="px-6 py-5 font-mono text-xs text-white/30 uppercase"><MapPin className="w-3 h-3 inline mr-1 text-[#00FFCC]" />{k.location}</td>
-                                                <td className="px-6 py-5"><button onClick={() => removeItem('kits', k.id)}><Trash2 className="w-4 h-4 text-white/10 hover:text-red-500 transition-colors" /></button></td>
+                                                <td className="px-6 py-5"><button onClick={() => { if (window.confirm('Remove this kit?')) removeItem('kits', k.id); }}><Trash2 className="w-4 h-4 text-white/10 hover:text-red-500 transition-colors" /></button></td>
                                             </tr>
                                         );
                                         });
@@ -311,7 +261,7 @@ export default function HospitalResources() {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {filtered.staff.map(s => (
                                 <div key={s.id} className="bg-white/5 border border-white/5 p-6 hover:border-white/10 transition-all relative group">
-                                    <button onClick={() => removeItem('staff', s.id)} className="absolute top-4 right-4 text-white/10 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
+                                    <button onClick={() => { if (window.confirm('Remove this staff member?')) removeItem('staff', s.id); }} className="absolute top-4 right-4 text-white/10 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
                                     <div className="flex items-center gap-4 mb-5">
                                         <div className="w-12 h-12 bg-black border border-white/10 flex items-center justify-center font-outfit font-black text-xl text-white">
                                             {s.name.charAt(0)}
@@ -333,7 +283,7 @@ export default function HospitalResources() {
             </main>
 
             {modal && (
-                <Modal title={`Add ${modal}`} fields={MODAL_FIELDS[modal]}
+                <CrudModal title={`Add ${modal}`} fields={MODAL_FIELDS[modal]}
                     onSave={form => addItem(modal, form)} onClose={() => setModal(null)} />
             )}
         </div>

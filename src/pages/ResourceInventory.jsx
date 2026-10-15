@@ -3,6 +3,8 @@ import { useDashboard } from '../context/DashboardContext';
 import Sidebar from '../components/Sidebar';
 import TopNavbar from '../components/TopNavbar';
 import { SZ } from '../constants';
+import * as api from '../api/index.js';
+import { captureBestEffortLocation } from '../lib/geolocation';
 import {
     Search, Plus, Package, MapPin, Database, Hospital,
     AlertCircle, CheckCircle2, ChevronRight, Pill,
@@ -123,51 +125,35 @@ export default function ResourceInventory() {
         try {
             const r = radius !== undefined ? radius : radiusKm;
             const t = type !== undefined ? type : centerTypeFilter;
-            let url = `http://localhost:5001/api/resources/nearby?lat=${lat}&lng=${lng}&radius=${r}`;
-            if (t) url += `&type=${encodeURIComponent(t)}`;
-            const res = await fetch(url);
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'Failed to fetch nearby centers');
+            // Goes through the shared axios client (src/api/index.js) instead of a
+            // raw fetch() to a hardcoded 'localhost:5001' — that hardcoded URL
+            // meant this feature broke the moment the app ran anywhere other than
+            // the original dev machine.
+            const { data } = await api.fetchNearbyResources({ lat, lng, radius: r, ...(t ? { type: t } : {}) });
             setHospitals(data);
             setLocationStatus('success');
         } catch (err) {
-            setLocationError(err.message);
+            setLocationError(err.response?.data?.error || err.message || 'Failed to fetch nearby centers');
             setLocationStatus('error');
         }
     };
 
-    const requestLocation = () => {
+    const requestLocation = async () => {
         setLocationStatus('loading');
         setLocationError('');
-        if (!navigator.geolocation) {
-            setLocationError('Geolocation is not supported by your browser.');
-            setLocationStatus('error');
-            return;
+        try {
+            // Falls back to an approximate IP-based location if precise GPS is
+            // denied/unavailable/times out, instead of just failing outright.
+            const loc = await captureBestEffortLocation();
+            setUserCoords(loc);
+            if (loc.approx) {
+                setLocationError('Using an approximate location (precise GPS unavailable) — results may not be exact.');
+            }
+            fetchNearbyCenters(loc.lat, loc.lng, radiusKm, centerTypeFilter);
+        } catch (err) {
+            setLocationError(err.message || 'Unable to retrieve your location.');
+            setLocationStatus('denied');
         }
-
-        const options = {
-            enableHighAccuracy: true,
-            timeout: 15000,
-            maximumAge: 0
-        };
-
-        navigator.geolocation.getCurrentPosition(
-            (pos) => {
-                const { latitude: lat, longitude: lng } = pos.coords;
-                const coords = { lat, lng };
-                setUserCoords(coords);
-                fetchNearbyCenters(lat, lng, radiusKm, centerTypeFilter);
-            },
-            (err) => {
-                let msg = 'Unable to retrieve your location.';
-                if (err.code === 1) msg = 'Location access denied. Enable it in browser settings.';
-                else if (err.code === 3) msg = 'GPS signal timeout. Try moving to an open area.';
-                
-                setLocationError(msg);
-                setLocationStatus('denied');
-            },
-            options
-        );
     };
 
     useEffect(() => {

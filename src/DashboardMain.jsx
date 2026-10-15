@@ -151,11 +151,11 @@ export default function DashboardMain() {
           <div className="grid grid-cols-12 gap-6 lg:gap-14">
 
             {/* Workflow: Sticky Top Strip */}
-             {/* <div className="col-span-12 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+             <div className="col-span-12 animate-slide-up" style={{ animationDelay: '0.1s' }}>
               <PanelContainer label="RESPONSE STATUS" accent="#00FFCC">
                 <WorkflowPanel />
               </PanelContainer>
-            </div> */}
+            </div>
 
             {/* Left Column: Alerts & Comms */}
             <div className="col-span-12 lg:col-span-4 flex flex-col gap-8">

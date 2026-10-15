@@ -1,80 +1,19 @@
-import React, { useState, useEffect, useMemo, Component } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useDashboard } from '../context/DashboardContext';
 import * as api from '../api/index.js';
 import Sidebar from '../components/Sidebar';
 import TopNavbar from '../components/TopNavbar';
-import { 
+import ErrorBoundary from '../components/ErrorBoundary';
+import AlertsMapView from '../components/AlertsMap';
+import {
     AlertTriangle, Flame, Droplets, Activity,
-    Clock, MapPin, ShieldAlert, ChevronRight,
-    Search, Filter, Calendar, Zap, Bell,
-    CheckCircle2, Truck, Info, Navigation,
-    Database, Globe, HeartPulse, Send, Satellite, Shield, X, Radio, Wind, Radiation, Loader2, Siren
+    Clock, MapPin, ShieldAlert,
+    Bell,
+    CheckCircle2, Truck, Info,
+    Globe, HeartPulse, Satellite, Shield, X, Radio, Wind, Radiation, Loader2, Siren
 } from 'lucide-react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-
-const createNumberedIcon = (number, color) => {
-    return L.divIcon({
-        className: 'custom-numbered-icon',
-        html: `<div style="background-color: ${color}; color: #fff; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid rgba(255,255,255,0.8); box-shadow: 0 0 10px ${color}; font-size: 12px; font-family: monospace;">${number}</div>`,
-        iconSize: [24, 24],
-        iconAnchor: [12, 12],
-        popupAnchor: [0, -12]
-    });
-};
-
-// Auto-center map component helper
-function MapUpdater({ alerts }) {
-    const map = useMap();
-    useEffect(() => {
-        if (alerts && alerts.length > 0) {
-            const coords = alerts
-                .filter(a => a.coordinates && a.coordinates !== 'N/A' && a.coordinates !== 'Pending')
-                .map(a => {
-                    const [lat, lng] = a.coordinates.split(',').map(Number);
-                    return [lat, lng];
-                })
-                .filter(c => !isNaN(c[0]) && !isNaN(c[1]));
-            
-            if (coords.length > 0) {
-                const bounds = L.latLngBounds(coords);
-                map.fitBounds(bounds, { padding: [50, 50], maxZoom: 14 });
-            }
-        }
-    }, [alerts, map]);
-    return null;
-}
-
-// ── ERROR BOUNDARY ──
-
-class LocalErrorBoundary extends Component {
-    constructor(props) {
-        super(props);
-        this.state = { hasError: false };
-    }
-    static getDerivedStateFromError(error) { return { hasError: true }; }
-    render() {
-        if (this.state.hasError) {
-            return (
-                <div className="h-screen w-full bg-[#0B1220] flex items-center justify-center">
-                    <div className="text-red-500 font-mono text-xs uppercase tracking-wider">
-                        APPLICATION ERROR // PLEASE REFRESH
-                    </div>
-                </div>
-            );
-        }
-        return this.props.children;
-    }
-}
-
-// ── CONSTANTS ──
-
-const LOCAL_SZ = {
-  sidebarClosed: 80,
-  sidebarOpen:   280,
-  navbarH:       72,
-};
+import { isCriticalSeverity } from '../lib/incidentTypes';
+import { SZ } from '../constants';
 
 // Map DB iconName strings to actual icon components
 const ICON_MAP = {
@@ -104,7 +43,7 @@ function BroadcastModal({ isOpen, onClose, onBroadcast }) {
     const [formData, setFormData] = useState({
         title: '',
         type: 'Fire',
-        severity: 'Critical',
+        severity: 'High',
         location: '',
         description: ''
     });
@@ -163,20 +102,23 @@ function BroadcastModal({ isOpen, onClose, onBroadcast }) {
                             >
                                 <option value="Fire">Fire</option>
                                 <option value="Flood">Flood</option>
-                                <option value="Medical">Medical</option>
-                                <option value="Accident">Accident</option>
-                                <option value="Terror">Security</option>
+                                <option value="Medical Emergency">Medical Emergency</option>
+                                <option value="Road Accident">Road Accident</option>
+                                <option value="Natural Disaster">Natural Disaster</option>
+                                <option value="Structural Collapse">Structural Collapse</option>
+                                <option value="Hazardous Material">Hazardous Material</option>
                             </select>
                         </div>
                         <div className="space-y-2">
                             <label className="text-sm font-semibold text-gray-300">Severity*</label>
-                            <select 
+                            <select
                                 value={formData.severity}
                                 onChange={e => setFormData({...formData, severity: e.target.value})}
                                 className="w-full bg-[#111827] border border-[#1F2937] rounded-md px-4 py-3 text-sm text-gray-200 focus:outline-none focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/50 transition-all"
                             >
                                 <option value="Critical">Critical</option>
-                                <option value="Warning">Warning</option>
+                                <option value="High">High</option>
+                                <option value="Medium">Medium</option>
                                 <option value="Low">Low</option>
                             </select>
                         </div>
@@ -256,8 +198,8 @@ function NewEmergencyModal({ alert, onClose }) {
                         </div>
                         
                         <div className={`inline-block px-6 py-2 border font-bold tracking-widest uppercase rounded-full ${
-                                alert.severity === 'Critical' ? 'bg-red-500/20 border-red-500/50 text-red-400' : 
-                                alert.severity === 'Warning' ? 'bg-amber-500/20 border-amber-500/50 text-amber-400' : 
+                                isCriticalSeverity(alert.severity) ? 'bg-red-500/20 border-red-500/50 text-red-400' :
+                                alert.severity === 'Medium' ? 'bg-amber-500/20 border-amber-500/50 text-amber-400' :
                                 'bg-blue-500/20 border-blue-500/50 text-blue-400'
                             }`}>
                             Severity: {alert.severity}
@@ -277,7 +219,7 @@ function NewEmergencyModal({ alert, onClose }) {
 }
 
 function AlertsContent() {
-    const { isSidebarOpen, addToast, alerts: liveAlerts, fetchLiveAlerts } = useDashboard();
+    const { isSidebarOpen, addToast, alerts: liveAlerts, fetchLiveAlerts, addAlert } = useDashboard();
     const [selectedAlert, setSelectedAlert] = useState(null);
     const [filterType, setFilterType] = useState('All');
     const [isBroadcastOpen, setIsBroadcastOpen] = useState(false);
@@ -362,26 +304,17 @@ function AlertsContent() {
         });
     }, [filterType, alerts]);
 
-    const handleBroadcast = (data) => {
-        const newAlert = {
-            id: `AL-${Math.floor(1000 + Math.random() * 9000)}`,
-            type: data.type,
-            title: data.title,
-            location: data.location,
-            severity: data.severity,
-            time: 'Just Now',
-            status: 'Active',
-            description: data.description,
-            timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
-            coordinates: 'Pending',
-            resources: 'Dispatch_Pending',
-            Icon: data.type === 'Fire' ? Flame : data.type === 'Flood' ? Droplets : Activity,
-            color: data.severity === 'Critical' ? '#ef4444' : data.severity === 'Warning' ? '#f59e0b' : '#3b82f6'
-        };
-        
-        // This is a simulation since we aren't sending to DB here, but let's assume it updates local state or makes API call via context in real app.
-        if (addToast) {
-            addToast('Alert created successfully. Refreshing DB sync.', 'success');
+    const handleBroadcast = async (data) => {
+        try {
+            await addAlert({
+                type: data.type,
+                location: data.location,
+                description: data.description,
+                severity: data.severity,
+            });
+            addToast('Alert broadcast successfully', 'success');
+        } catch {
+            addToast('Failed to broadcast alert', 'error');
         }
     };
 
@@ -391,10 +324,11 @@ function AlertsContent() {
             <TopNavbar />
 
             <main
-                className={`flex-1 overflow-x-hidden overflow-y-auto transition-all duration-300 ${isSidebarOpen ? 'ml-[280px]' : 'ml-[80px]'}`}
+                className="flex-1 overflow-x-hidden overflow-y-auto transition-all duration-300"
                 style={{
-                    marginTop: LOCAL_SZ.navbarH,
-                    height: `calc(100vh - ${LOCAL_SZ.navbarH}px)`,
+                    marginLeft: isSidebarOpen ? SZ.sidebarOpen : SZ.sidebarClosed,
+                    marginTop: SZ.navbarH,
+                    height: `calc(100vh - ${SZ.navbarH}px)`,
                 }}
             >
                 <div className="p-6 md:p-8 max-w-7xl mx-auto">
@@ -435,31 +369,7 @@ function AlertsContent() {
 
                     {/* ── GLOBAL MAP ── */}
                     <div className="w-full h-80 bg-[#111827] border border-[#1F2937] rounded-lg overflow-hidden mb-6 relative">
-                        <MapContainer center={[12.8719, 74.8422]} zoom={12} style={{ height: '100%', width: '100%', backgroundColor: '#0B1220' }}>
-                            <TileLayer
-                                url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-                                attribution='&copy; <a href="https://carto.com/attributions">CARTO</a>'
-                            />
-                            <MapUpdater alerts={filteredAlerts} />
-                            {filteredAlerts.map((alert, idx) => {
-                                if (!alert.coordinates || alert.coordinates === 'N/A' || alert.coordinates === 'Pending') return null;
-                                const [lat, lng] = alert.coordinates.split(',').map(Number);
-                                if (isNaN(lat) || isNaN(lng)) return null;
-                                return (
-                                    <Marker 
-                                        key={alert.id}
-                                        position={[lat, lng]}
-                                        icon={createNumberedIcon(idx + 1, alert.color)}
-                                        eventHandlers={{ click: () => setSelectedAlert(alert) }}
-                                    >
-                                        <Popup className="custom-popup">
-                                            <div className="font-poppins font-bold">{alert.title}</div>
-                                            <div className="text-xs">{alert.severity} • {alert.status}</div>
-                                        </Popup>
-                                    </Marker>
-                                );
-                            })}
-                        </MapContainer>
+                        <AlertsMapView alerts={filteredAlerts} onMarkerClick={setSelectedAlert} />
                     </div>
 
                     {/* ── MAIN WORKSPACE ── */}
@@ -473,13 +383,23 @@ function AlertsContent() {
                                     Ongoing Emergencies
                                 </h3>
                                 <div className="flex flex-wrap gap-2">
-                                    {['All', 'Fire', 'Flood', 'Medical', 'Accident'].map(v => (
+                                    {/* value must match the canonical `incident.type` strings coming back
+                                        from the backend (see src/lib/incidentTypes.js) — the old chips
+                                        ('Medical', 'Accident') never matched real data ('Medical Emergency',
+                                        'Road Accident'), so those filters silently returned zero results. */}
+                                    {[
+                                        { label: 'All', value: 'All' },
+                                        { label: 'Fire', value: 'Fire' },
+                                        { label: 'Flood', value: 'Flood' },
+                                        { label: 'Medical', value: 'Medical Emergency' },
+                                        { label: 'Accident', value: 'Road Accident' },
+                                    ].map(({ label, value: v }) => (
                                         <button
                                             key={v}
                                             onClick={() => setFilterType(v)}
                                             className={`px-3 py-1 rounded text-xs font-semibold transition-colors ${filterType === v ? 'bg-teal-500/10 text-teal-500 border border-teal-500/20' : 'bg-[#1F2937] text-gray-400 hover:text-gray-200 border border-transparent'}`}
                                         >
-                                            {v}
+                                            {label}
                                         </button>
                                     ))}
                                 </div>
@@ -516,8 +436,8 @@ function AlertsContent() {
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex justify-between items-center mb-1">
                                                     <span className={`text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded ${
-                                                        alert.severity === 'Critical' ? 'bg-red-500/10 text-red-500' : 
-                                                        alert.severity === 'Warning' ? 'bg-amber-500/10 text-amber-500' : 'bg-blue-500/10 text-blue-500'
+                                                        isCriticalSeverity(alert.severity) ? 'bg-red-500/10 text-red-500' :
+                                                        alert.severity === 'Medium' ? 'bg-amber-500/10 text-amber-500' : 'bg-blue-500/10 text-blue-500'
                                                     }`}>
                                                         {alert.severity}
                                                     </span>
@@ -553,8 +473,8 @@ function AlertsContent() {
                                             </div>
                                             <div className="flex flex-col items-end gap-2">
                                                 <div className={`px-3 py-1 rounded text-xs font-bold uppercase ${
-                                                    selectedAlert.severity === 'Critical' ? 'bg-red-500/10 text-red-500 border border-red-500/20' : 
-                                                    selectedAlert.severity === 'Warning' ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20' : 'bg-blue-500/10 text-blue-500 border border-blue-500/20'
+                                                    isCriticalSeverity(selectedAlert.severity) ? 'bg-red-500/10 text-red-500 border border-red-500/20' :
+                                                    selectedAlert.severity === 'Medium' ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20' : 'bg-blue-500/10 text-blue-500 border border-blue-500/20'
                                                 }`}>
                                                     {selectedAlert.severity}
                                                 </div>
@@ -568,7 +488,7 @@ function AlertsContent() {
                                             {[
                                                 { l: 'Location', v: selectedAlert.location },
                                                 { l: 'Time Reported', v: selectedAlert.time },
-                                                { l: 'Coordinates', v: selectedAlert.coordinates },
+                                                { l: 'Coordinates', v: selectedAlert.coordinates || 'Not pinned' },
                                                 { l: 'Resources', v: selectedAlert.resources },
                                             ].map((stat, i) => (
                                                 <div key={i} className="bg-[#0B1220] border border-[#1F2937] rounded p-3">
@@ -676,8 +596,8 @@ function AlertsContent() {
 
 export default function Alerts() {
     return (
-        <LocalErrorBoundary>
+        <ErrorBoundary>
             <AlertsContent />
-        </LocalErrorBoundary>
+        </ErrorBoundary>
     );
 }

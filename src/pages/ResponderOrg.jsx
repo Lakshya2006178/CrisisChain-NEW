@@ -5,8 +5,9 @@ import TopNavbar from '../components/TopNavbar';
 import { SZ } from '../constants';
 import {
     Truck, Wrench, Users, ClipboardList, Plus, Trash2,
-    CheckCircle2, AlertCircle, Clock, MapPin, Search, X
+    Clock, MapPin, Search
 } from 'lucide-react';
+import { Badge, CrudModal } from '../components/CrudModal';
 
 const STORAGE_KEY = 'responder_org_data';
 
@@ -38,57 +39,6 @@ const TABS = [
     { id: 'incidents', label: 'INCIDENTS', icon: ClipboardList },
 ];
 
-const STATUS_COLOR = {
-    Available: '#00FFCC', Deployed: '#3b82f6', 'Off Duty': '#f59e0b',
-    'On Duty': '#00FFCC', Resolved: '#10b981', Active: '#ef4444',
-    Good: '#00FFCC', Moderate: '#f59e0b', Poor: '#ef4444',
-};
-
-function Badge({ label }) {
-    const color = STATUS_COLOR[label] || '#ffffff40';
-    return (
-        <span className="px-3 py-1 text-[9px] font-mono font-black uppercase tracking-widest border"
-            style={{ color, borderColor: `${color}40`, background: `${color}10` }}>
-            {label}
-        </span>
-    );
-}
-
-function Modal({ title, fields, onSave, onClose }) {
-    const [form, setForm] = useState(() => Object.fromEntries(fields.map(f => [f.key, f.default || ''])));
-    return (
-        <div className="fixed inset-0 z-[300] bg-black/80 backdrop-blur-xl flex items-center justify-center p-8">
-            <div className="bg-[#08080A] border border-white/10 w-full max-w-md shadow-2xl">
-                <div className="flex items-center justify-between px-8 py-6 border-b border-white/5">
-                    <span className="font-outfit font-black text-xl text-white uppercase tracking-tight">{title}</span>
-                    <button onClick={onClose}><X className="w-5 h-5 text-white/30 hover:text-white" /></button>
-                </div>
-                <div className="p-8 space-y-5">
-                    {fields.map(f => (
-                        <div key={f.key} className="space-y-2">
-                            <label className="text-[9px] font-mono text-white/30 uppercase tracking-widest">{f.label}</label>
-                            {f.options ? (
-                                <select value={form[f.key]} onChange={e => setForm({ ...form, [f.key]: e.target.value })}
-                                    className="w-full bg-white/5 border border-white/5 px-4 py-3 font-mono text-sm text-white focus:outline-none focus:border-[#00FFCC]/40 appearance-none">
-                                    {f.options.map(o => <option key={o} value={o} className="bg-[#08080A]">{o}</option>)}
-                                </select>
-                            ) : (
-                                <input type={f.type || 'text'} value={form[f.key]}
-                                    onChange={e => setForm({ ...form, [f.key]: e.target.value })}
-                                    className="w-full bg-white/5 border border-white/5 px-4 py-3 font-mono text-sm text-white focus:outline-none focus:border-[#00FFCC]/40" />
-                            )}
-                        </div>
-                    ))}
-                    <div className="flex gap-4 pt-4">
-                        <button onClick={onClose} className="flex-1 py-3 border border-white/10 font-mono text-xs text-white/40 hover:text-white uppercase tracking-widest">Cancel</button>
-                        <button onClick={() => onSave(form)} className="flex-1 py-3 bg-[#00FFCC] text-black font-outfit font-black text-xs uppercase tracking-widest hover:brightness-110">Add</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-}
-
 export default function ResponderOrg() {
     const { isSidebarOpen } = useDashboard();
     const ml = isSidebarOpen ? SZ.sidebarOpen : SZ.sidebarClosed;
@@ -103,7 +53,10 @@ export default function ResponderOrg() {
     useEffect(() => { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }, [data]);
 
     const addItem = (tab, item) => {
-        setData(prev => ({ ...prev, [tab]: [...prev[tab], { ...item, id: Date.now(), qty: Number(item.qty || 1) }] }));
+        const parsed = { ...item, id: Date.now() };
+        if (item.qty !== undefined && item.qty !== '') parsed.qty = Number(item.qty);
+        if (item.units !== undefined && item.units !== '') parsed.units = Number(item.units);
+        setData(prev => ({ ...prev, [tab]: [...prev[tab], parsed] }));
         setModal(null);
     };
     const removeItem = (tab, id) => setData(prev => ({ ...prev, [tab]: prev[tab].filter(i => i.id !== id) }));
@@ -209,7 +162,7 @@ export default function ResponderOrg() {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {filtered.fleet.map(v => (
                                 <div key={v.id} className="bg-white/5 border border-white/5 p-6 hover:border-[#00FFCC]/20 transition-all group relative">
-                                    <button onClick={() => removeItem('fleet', v.id)} className="absolute top-4 right-4 text-white/10 hover:text-red-500 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                                    <button onClick={() => { if (window.confirm('Remove this vehicle?')) removeItem('fleet', v.id); }} className="absolute top-4 right-4 text-white/10 hover:text-red-500 transition-colors"><Trash2 className="w-4 h-4" /></button>
                                     <div className="flex items-start gap-4 mb-5">
                                         <div className="w-12 h-12 bg-white/5 border border-white/5 flex items-center justify-center text-[#00FFCC]">
                                             <Truck className="w-5 h-5" />
@@ -248,7 +201,7 @@ export default function ResponderOrg() {
                                             <td className="px-6 py-5"><Badge label={e.condition} /></td>
                                             <td className="px-6 py-5 font-mono text-xs text-white/40 uppercase"><MapPin className="w-3 h-3 inline mr-1 text-[#00FFCC]" />{e.location}</td>
                                             <td className="px-6 py-5 font-mono text-xs text-white/30">{e.nextInspection}</td>
-                                            <td className="px-6 py-5"><button onClick={() => removeItem('equipment', e.id)}><Trash2 className="w-4 h-4 text-white/10 hover:text-red-500 transition-colors" /></button></td>
+                                            <td className="px-6 py-5"><button onClick={() => { if (window.confirm('Remove this equipment?')) removeItem('equipment', e.id); }}><Trash2 className="w-4 h-4 text-white/10 hover:text-red-500 transition-colors" /></button></td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -261,7 +214,7 @@ export default function ResponderOrg() {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {filtered.personnel.map(p => (
                                 <div key={p.id} className="bg-white/5 border border-white/5 p-6 hover:border-white/10 transition-all relative group">
-                                    <button onClick={() => removeItem('personnel', p.id)} className="absolute top-4 right-4 text-white/10 hover:text-red-500 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                                    <button onClick={() => { if (window.confirm('Remove this person?')) removeItem('personnel', p.id); }} className="absolute top-4 right-4 text-white/10 hover:text-red-500 transition-colors"><Trash2 className="w-4 h-4" /></button>
                                     <div className="flex items-center gap-4 mb-5">
                                         <div className="w-12 h-12 bg-black border border-white/10 flex items-center justify-center font-outfit font-black text-xl text-white">
                                             {p.name.charAt(0)}
@@ -295,7 +248,7 @@ export default function ResponderOrg() {
                                     <div className="flex items-center gap-6">
                                         <span className="text-[9px] font-mono text-white/20 uppercase">{i.units} unit{i.units > 1 ? 's' : ''} deployed</span>
                                         <Badge label={i.status} />
-                                        <button onClick={() => removeItem('incidents', i.id)}><Trash2 className="w-4 h-4 text-white/10 hover:text-red-500 transition-colors" /></button>
+                                        <button onClick={() => { if (window.confirm('Remove this incident record?')) removeItem('incidents', i.id); }}><Trash2 className="w-4 h-4 text-white/10 hover:text-red-500 transition-colors" /></button>
                                     </div>
                                 </div>
                             ))}
@@ -305,7 +258,7 @@ export default function ResponderOrg() {
             </main>
 
             {modal && (
-                <Modal title={`Add ${modal}`} fields={MODAL_FIELDS[modal]}
+                <CrudModal title={`Add ${modal}`} fields={MODAL_FIELDS[modal]}
                     onSave={form => addItem(modal, form)} onClose={() => setModal(null)} />
             )}
         </div>

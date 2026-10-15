@@ -1,15 +1,15 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { 
-  Shield, 
-  AlertTriangle, 
-  MapPin, 
-  Phone, 
-  User, 
-  MessageSquare, 
-  Upload, 
-  Camera, 
-  CheckCircle2, 
+import {
+  Shield,
+  AlertTriangle,
+  MapPin,
+  Phone,
+  User,
+  MessageSquare,
+  Upload,
+  Camera,
+  CheckCircle2,
   ChevronLeft,
   Activity,
   Zap,
@@ -18,26 +18,17 @@ import {
   Flame,
   Droplets,
   Wind,
+  HeartPulse,
   Info
 } from 'lucide-react';
 import { useDashboard } from '../context/DashboardContext';
+import { INCIDENT_TYPES, SEVERITIES } from '../lib/incidentTypes';
+import { captureBestEffortLocation, reverseGeocode } from '../lib/geolocation';
 
-const DISASTER_TYPES = [
-  { value: 'flood', label: 'Flood / Flash Flood', icon: Droplets, iconName: 'Droplets' },
-  { value: 'cyclone', label: 'Cyclone / Hurricane', icon: Wind, iconName: 'Wind' },
-  { value: 'wildfire', label: 'Wildfire', icon: Flame, iconName: 'Flame' },
-  { value: 'earthquake', label: 'Earthquake / Landslide', icon: Activity, iconName: 'Activity' },
-  { value: 'collapse', label: 'Structural Collapse', icon: Shield, iconName: 'Shield' },
-  { value: 'chemical', label: 'Chemical / Hazmat Spill', icon: Radiation, iconName: 'Radiation' },
-  { value: 'other', label: 'Other Emergency', icon: AlertTriangle, iconName: 'AlertTriangle' },
-];
-
-const SEVERITIES = [
-  { id: 'low', label: 'MINOR', color: '#10b981' },
-  { id: 'medium', label: 'MODERATE', color: '#f59e0b' },
-  { id: 'high', label: 'HIGH DANGER', color: '#ef4444' },
-  { id: 'critical', label: 'LIFE THREATENING', color: '#ef4444' },
-];
+// Local icon-component lookup for the type picker (INCIDENT_TYPES only stores
+// the string iconName so it can be shared with plain JS/backend code).
+const TYPE_ICON_COMPONENTS = { Flame, Droplets, HeartPulse, AlertTriangle, Wind, Shield, Radiation };
+const DISASTER_TYPES = INCIDENT_TYPES.map(t => ({ ...t, icon: TYPE_ICON_COMPONENTS[t.iconName] || AlertTriangle }));
 
 export default function ReportIncident() {
   const nav = useNavigate();
@@ -67,69 +58,43 @@ export default function ReportIncident() {
     setFiles(prev => [...prev, ...arr].slice(0, 5));
   };
 
-  const fetchGPSLocation = () => {
-    if (!navigator.geolocation) { 
-      set('location', 'Geolocation not supported'); 
-      addToast('Geolocation is not supported by your browser.', 'error');
-      return; 
-    }
-    
+  const fetchGPSLocation = async () => {
     setLocLoading(true);
-    
-    // Use high accuracy and reasonable timeout
-    const options = {
-      enableHighAccuracy: true,
-      timeout: 15000,
-      maximumAge: 0
-    };
+    setErrors(e => ({ ...e, location: undefined }));
 
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const { latitude: lat, longitude: lng, accuracy } = pos.coords;
-        console.log(`GPS Location captured: ${lat}, ${lng} (Accuracy: ${accuracy}m)`);
-        
-        setCoords({ lat, lng });
+    try {
+      // Precise GPS first; if that's denied/unavailable/times out, this
+      // transparently falls back to an approximate IP-based location instead
+      // of just failing (previously a single high-accuracy attempt with no
+      // retry and no fallback — the #1 reason "USE GPS" appeared to do
+      // nothing on desktops/VMs without a GPS chip or with Location Services
+      // disabled).
+      const loc = await captureBestEffortLocation();
+      setCoords({ lat: loc.lat, lng: loc.lng });
 
-        let placeName = '';
-        try {
-          // Attempt reverse geocoding with a timeout
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 8000);
-          
-          const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`,
-            { signal: controller.signal }
-          );
-          clearTimeout(timeoutId);
-          
-          const data = await res.json();
-          if (data && data.display_name) {
-            const parts = data.display_name.split(', ');
-            placeName = parts.slice(0, 3).join(', ');
-          }
-        } catch (error) {
-          console.warn("Reverse geocoding failed or timed out, using coordinates only", error);
-        }
-        
-        const finalLocString = placeName 
-          ? `${placeName} (${lat.toFixed(6)}, ${lng.toFixed(6)})`
-          : `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-          
-        set('location', finalLocString);
-        setLocLoading(false);
+      const placeName = await reverseGeocode(loc.lat, loc.lng);
+      const coordStr = `${loc.lat.toFixed(6)}, ${loc.lng.toFixed(6)}`;
+      const approxTag = loc.approx ? ' [Approximate — please refine]' : '';
+      const finalLocString = placeName
+        ? `${placeName} (${coordStr})${approxTag}`
+        : `${coordStr}${approxTag}`;
+
+      set('location', finalLocString);
+      setLocLoading(false);
+
+      if (loc.approx) {
+        addToast('Precise GPS unavailable — using an approximate IP-based location. Please refine the address.', 'info');
+      } else {
         addToast('GPS Location Verified', 'success');
-      },
-      (err) => { 
-        let errMsg = 'Unable to retrieve location';
-        if (err.code === 1) errMsg = 'Location access denied. Please enable GPS permissions.';
-        else if (err.code === 3) errMsg = 'GPS signal timeout. Try moving to an open area.';
-        
-        set('location', errMsg); 
-        setLocLoading(false);
-        addToast(errMsg, 'error');
-      },
-      options
-    );
+      }
+    } catch (err) {
+      // Never overwrite whatever the user already typed with an error
+      // string — that used to pass validation as a "valid address".
+      setLocLoading(false);
+      const message = err?.message || 'Unable to retrieve location';
+      addToast(message, 'error');
+      setErrors(e => ({ ...e, location: form.location.trim() ? undefined : message }));
+    }
   };
 
   const validate = () => {
@@ -153,12 +118,12 @@ export default function ReportIncident() {
       const isHigh = form.severity === 'high';
       
       const payload = {
-        type: form.disasterType,
+        type: form.disasterType,   // canonical value from INCIDENT_TYPES, e.g. "Fire"
         location: form.location,
-        severity: form.severity, // Send original ID, backend mapSeverity will handle it
+        severity: form.severity,   // canonical value from SEVERITIES, e.g. "Critical"
         description: form.description,
-        latitude: coords?.lat || null,
-        longitude: coords?.lng || null
+        latitude: coords?.lat ?? null,
+        longitude: coords?.lng ?? null
       };
       
       console.log('Submitting emergency report:', payload);

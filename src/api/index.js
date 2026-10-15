@@ -1,6 +1,14 @@
 import axios from "axios";
 
-const API = axios.create({ baseURL: 'http://localhost:5001/api' });
+// Single source of truth for the backend origin. Was previously hardcoded
+// as 'http://localhost:5001' in this file AND separately duplicated in
+// ResourceInventory.jsx's raw fetch() call — the latter meant the "nearest
+// facilities" feature would silently break on any host other than the
+// original dev machine. Override with VITE_API_URL in a .env file when
+// deploying anywhere else.
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+
+const API = axios.create({ baseURL: `${API_BASE_URL}/api` });
 
 // Add token to requests
 API.interceptors.request.use((req) => {
@@ -24,6 +32,7 @@ export const fetchStats = () => API.get('/alerts/stats');
 // Resources
 export const fetchResources = () => API.get('/resources');
 export const updateResource = (id, deployed) => API.patch(`/resources/${id}`, { deployed });
+export const fetchNearbyResources = (params) => API.get('/resources/nearby', { params });
 
 // Analytics
 export const fetchDistribution = () => API.get('/analytics/distribution');

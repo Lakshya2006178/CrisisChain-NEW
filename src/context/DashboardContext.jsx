@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { AlertCircle, Waves, Wind, Flame, HeartPulse, Truck, Users, MessageSquare, AlertTriangle, ClipboardCheck, Siren, HeartHandshake, Droplets, Shield, Radiation, Activity, MapPin } from 'lucide-react';
 import * as api from '../api/index.js';
+import { captureBestEffortLocation } from '../lib/geolocation';
 
 const DashboardContext = createContext();
 
@@ -11,16 +12,19 @@ export function DashboardProvider({ children }) {
         JSON.parse(localStorage.getItem('userLocation')) || null
     );
 
-    const captureLocation = () => {
-        if (!navigator.geolocation) return;
-        navigator.geolocation.getCurrentPosition(
-            ({ coords }) => {
-                const loc = { lat: coords.latitude, lng: coords.longitude };
-                setUserLocation(loc);
-                localStorage.setItem('userLocation', JSON.stringify(loc));
-            },
-            () => {}
-        );
+    const captureLocation = async () => {
+        try {
+            // Precise GPS first, falls back to approximate IP-based location
+            // rather than just giving up (previously a single GPS attempt with
+            // no retry and no fallback, so it silently did nothing whenever GPS
+            // was denied/unavailable — e.g. Location Services off, or a VM/desktop
+            // with no GPS hardware).
+            const loc = await captureBestEffortLocation();
+            setUserLocation(loc);
+            localStorage.setItem('userLocation', JSON.stringify(loc));
+        } catch {
+            // No location available from any source — leave userLocation as-is.
+        }
     };
 
     useEffect(() => {
@@ -83,8 +87,21 @@ export function DashboardProvider({ children }) {
         }
     };
 
+    const fetchResources = async () => {
+        try {
+            const { data } = await api.fetchResources();
+            setResources(Array.isArray(data) ? data : []);
+        } catch (err) {
+            console.warn('Backend resources unavailable');
+        }
+    };
+
     const refreshData = async () => {
-        await Promise.all([fetchLiveAlerts(), fetchStats()]);
+        await Promise.all([fetchLiveAlerts(), fetchStats(), fetchResources()]);
+    };
+
+    const advanceWorkflow = () => {
+        setWorkflowId(prev => Math.min(prev + 1, 4));
     };
 
     useEffect(() => {
@@ -160,7 +177,7 @@ export function DashboardProvider({ children }) {
             isSidebarOpen, isMobileMenuOpen, toggleSidebar, openSidebar, closeSidebar, login, signup, logout, addAlert,
             getIcon, searchQuery, setSearchQuery, addToast, refreshData,
             userLocation, captureLocation,
-            fetchLiveAlerts, acknowledgeAction, escalateAction, addMessage
+            fetchLiveAlerts, fetchResources, acknowledgeAction, escalateAction, addMessage, advanceWorkflow
         }}>
             {children}
         </DashboardContext.Provider>

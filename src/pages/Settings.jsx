@@ -1,58 +1,46 @@
-import React, { useState, useEffect, useMemo, Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDashboard } from '../context/DashboardContext';
 import Sidebar from '../components/Sidebar';
 import TopNavbar from '../components/TopNavbar';
+import ErrorBoundary from '../components/ErrorBoundary';
 import { SZ } from '../constants';
-import { 
-    Settings as SettingsIcon, Users, Building2, Bell, Shield, 
-    Server, Cpu, Activity, CheckCircle2, XCircle, 
-    ChevronRight, Search, Plus, Edit2, ToggleLeft, 
-    ToggleRight, Mail, MessageSquare, Clock, AlertCircle,
-    Key, Lock, Smartphone, LogOut, ChevronDown, Filter, Trash2,
-    Zap, Radio, Database, Globe, Phone, Info
+import {
+    Settings as SettingsIcon, Users, Building2, Bell, Shield,
+    Server, Cpu, Activity,
+    Search, Edit2,
+    Clock, AlertCircle,
+    Smartphone, LogOut, ChevronDown, Filter, Trash2,
+    Zap, Lock
 } from 'lucide-react';
 
-// ── ERROR BOUNDARY ──
-
-class LocalErrorBoundary extends Component {
-    constructor(props) {
-        super(props);
-        this.state = { hasError: false };
-    }
-    static getDerivedStateFromError(error) { return { hasError: true }; }
-    render() {
-        if (this.state.hasError) {
-            return (
-                <div className="h-screen w-full bg-[#08080A] flex flex-col items-center justify-center p-10 text-center">
-                    <div className="w-16 h-16 border border-red-500/20 flex items-center justify-center mb-6">
-                        <AlertCircle className="text-red-500" size={32} />
-                    </div>
-                    <h2 className="font-outfit font-black text-2xl text-white uppercase tracking-tighter mb-2">SYSTEM ERROR</h2>
-                    <p className="font-mono text-[9px] text-white/20 uppercase tracking-[0.4em] mb-8">Connection lost // Refresh to retry</p>
-                    <button 
-                        onClick={() => window.location.reload()}
-                        className="px-8 py-3 bg-red-600 text-white font-mono text-[10px] font-black uppercase tracking-widest hover:brightness-110 transition-all"
-                    >
-                        RETRY CONNECTION
-                    </button>
-                </div>
-            );
-        }
-        return this.props.children;
-    }
-}
+const SETTINGS_ERROR_FALLBACK = (
+    <div className="h-screen w-full bg-[#08080A] flex flex-col items-center justify-center p-10 text-center">
+        <div className="w-16 h-16 border border-red-500/20 flex items-center justify-center mb-6">
+            <AlertCircle className="text-red-500" size={32} />
+        </div>
+        <h2 className="font-outfit font-black text-2xl text-white uppercase tracking-tighter mb-2">SYSTEM ERROR</h2>
+        <p className="font-mono text-[9px] text-white/20 uppercase tracking-[0.4em] mb-8">Connection lost // Refresh to retry</p>
+        <button
+            onClick={() => window.location.reload()}
+            className="px-8 py-3 bg-red-600 text-white font-mono text-[10px] font-black uppercase tracking-widest hover:brightness-110 transition-all"
+        >
+            RETRY CONNECTION
+        </button>
+    </div>
+);
 
 // ── MOCK DATA ──
+// Seed values only — turned into real state below so delete/search actually work.
 
-const MOCK_ORGS = [
+const DEFAULT_ORGS = [
     { id: 1, name: 'City General Hospital', type: 'Hospital', location: 'Downtown', status: 'Active', contact: '+1-555-0123', capacity: '200 Beds' },
     { id: 2, name: 'Western Fire Dept', type: 'Fire Dept', location: 'Industrial Sector', status: 'Active', contact: '+1-555-0199', capacity: '12 Units' },
     { id: 3, name: 'Red Cross Alpha', type: 'NGO', location: 'Suburban East', status: 'Inactive', contact: '+1-555-0144', capacity: '50 Responders' },
     { id: 4, name: 'Emergency Medics Unit', type: 'Hospital', location: 'North Point', status: 'Active', contact: '+1-555-0188', capacity: '40 Beds' },
 ];
 
-const MOCK_USERS = [
+const DEFAULT_USERS = [
     { id: 1, name: 'Commander Alex', role: 'Admin', org: 'Crisis HQ', status: 'Active', lastLogin: '2 mins ago', sessions: 1 },
     { id: 2, name: 'Major Sarah', role: 'Responder', org: 'Fire Dept', status: 'Active', lastLogin: '1 hour ago', sessions: 2 },
     { id: 3, name: 'Officer James', role: 'User', org: 'General Hospital', status: 'Active', lastLogin: '3 hours ago', sessions: 1 },
@@ -151,9 +139,16 @@ function SettingsContent() {
     const [config, setConfig] = useState({ respTime: '15', threshold: 'Critical', autoDispatch: true });
     const [tfa, setTfa] = useState(false);
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-    
+    const [orgs, setOrgs] = useState(DEFAULT_ORGS);
+    const [orgSearch, setOrgSearch] = useState('');
+    const [users, setUsers] = useState(DEFAULT_USERS);
+    const [userSearch, setUserSearch] = useState('');
+
     // Modal controls
     const [modal, setModal] = useState({ open: false, type: '', data: null });
+
+    const filteredOrgs = orgs.filter(o => o.name.toLowerCase().includes(orgSearch.toLowerCase()));
+    const filteredUsers = users.filter(u => u.name.toLowerCase().includes(userSearch.toLowerCase()));
 
     useEffect(() => {
         const handleMouseMove = (e) => setMousePos({ x: e.clientX, y: e.clientY });
@@ -163,6 +158,19 @@ function SettingsContent() {
 
     const openConfirm = (type, data) => setModal({ open: true, type, data });
     const closeConfirm = () => setModal({ open: false, type: '', data: null });
+
+    const handleConfirm = () => {
+        if (modal.type === 'delete_org' && modal.data) {
+            setOrgs(prev => prev.filter(o => o.id !== modal.data.id));
+            addToast('Organization removed', 'success');
+        } else if (modal.type === 'delete_user' && modal.data) {
+            setUsers(prev => prev.filter(u => u.id !== modal.data.id));
+            addToast('User removed', 'success');
+        } else if (modal.type === 'logout_all') {
+            addToast('All other sessions terminated', 'info');
+        }
+        closeConfirm();
+    };
 
     const handleLogout = () => {
         addToast('Terminating session...', 'info');
@@ -222,7 +230,7 @@ function SettingsContent() {
                                 <div className="flex justify-between items-center mb-6">
                                     <div className="relative group flex-1 max-w-xs">
                                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-red-500 transition-colors" size={12} />
-                                        <input type="text" placeholder="Search entries..." className="w-full bg-white/5 border border-white/5 px-10 py-2.5 font-mono text-[10px] uppercase tracking-widest outline-none focus:border-red-500/30 transition-all text-white" />
+                                        <input type="text" placeholder="Search entries..." value={orgSearch} onChange={e => setOrgSearch(e.target.value)} className="w-full bg-white/5 border border-white/5 px-10 py-2.5 font-mono text-[10px] uppercase tracking-widest outline-none focus:border-red-500/30 transition-all text-white" />
                                     </div>
                                     <button className="px-6 py-2.5 bg-red-600 text-white font-mono text-[9px] font-black uppercase tracking-widest hover:brightness-110 transition-all">
                                         Add Organization
@@ -232,7 +240,7 @@ function SettingsContent() {
                                     <table className="w-full min-w-[900px]">
                                         <TableHeader columns={['NAME', 'TYPE', 'CONTACT', 'CAPACITY', 'STATUS']} />
                                         <tbody className="font-mono text-[10px] uppercase tracking-widest text-white/60">
-                                            {MOCK_ORGS.map((org) => (
+                                            {filteredOrgs.map((org) => (
                                                 <tr key={org.id} className="border-b border-white/[0.02] hover:bg-white/[0.02] transition-colors">
                                                     <td className="px-6 py-5 font-black text-white">{org.name}</td>
                                                     <td className="px-6 py-5">{org.type}</td>
@@ -249,9 +257,9 @@ function SettingsContent() {
                                                     <td className="px-6 py-5 text-right">
                                                         <div className="flex justify-end gap-4">
                                                             <button className="text-white/20 hover:text-white transition-colors" title="Edit"><Edit2 size={12} /></button>
-                                                            <button 
-                                                                onClick={() => openConfirm('delete_org', org.name)} 
-                                                                className="text-white/20 hover:text-red-500 transition-colors" 
+                                                            <button
+                                                                onClick={() => openConfirm('delete_org', org)}
+                                                                className="text-white/20 hover:text-red-500 transition-colors"
                                                                 title="Delete"
                                                             >
                                                                 <Trash2 size={12} />
@@ -337,7 +345,7 @@ function SettingsContent() {
                                 <div className="flex items-center gap-4 mb-6">
                                     <div className="relative group max-w-xs flex-1">
                                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-red-500 transition-colors" size={12} />
-                                        <input type="text" placeholder="Search users..." className="w-full bg-white/5 border border-white/5 px-10 py-2.5 font-mono text-[10px] uppercase tracking-widest outline-none focus:border-red-500/30 transition-all text-white" />
+                                        <input type="text" placeholder="Search users..." value={userSearch} onChange={e => setUserSearch(e.target.value)} className="w-full bg-white/5 border border-white/5 px-10 py-2.5 font-mono text-[10px] uppercase tracking-widest outline-none focus:border-red-500/30 transition-all text-white" />
                                     </div>
                                     <div className="flex items-center gap-2 px-3 py-2 bg-white/5 border border-white/10">
                                          <Filter size={12} className="text-white/20" />
@@ -352,7 +360,7 @@ function SettingsContent() {
                                     <table className="w-full min-w-[700px]">
                                         <TableHeader columns={['NAME', 'ROLE', 'ORGANIZATION', 'LAST LOGIN', 'SESSIONS']} />
                                         <tbody className="font-mono text-[10px] uppercase tracking-widest text-white/60">
-                                            {MOCK_USERS.map((user) => (
+                                            {filteredUsers.map((user) => (
                                                 <tr key={user.id} className="border-b border-white/[0.02] hover:bg-white/[0.02] transition-colors group/row">
                                                     <td className="px-6 py-5">
                                                         <div className="flex items-center gap-3">
@@ -371,7 +379,7 @@ function SettingsContent() {
                                                     <td className="px-6 py-5 text-right">
                                                         <div className="flex justify-end gap-3 opacity-0 group-hover/row:opacity-100 transition-opacity">
                                                             <button className="p-1.5 bg-white/5 hover:bg-white/10 transition-all"><Edit2 size={10} /></button>
-                                                            <button className="p-1.5 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all"><Trash2 size={10} /></button>
+                                                            <button onClick={() => openConfirm('delete_user', user)} className="p-1.5 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all"><Trash2 size={10} /></button>
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -512,11 +520,15 @@ function SettingsContent() {
                 </div>
             </main>
 
-            <ConfirmationModal 
+            <ConfirmationModal
                 isOpen={modal.open}
-                title={modal.type === 'delete_org' ? 'Delete Organization?' : 'Security Action'}
-                message={modal.type === 'delete_org' ? `Are you sure you want to remove ${modal.data}? This action cannot be undone.` : modal.data}
-                onConfirm={closeConfirm}
+                title={modal.type === 'delete_org' ? 'Delete Organization?' : modal.type === 'delete_user' ? 'Remove User?' : 'Security Action'}
+                message={
+                    modal.type === 'delete_org' ? `Are you sure you want to remove ${modal.data?.name}? This action cannot be undone.` :
+                    modal.type === 'delete_user' ? `Are you sure you want to remove ${modal.data?.name}? This action cannot be undone.` :
+                    modal.data
+                }
+                onConfirm={handleConfirm}
                 onCancel={closeConfirm}
             />
 
@@ -534,8 +546,8 @@ function SettingsContent() {
 
 export default function Settings() {
     return (
-        <LocalErrorBoundary>
+        <ErrorBoundary fallback={SETTINGS_ERROR_FALLBACK}>
             <SettingsContent />
-        </LocalErrorBoundary>
+        </ErrorBoundary>
     );
 }

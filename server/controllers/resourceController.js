@@ -1,7 +1,3 @@
-import crypto from 'crypto';
-
-const uuid = () => crypto.randomUUID();
-
 // MOCK: In-memory resources array
 // TODO (DBMS Project): Replace with SELECT * FROM resource_center ...
 let mockCenters = [
