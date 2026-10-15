@@ -18,7 +18,7 @@ CrisisChain is a premium, real-time login designed for rapid disaster response, 
 ### Backend (The Logic Core)
 - **Runtime**: [Node.js](https://nodejs.org/)
 - **Framework**: [Express.js](https://expressjs.com/)
-- **Database**: [MongoDB](https://www.mongodb.com/) + [Mongoose](https://mongoosejs.com/)
+- **Database**: [MySQL](https://www.mysql.com/) + [mysql2](https://github.com/sidorares/node-mysql2)
 - **Security**: [JWT Authentication](https://jwt.io/) & [Bcrypt.js](https://github.com/kelektiv/node.bcrypt.js)
 - **Integration**: [Axios](https://axios-http.com/) (Custom Interceptors with Bearer Token support)
 
@@ -44,11 +44,11 @@ graph TD
     subgraph "Backend Layer (Node.js Core)"
         API[Express API Gateways]
         CTR[Business Logic Controllers]
-        SCH[Mongoose Data Schemas]
+        SCH[MySQL Query Layer]
     end
 
     subgraph "Persistent Storage"
-        DB[(MongoDB Cluster)]
+        DB[(MySQL Database)]
         LS[Local Storage - Session Persistence]
     end
 
@@ -142,7 +142,7 @@ sequenceDiagram
 ---
 
 ## ⚡ Current Configuration: "Pure Mock Mode"
-To ensure the application remains functional even without a local MongoDB instance, the `DashboardContext.jsx` is currently set to **Mock Mode**.
+To ensure the application remains functional even without a local MySQL instance, the `DashboardContext.jsx` is currently set to **Mock Mode**.
 -   **Immediate Access**: The Login/Signup portals accept any credentials for demonstration.
 -   **Session Memory**: Reports submitted in the portal are saved to local state for the duration of the session.
 -   **Auth Persistence**: User roles and sessions are maintained in LocalStorage via the `AuthContext` logic.
