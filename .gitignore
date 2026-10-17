@@ -14,7 +14,12 @@ dist-ssr
 
 # Environment variables — never commit secrets
 .env
+.env.*
+!.env.example
+
 server/.env
+server/.env.*
+!server/.env.example
 
 # SQLite database files
 *.sqlite

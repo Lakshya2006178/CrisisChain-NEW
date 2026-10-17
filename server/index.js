@@ -5,6 +5,7 @@ import authRoutes from './routes/auth.js';
 import alertRoutes from './routes/alerts.js';
 import resourceRoutes from './routes/resources.js';
 import analyticsRoutes from './routes/analytics.js';
+import pool, { testConnection } from './config/db.js';
 
 dotenv.config();
 
@@ -22,10 +23,28 @@ app.use('/api/resources', resourceRoutes);
 app.use('/api/analytics', analyticsRoutes);
 
 // Health check
-app.get('/', (req, res) => res.json({ status: 'CrisisChain API running', db: 'SQLite' }));
+app.get('/', (req, res) => res.json({ status: 'CrisisChain API running' }));
 
-// Mock Mode: Start server directly without requiring DB connection
+// TEMPORARY – will be removed later once full DB integration is wired up
+app.get('/api/health/db', async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT NOW() AS now');
+    res.json({ status: 'ok', ...rows[0] });
+  } catch (err) {
+    res.status(500).json({ status: 'error', message: err.message });
+  }
+});
+
+// Verify MySQL is reachable before accepting traffic
+try {
+  await testConnection();
+  console.log(`✅ MySQL connected to ${process.env.DB_NAME}`);
+} catch (err) {
+  console.error(`MySQL connection failed: ${err.message}`);
+  process.exit(1);
+}
+
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT} (MOCK MODE)`);
+  console.log(`🚀 Server running on port ${PORT}`);
   console.log(`🌐 API: http://localhost:${PORT}/api`);
 });
