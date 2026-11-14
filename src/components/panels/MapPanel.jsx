@@ -1,9 +1,11 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useDashboard } from '../../context/DashboardContext';
 import { Map as MapIcon, Crosshair, Navigation, Zap, Globe } from 'lucide-react';
 import AlertsMapView from '../AlertsMap';
 
 export default function MapPanel() {
+    const navigate = useNavigate();
     const { addToast, alerts } = useDashboard();
 
     // Map alerts to include color for markers
@@ -62,7 +64,15 @@ export default function MapPanel() {
 
                 {/* Leaflet Map Integration */}
                 <div className="absolute inset-0 z-0">
-                    <AlertsMapView alerts={mapAlerts} />
+                    <AlertsMapView 
+                        alerts={mapAlerts} 
+                        onMarkerClick={(alert) => {
+                            const targetId = alert?.numeric_id || alert?.id;
+                            if (targetId) {
+                                navigate(`/alerts?id=${encodeURIComponent(targetId)}`);
+                            }
+                        }}
+                    />
                 </div>
 
                 {/* Legend HUD */}

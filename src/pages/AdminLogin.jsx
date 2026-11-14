@@ -14,8 +14,7 @@ import {
 export default function AdminLogin() {
   const nav = useNavigate();
   const { login } = useDashboard();
-  const [name, setName] = useState('');
-  const [aadhar, setAadhar] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -28,15 +27,21 @@ export default function AdminLogin() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    if (!name.trim() || !aadhar.trim() || !password) { setError('Credentials required.'); return; }
+    const trimmedEmail = email.trim().toLowerCase();
+    if (!trimmedEmail || !password) { setError('Email and password required.'); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) { setError('Valid email address required.'); return; }
     setLoading(true);
     try {
-      await login({ name, aadhar, password, role: 'admin' }, true);
+      const user = await login({ email: trimmedEmail, password });
       setLoading(false); 
+      if (user.role !== 'admin') {
+        setError('Access denied: Administrator privileges required.');
+        return;
+      }
       nav('/dashboard');
     } catch (err) {
       setLoading(false);
-      setError('Admin Authentication Failed.');
+      setError(err.response?.data?.error || err.message || 'Admin Authentication Failed.');
     }
   };
 
@@ -58,22 +63,10 @@ export default function AdminLogin() {
                 <Mail className="h-5 w-5 text-white/20 group-focus-within:text-red-500 transition-colors" />
               </div>
               <input 
-                type="text" 
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="ADMIN_USERNAME"
-                className="w-full bg-black/50 border border-white/10 px-14 py-5 text-white placeholder:text-white/20 focus:outline-none focus:border-red-500/40 transition-all font-mono text-sm tracking-widest"
-              />
-            </div>
-            <div className="relative group">
-              <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none">
-                <ShieldAlert className="h-5 w-5 text-white/20 group-focus-within:text-red-500 transition-colors" />
-              </div>
-              <input 
-                type="text" 
-                value={aadhar}
-                onChange={(e) => setAadhar(e.target.value)}
-                placeholder="ADMIN_AADHAR"
+                type="email" 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="ADMIN_EMAIL"
                 className="w-full bg-black/50 border border-white/10 px-14 py-5 text-white placeholder:text-white/20 focus:outline-none focus:border-red-500/40 transition-all font-mono text-sm tracking-widest"
               />
             </div>

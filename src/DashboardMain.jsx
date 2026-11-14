@@ -106,14 +106,13 @@ export default function DashboardMain() {
       <SystemGridOverlay mousePos={mousePos} />
 
       <Sidebar />
-      <TopNavbar fullWidth />
+      <TopNavbar />
 
       {/* ── PROPER DASHBOARD GRID ── */}
       <main
-        className="flex-1 overflow-y-auto overflow-x-hidden transition-all duration-500 relative z-10 custom-scrollbar will-change-transform w-full"
+        className={`flex-1 overflow-y-auto overflow-x-hidden transition-all duration-500 relative z-10 custom-scrollbar will-change-transform w-full ${isSidebarOpen ? 'ml-sidebar-open' : 'ml-sidebar-closed'}`}
         style={{
           marginTop: SZ.navbarH,
-          marginLeft: ml,
           height: `calc(100vh - ${SZ.navbarH}px)`,
         }}
       >

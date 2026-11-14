@@ -19,8 +19,16 @@ export function Badge({ label }) {
     );
 }
 
-export function CrudModal({ title, fields, onSave, onClose }) {
-    const [form, setForm] = useState(() => Object.fromEntries(fields.map(f => [f.key, f.default || ''])));
+export function CrudModal({ title, fields, initialData, submitLabel = 'Add', onSave, onClose }) {
+    const [form, setForm] = useState(() => {
+        if (initialData) {
+            return Object.fromEntries(fields.map(f => [
+                f.key,
+                initialData[f.key] !== undefined && initialData[f.key] !== null ? initialData[f.key] : (f.default || '')
+            ]));
+        }
+        return Object.fromEntries(fields.map(f => [f.key, f.default || '']));
+    });
     return (
         <div className="fixed inset-0 z-[300] bg-black/80 backdrop-blur-xl flex items-center justify-center p-8">
             <div className="bg-[#08080A] border border-white/10 w-full max-w-md shadow-2xl">
@@ -46,7 +54,7 @@ export function CrudModal({ title, fields, onSave, onClose }) {
                     ))}
                     <div className="flex gap-4 pt-4">
                         <button onClick={onClose} className="flex-1 py-3 border border-white/10 font-mono text-xs text-white/40 hover:text-white uppercase tracking-widest">Cancel</button>
-                        <button onClick={() => onSave(form)} className="flex-1 py-3 bg-[#00FFCC] text-black font-outfit font-black text-xs uppercase tracking-widest hover:brightness-110">Add</button>
+                        <button onClick={() => onSave(form)} className="flex-1 py-3 bg-[#00FFCC] text-black font-outfit font-black text-xs uppercase tracking-widest hover:brightness-110">{submitLabel}</button>
                     </div>
                 </div>
             </div>

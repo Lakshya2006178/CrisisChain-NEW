@@ -8,8 +8,10 @@ import { captureBestEffortLocation } from '../lib/geolocation';
 import {
     Search, Plus, Package, MapPin, Database, Hospital,
     AlertCircle, CheckCircle2, ChevronRight, Pill,
-    Truck, Navigation, Clock, Activity, Send, HeartPulse, Wrench, Shield, Globe, Zap
+    Truck, Navigation, Clock, Activity, Send, HeartPulse, Wrench, Shield, Globe, Zap,
+    RotateCcw, Loader2
 } from 'lucide-react';
+import AllocateResourceModal from '../components/AllocateResourceModal';
 
 function Toast({ message, type }) {
     const bg = type === 'error' ? 'rgba(239, 68, 68, 0.1)' : type === 'success' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(0, 240, 255, 0.1)';
@@ -99,17 +101,86 @@ export default function ResourceInventory() {
         return () => window.removeEventListener('mousemove', handleMouseMove);
     }, []);
 
-    // Supplies State
-    const [resources, setResources] = useState([
-        { id: 1, name: 'Medical Kits', quantity: 500, unit: 'kits', location: 'Main Warehouse' },
-        { id: 2, name: 'Bottled Water', quantity: 2000, unit: 'liters', location: 'Sector A Storage' },
-        { id: 3, name: 'Blankets', quantity: 1500, unit: 'units', location: 'Camp B Supply' },
-        { id: 4, name: 'Emergency Rations', quantity: 3000, unit: 'kg', location: 'Main Warehouse' },
-    ]);
+    // Supplies State (Live MySQL)
+    const [resources, setResources] = useState([]);
+    const [loadingResources, setLoadingResources] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [isSpaceModalOpen, setIsSpaceModalOpen] = useState(false);
-    const [newItem, setNewItem] = useState({ name: '', quantity: '', unit: 'kg', location: '' });
+    const [newItem, setNewItem] = useState({ name: '', quantity: '', unit: 'units', location: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Live Allocations & Dispatches State
+    const [allocations, setAllocations] = useState([]);
+    const [allocationFilter, setAllocationFilter] = useState('all'); // all | active | released
+    const [loadingAllocations, setLoadingAllocations] = useState(false);
+    const [releasingAllocationId, setReleasingAllocationId] = useState(null);
+    const [isAllocateModalOpen, setIsAllocateModalOpen] = useState(false);
+    const [selectedResourceForModal, setSelectedResourceForModal] = useState(null);
+
+    const loadResources = async () => {
+        try {
+            setLoadingResources(true);
+            const { data } = await api.fetchResources();
+            if (Array.isArray(data)) {
+                setResources(data.map(r => ({
+                    id: r.resource_id,
+                    resource_id: r.resource_id,
+                    name: r.resource_type || r.name,
+                    resource_type: r.resource_type,
+                    quantity: r.quantity_available !== undefined ? r.quantity_available : (r.quantity || 0),
+                    quantity_available: r.quantity_available !== undefined ? r.quantity_available : (r.quantity || 0),
+                    deployed: r.deployed || 0,
+                    total: (r.quantity_available || 0) + (r.deployed || 0),
+                    unit: 'units',
+                    location: r.center_name || r.address || 'Facility',
+                    center_name: r.center_name,
+                    raw: r
+                })));
+            }
+        } catch (err) {
+            console.error('Failed to load resources from backend:', err);
+        } finally {
+            setLoadingResources(false);
+        }
+    };
+
+    const loadAllocations = async () => {
+        try {
+            setLoadingAllocations(true);
+            const params = allocationFilter !== 'all' ? { status: allocationFilter } : {};
+            const { data } = await api.fetchAllocations(params);
+            setAllocations(Array.isArray(data) ? data : []);
+        } catch (err) {
+            console.error('Failed to load allocations:', err);
+        } finally {
+            setLoadingAllocations(false);
+        }
+    };
+
+    useEffect(() => {
+        loadResources();
+    }, []);
+
+    useEffect(() => {
+        loadAllocations();
+    }, [allocationFilter]);
+
+    const handleReleaseDispatch = async (allocationId, resourceType, qty) => {
+        if (!window.confirm(`Release ${qty} x ${resourceType} back to inventory stock?`)) return;
+        try {
+            setReleasingAllocationId(allocationId);
+            await api.releaseAllocation(allocationId);
+            if (typeof toasts === 'object') {
+                // Toast notification
+            }
+            await Promise.all([loadResources(), loadAllocations()]);
+        } catch (err) {
+            console.error('Failed to release allocation:', err);
+            alert(err.response?.data?.error || err.message || 'Failed to release allocation.');
+        } finally {
+            setReleasingAllocationId(null);
+        }
+    };
 
     // ── DYNAMIC NEARBY CENTERS ───────────────────────────────────
     const [hospitals, setHospitals] = useState([]);
@@ -234,14 +305,13 @@ export default function ResourceInventory() {
             <TopNavbar />
 
             <main
-                className="flex-1 overflow-x-hidden overflow-y-auto transition-all duration-500 relative z-10 custom-scrollbar"
+                className={`flex-1 overflow-x-hidden overflow-y-auto transition-all duration-500 relative z-10 custom-scrollbar ${isSidebarOpen ? 'ml-sidebar-open' : 'ml-sidebar-closed'}`}
                 style={{
-                    marginLeft: ml,
                     marginTop: SZ.navbarH,
                     height: `calc(100vh - ${SZ.navbarH}px)`,
                 }}
             >
-                <div className="p-8 lg:p-12 max-w-[1600px] mx-auto">
+                <div className="p-4 sm:p-8 lg:p-12 max-w-[1600px] mx-auto">
 
                     {/* Header Section */}
                     <div className="mb-12 animate-fade-in">
@@ -256,12 +326,25 @@ export default function ResourceInventory() {
                            </h1>
                            
                            {!isCivilian && activeTab === 'supplies' && (
-                                <button
-                                    onClick={() => setIsSpaceModalOpen(true)}
-                                    className="px-10 py-5 bg-[#00FFCC] text-black font-outfit font-black uppercase tracking-widest hover:brightness-110 transition-all flex items-center gap-4 shadow-[0_0_40px_rgba(0,255,204,0.15)]"
-                                >
-                                    <Plus className="w-6 h-6" /> Add Stock
-                                </button>
+                                <div className="flex items-center gap-4 flex-wrap">
+                                    {user?.role === 'admin' && (
+                                        <button
+                                            onClick={() => {
+                                                setSelectedResourceForModal(null);
+                                                setIsAllocateModalOpen(true);
+                                            }}
+                                            className="px-8 py-5 bg-blue-600 hover:bg-blue-500 text-white font-outfit font-black uppercase tracking-widest transition-all flex items-center gap-3 shadow-[0_0_30px_rgba(59,130,246,0.3)]"
+                                        >
+                                            <Package className="w-5 h-5" /> ALLOCATE RESOURCE
+                                        </button>
+                                    )}
+                                    <button
+                                        onClick={() => setIsSpaceModalOpen(true)}
+                                        className="px-8 py-5 bg-[#00FFCC] text-black font-outfit font-black uppercase tracking-widest hover:brightness-110 transition-all flex items-center gap-4 shadow-[0_0_40px_rgba(0,255,204,0.15)]"
+                                    >
+                                        <Plus className="w-6 h-6" /> Add Stock
+                                    </button>
+                                </div>
                             )}
                         </div>
                     </div>
@@ -343,15 +426,29 @@ export default function ResourceInventory() {
                                                         </div>
                                                     </td>
                                                     <td className="px-8 py-8 text-right">
-                                                        {item.quantity > 500 ? (
-                                                            <span className="inline-flex items-center gap-3 px-4 py-2 bg-blue-500/10 border border-blue-500/20 text-blue-400 font-mono text-[9px] font-bold tracking-[0.2em] uppercase">
-                                                                <div className="w-1 h-1 bg-blue-500 rounded-full animate-pulse" /> Adequate
-                                                            </span>
-                                                        ) : (
-                                                            <span className="inline-flex items-center gap-3 px-4 py-2 bg-red-500/10 border border-red-500/20 text-red-400 font-mono text-[9px] font-bold tracking-[0.2em] uppercase">
-                                                                <AlertCircle className="w-3.5 h-3.5" /> Low Stock
-                                                            </span>
-                                                        )}
+                                                        <div className="flex items-center justify-end gap-3">
+                                                            {item.quantity > 0 ? (
+                                                                <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-500/10 border border-blue-500/20 text-blue-400 font-mono text-[9px] font-bold tracking-[0.2em] uppercase">
+                                                                    <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse" /> {item.quantity} Avail
+                                                                </span>
+                                                            ) : (
+                                                                <span className="inline-flex items-center gap-2 px-3 py-1.5 bg-red-500/10 border border-red-500/20 text-red-400 font-mono text-[9px] font-bold tracking-[0.2em] uppercase">
+                                                                    <AlertCircle className="w-3.5 h-3.5" /> Depleted
+                                                                </span>
+                                                            )}
+                                                            {user?.role === 'admin' && item.quantity > 0 && (
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        setSelectedResourceForModal(item.raw || item);
+                                                                        setIsAllocateModalOpen(true);
+                                                                    }}
+                                                                    className="px-3 py-1.5 bg-[#00FFCC]/10 hover:bg-[#00FFCC]/20 text-[#00FFCC] border border-[#00FFCC]/40 font-mono text-[9px] font-bold tracking-widest uppercase transition-all"
+                                                                >
+                                                                    + ALLOCATE
+                                                                </button>
+                                                            )}
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             )) : (
@@ -366,38 +463,94 @@ export default function ResourceInventory() {
                                 </div>
                             </div>
 
-                            {/* Right Panel: Recent Dispatches */}
+                            {/* Right Panel: Recent Dispatches & Live Allocations */}
                             <div className="col-span-12 lg:col-span-4">
-                                <div className="bg-white/5 border border-white/5 backdrop-blur-3xl p-10 h-full">
-                                    <div className="flex items-center gap-3 mb-10">
-                                        <div className="w-2 h-2 bg-[#00FFCC] rounded-full animate-pulse shadow-[0_0_10px_#00FFCC]" />
-                                        <h3 className="font-outfit font-black text-2xl tracking-tighter text-white uppercase">Live Dispatches</h3>
+                                <div className="bg-white/5 border border-white/5 backdrop-blur-3xl p-8 h-full">
+                                    <div className="flex items-center justify-between gap-3 mb-6">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-2 h-2 bg-[#00FFCC] rounded-full animate-pulse shadow-[0_0_10px_#00FFCC]" />
+                                            <h3 className="font-outfit font-black text-xl tracking-tighter text-white uppercase">Live Dispatches</h3>
+                                        </div>
+                                        {/* Filter pills */}
+                                        <div className="flex gap-1.5 bg-black/40 p-1 border border-white/10">
+                                            {['all', 'active', 'released'].map(f => (
+                                                <button
+                                                    key={f}
+                                                    onClick={() => setAllocationFilter(f)}
+                                                    className={`px-2 py-0.5 font-mono text-[8px] uppercase tracking-wider transition-all ${
+                                                        allocationFilter === f ? 'bg-[#00FFCC] text-black font-bold' : 'text-white/40 hover:text-white'
+                                                    }`}
+                                                >
+                                                    {f}
+                                                </button>
+                                            ))}
+                                        </div>
                                     </div>
 
-                                    <div className="space-y-8">
-                                        {dispatches.map(dispatch => (
-                                            <div key={dispatch.id} className="relative pl-10 border-l border-white/5 last:border-transparent">
-                                                <div className="absolute left-[-4px] top-1 w-2 h-2 rounded-full border border-red-500/40 bg-red-600/20 shadow-[0_0_8px_rgba(239,57,53,0.4)]" />
-                                                <div className="bg-white/[0.02] border border-white/5 hover:border-red-500/30 transition-all p-6 space-y-4">
-                                                    <div className="flex justify-between items-start">
-                                                        <span className="font-outfit font-black text-lg text-white uppercase tracking-tight leading-none">{dispatch.item}</span>
-                                                        <span className="font-mono text-xs font-black text-red-500 tracking-wider">
-                                                            x{dispatch.qty}
-                                                        </span>
+                                    {loadingAllocations ? (
+                                        <div className="p-8 text-center text-white/30 font-mono text-xs flex items-center justify-center gap-2">
+                                            <Loader2 className="w-4 h-4 animate-spin text-[#00FFCC]" />
+                                            SYNCING DISPATCHES...
+                                        </div>
+                                    ) : allocations.length === 0 ? (
+                                        <div className="p-8 text-center text-white/20 font-mono text-xs uppercase tracking-widest">
+                                            No {allocationFilter !== 'all' ? allocationFilter : ''} dispatches recorded
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-4 max-h-[600px] overflow-y-auto custom-scrollbar pr-1">
+                                            {allocations.map(dispatch => {
+                                                const isReleased = dispatch.status === 'Released' || dispatch.released_at !== null;
+                                                const isReleasing = releasingAllocationId === dispatch.allocation_id;
+
+                                                return (
+                                                    <div key={dispatch.allocation_id} className="relative pl-6 border-l border-white/10 last:border-transparent">
+                                                        <div className={`absolute left-[-5px] top-1.5 w-2 h-2 rounded-full ${
+                                                            isReleased ? 'bg-gray-600 border border-gray-500' : 'bg-[#00FFCC] border border-[#00FFCC]/60 shadow-[0_0_8px_#00FFCC]'
+                                                        }`} />
+                                                        <div className="bg-white/[0.02] border border-white/5 hover:border-[#00FFCC]/30 transition-all p-5 space-y-3">
+                                                            <div className="flex justify-between items-start gap-2">
+                                                                <span className="font-outfit font-black text-base text-white uppercase tracking-tight leading-none">
+                                                                    {dispatch.resource_type}
+                                                                </span>
+                                                                <span className="font-mono text-xs font-black text-[#00FFCC] tracking-wider">
+                                                                    x{dispatch.quantity_allocated}
+                                                                </span>
+                                                            </div>
+                                                            <div className="space-y-1">
+                                                                <div className="flex items-center gap-2 text-[10px] font-mono text-white/60 uppercase tracking-widest truncate">
+                                                                    <Globe className="w-3 h-3 text-blue-400 flex-shrink-0" /> 
+                                                                    TO: {dispatch.incident_display_id} // {dispatch.incident_title}
+                                                                </div>
+                                                                <div className="flex items-center gap-2 text-[9px] font-mono text-white/40 uppercase tracking-wider truncate">
+                                                                    <MapPin className="w-3 h-3 text-teal-400 flex-shrink-0" /> 
+                                                                    FROM: {dispatch.center_name}
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex items-center justify-between text-[8px] font-mono uppercase tracking-[0.2em] font-bold pt-3 border-t border-white/[0.04]">
+                                                                <span className="text-white/30 flex items-center gap-1.5">
+                                                                    <Clock className="w-3 h-3" /> 
+                                                                    {dispatch.allocated_at ? new Date(dispatch.allocated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                                                                </span>
+                                                                <span className={isReleased ? "text-gray-500" : "text-[#00FFCC]"}>
+                                                                    {isReleased ? "Released" : "Active"}
+                                                                </span>
+                                                            </div>
+                                                            {user?.role === 'admin' && !isReleased && (
+                                                                <button
+                                                                    onClick={() => handleReleaseDispatch(dispatch.allocation_id, dispatch.resource_type, dispatch.quantity_allocated)}
+                                                                    disabled={isReleasing}
+                                                                    className="w-full mt-2 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px] font-mono font-bold tracking-widest uppercase flex items-center justify-center gap-1.5 transition-all disabled:opacity-50"
+                                                                >
+                                                                    {isReleasing ? <Loader2 className="w-3 h-3 animate-spin" /> : <RotateCcw className="w-3 h-3" />}
+                                                                    Release Stock
+                                                                </button>
+                                                            )}
+                                                        </div>
                                                     </div>
-                                                    <div className="flex items-center gap-3 text-[10px] font-mono text-white/40 uppercase tracking-widest">
-                                                        <Globe className="w-3.5 h-3.5 text-blue-400" /> TO: {dispatch.to}
-                                                    </div>
-                                                    <div className="flex items-center justify-between text-[8px] font-mono uppercase tracking-[0.3em] font-bold mt-4 pt-4 border-t border-white/[0.02]">
-                                                        <span className="text-white/20 flex items-center gap-2"><Clock className="w-3.5 h-3.5" /> {dispatch.time}</span>
-                                                        <span className={dispatch.status === 'In Transit' ? "text-blue-400" : "text-white/10"}>
-                                                            {dispatch.status}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -719,6 +872,19 @@ export default function ResourceInventory() {
                     </div>
                 </div>
             )}
+
+            <AllocateResourceModal
+                isOpen={isAllocateModalOpen}
+                onClose={() => {
+                    setIsAllocateModalOpen(false);
+                    setSelectedResourceForModal(null);
+                }}
+                preselectedResource={selectedResourceForModal}
+                onAllocated={() => {
+                    loadResources();
+                    loadAllocations();
+                }}
+            />
 
             <ToastContainer toasts={toasts} />
             

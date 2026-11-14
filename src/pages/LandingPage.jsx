@@ -22,7 +22,9 @@ import {
   User,
   ChevronDown,
   Settings,
-  LogOut
+  LogOut,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
@@ -37,7 +39,7 @@ import { useDashboard } from '../context/DashboardContext';
 const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
 const LandingPage = () => {
-  const { user, logout } = useDashboard();
+  const { user, logout, theme, toggleTheme } = useDashboard();
   const userName = user?.name || null;
   const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
@@ -150,7 +152,20 @@ const LandingPage = () => {
                  <div className="w-1 h-12 bg-red-500 scale-y-0 group-hover:scale-y-100 transition-transform origin-top" />
                  REPORT EMERGENCY
                </Link>
-                {userName ? (
+                <button
+              onClick={toggleTheme}
+              title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+              className="w-10 h-10 border border-white/10 flex items-center justify-center bg-white/5 hover:border-amber-400/40 hover:bg-amber-400/5 transition-all text-white/50 hover:text-white"
+              aria-label="Toggle Theme"
+            >
+              {theme === 'light' ? (
+                <Moon className="w-4 h-4 text-blue-400" />
+              ) : (
+                <Sun className="w-4 h-4 text-amber-400" />
+              )}
+            </button>
+
+            {userName ? (
                   <Link to={user.role === 'admin' ? "/dashboard" : "/alerts"} onClick={() => setMobileMenuOpen(false)} className="text-3xl font-outfit font-black uppercase tracking-tighter text-blue-400 flex items-center gap-6 group">
                     <div className="w-12 h-1 bg-blue-500 scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
                     <div className="flex flex-col items-start gap-1">
@@ -220,6 +235,19 @@ const LandingPage = () => {
             </div>
             <div className="h-4 w-[1px] bg-white/10 mx-2" />
             <Link to="/report" className="text-red-500 hover:text-red-400 transition-colors uppercase">REPORT EMERGENCY</Link>
+            <button
+              onClick={toggleTheme}
+              title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+              className="w-10 h-10 border border-white/10 flex items-center justify-center bg-white/5 hover:border-amber-400/40 hover:bg-amber-400/5 transition-all text-white/50 hover:text-white"
+              aria-label="Toggle Theme"
+            >
+              {theme === 'light' ? (
+                <Moon className="w-4 h-4 text-blue-400" />
+              ) : (
+                <Sun className="w-4 h-4 text-amber-400" />
+              )}
+            </button>
+
             {userName ? (
               <div className="relative z-[100]" ref={userRef}>
                 <button 

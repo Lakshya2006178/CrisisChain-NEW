@@ -63,6 +63,7 @@ function AppContent() {
       <Routes>
         <Route path="/login" element={<GuestRoute><LoginPage /></GuestRoute>} />
         <Route path="/admin" element={<GuestRoute><AdminLogin /></GuestRoute>} />
+        <Route path="/admin-login" element={<Navigate to="/admin" replace />} />
         <Route path="/register" element={<GuestRoute><SignUpPage /></GuestRoute>} />
         <Route path="/" element={<LandingPage />} />
         <Route path="/dashboard" element={<AdminProtectedRoute><DashboardMain /></AdminProtectedRoute>} />

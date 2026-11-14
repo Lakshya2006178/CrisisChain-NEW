@@ -7,6 +7,36 @@ const DashboardContext = createContext();
 
 export function DashboardProvider({ children }) {
     // --- STATE INITIALIZATION ---
+    const [theme, setTheme] = useState(() => {
+        try {
+            return localStorage.getItem('crisischain_theme') || 'dark';
+        } catch {
+            return 'dark';
+        }
+    });
+
+    useEffect(() => {
+        try {
+            const root = document.documentElement;
+            if (theme === 'light') {
+                root.classList.add('light');
+                root.classList.remove('dark');
+                root.setAttribute('data-theme', 'light');
+            } else {
+                root.classList.add('dark');
+                root.classList.remove('light');
+                root.setAttribute('data-theme', 'dark');
+            }
+            localStorage.setItem('crisischain_theme', theme);
+        } catch (e) {
+            console.error('Failed to update theme:', e);
+        }
+    }, [theme]);
+
+    const toggleTheme = () => {
+        setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
+    };
+
     const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')) || null);
     const [userLocation, setUserLocation] = useState(
         JSON.parse(localStorage.getItem('userLocation')) || null
@@ -34,6 +64,8 @@ export function DashboardProvider({ children }) {
     const [alerts, setAlerts] = useState([]);
     const [resources, setResources] = useState([]);
     const [stats, setStats] = useState({ total: 0, active: 0, resolved: 0, avgResponseTime: 0 });
+    const [notifications, setNotifications] = useState([]);
+    const [unreadNotifCount, setUnreadNotifCount] = useState(0);
     const [actions, setActions] = useState([
         { id: 'ACT-001', title: 'Evacuation Order: Sector 7', priority: 'High', source: 'Cortex_AI', time: '10m ago' },
         { id: 'ACT-002', title: 'Medical Resupply: City Hospital', priority: 'Medium', source: 'Hospital_Alpha', time: '25m ago' }
@@ -96,8 +128,57 @@ export function DashboardProvider({ children }) {
         }
     };
 
+    const fetchNotificationsList = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+            const [notifRes, countRes] = await Promise.all([
+                api.fetchNotifications(),
+                api.fetchUnreadNotificationCount()
+            ]);
+            setNotifications(Array.isArray(notifRes.data) ? notifRes.data : []);
+            setUnreadNotifCount(countRes.data?.unread_count || 0);
+        } catch {
+            // Silently handle if unauthenticated
+        }
+    };
+
+    const markNotificationRead = async (id) => {
+        try {
+            await api.markNotificationAsRead(id);
+            setNotifications(prev => prev.map(n => (n.id === id || n.notification_id === id) ? { ...n, is_read: true } : n));
+            setUnreadNotifCount(prev => Math.max(0, prev - 1));
+        } catch (err) {
+            console.error('Failed to mark notification as read:', err);
+        }
+    };
+
+    const markAllNotificationsRead = async () => {
+        try {
+            await api.markAllNotificationsAsRead();
+            setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+            setUnreadNotifCount(0);
+            addToast('All notifications marked as read', 'success');
+        } catch (err) {
+            console.error('Failed to mark all notifications as read:', err);
+        }
+    };
+
+    const deleteNotificationItem = async (id) => {
+        try {
+            await api.deleteNotification(id);
+            const target = notifications.find(n => n.id === id || n.notification_id === id);
+            setNotifications(prev => prev.filter(n => n.id !== id && n.notification_id !== id));
+            if (target && !target.is_read) {
+                setUnreadNotifCount(prev => Math.max(0, prev - 1));
+            }
+        } catch (err) {
+            console.error('Failed to delete notification:', err);
+        }
+    };
+
     const refreshData = async () => {
-        await Promise.all([fetchLiveAlerts(), fetchStats(), fetchResources()]);
+        await Promise.all([fetchLiveAlerts(), fetchStats(), fetchResources(), fetchNotificationsList()]);
     };
 
     const advanceWorkflow = () => {
@@ -108,38 +189,33 @@ export function DashboardProvider({ children }) {
         if (user) {
             refreshData();
             captureLocation();
+            const interval = setInterval(fetchNotificationsList, 20000);
+            return () => clearInterval(interval);
         }
     }, [user]);
 
-    const login = async (formData, isAdmin = false) => {
-        try {
-            // First attempt backend login
-            const { data } = await api.login(formData);
-            const userData = data.user;
-            localStorage.setItem('user', JSON.stringify(userData));
-            localStorage.setItem('token', data.token);
-            setUser(userData);
-            addToast('Authenticated via Backend', 'success');
-            return userData;
-        } catch (error) {
-            // Fallback for demo admin
-            const ADMIN_EMAIL = 'admin@crisischain.com';
-            const VALID_PASSWORDS = ['admin123', 'admin@123', 'Admin@1234'];
-            if ((formData.email === ADMIN_EMAIL || formData.name === ADMIN_EMAIL) && VALID_PASSWORDS.includes(formData.password)) {
-                 const adminUser = { id: 'admin-001', name: 'Admin', email: ADMIN_EMAIL, role: 'admin' };
-                 setUser(adminUser);
-                 localStorage.setItem('user', JSON.stringify(adminUser));
-                 addToast('Authenticated via Safe Mode', 'success');
-                 return adminUser;
-            }
-            throw error;
-        }
+    const login = async (formData) => {
+        const { data } = await api.login(formData);
+        const userData = data.user;
+        localStorage.setItem('user', JSON.stringify(userData));
+        localStorage.setItem('token', data.token);
+        setUser(userData);
+        addToast('Authenticated via Backend', 'success');
+        return userData;
     };
 
     const signup = async (formData) => {
         const { data } = await api.register(formData);
-        setUser(data.user);
-        return data.user;
+        const userData = data.user;
+        if (data.token) {
+            localStorage.setItem('token', data.token);
+        }
+        if (userData) {
+            localStorage.setItem('user', JSON.stringify(userData));
+            setUser(userData);
+        }
+        addToast('Account Created Successfully', 'success');
+        return userData;
     };
 
     const addAlert = async (alertData) => {
@@ -154,6 +230,8 @@ export function DashboardProvider({ children }) {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         setUser(null);
+        setNotifications([]);
+        setUnreadNotifCount(0);
     };
 
     const toggleSidebar = () => setIsSidebarOpen(prev => !prev);
@@ -173,7 +251,9 @@ export function DashboardProvider({ children }) {
 
     return (
         <DashboardContext.Provider value={{
+            theme, setTheme, toggleTheme,
             user, alerts, actions, messages, resources, stats, workflowId, toasts,
+            notifications, unreadNotifCount, fetchNotificationsList, markNotificationRead, markAllNotificationsRead, deleteNotificationItem,
             isSidebarOpen, isMobileMenuOpen, toggleSidebar, openSidebar, closeSidebar, login, signup, logout, addAlert,
             getIcon, searchQuery, setSearchQuery, addToast, refreshData,
             userLocation, captureLocation,

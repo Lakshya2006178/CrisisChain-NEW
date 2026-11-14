@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useDashboard } from '../context/DashboardContext';
+import * as api from '../api/index.js';
 import Sidebar from '../components/Sidebar';
 import TopNavbar from '../components/TopNavbar';
 import { SZ } from '../constants';
 import {
     BedDouble, Ambulance, Package, Users,
-    Plus, Trash2, Search, Clock, MapPin
+    Plus, Trash2, Search, Clock, MapPin, Edit2, RefreshCw
 } from 'lucide-react';
 import { Badge, CrudModal, STATUS_COLOR } from '../components/CrudModal';
 
@@ -45,27 +46,112 @@ const TABS = [
 ];
 
 export default function HospitalResources() {
-    const { isSidebarOpen } = useDashboard();
+    const { isSidebarOpen, addToast } = useDashboard();
     const ml = isSidebarOpen ? SZ.sidebarOpen : SZ.sidebarClosed;
     const [activeTab, setActiveTab] = useState('beds');
     const [search, setSearch] = useState('');
+    const [isSyncing, setIsSyncing] = useState(false);
+    const [editingItem, setEditingItem] = useState(null);
     const [data, setData] = useState(() => {
         try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || DEFAULT_DATA; }
         catch { return DEFAULT_DATA; }
     });
     const [modal, setModal] = useState(null);
 
-    useEffect(() => { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }, [data]);
+    const loadHospitalData = async () => {
+        try {
+            setIsSyncing(true);
+            const { data: dbData } = await api.fetchHospitalResources();
+            if (dbData && (dbData.beds || dbData.ambulances || dbData.kits || dbData.staff)) {
+                const merged = {
+                    beds: Array.isArray(dbData.beds) ? dbData.beds : DEFAULT_DATA.beds,
+                    ambulances: Array.isArray(dbData.ambulances) ? dbData.ambulances : DEFAULT_DATA.ambulances,
+                    kits: Array.isArray(dbData.kits) ? dbData.kits : DEFAULT_DATA.kits,
+                    staff: Array.isArray(dbData.staff) ? dbData.staff : DEFAULT_DATA.staff
+                };
+                setData(merged);
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+            }
+        } catch (err) {
+            console.warn('Backend hospital resources unavailable, using cached storage:', err.message);
+        } finally {
+            setIsSyncing(false);
+        }
+    };
 
-    const addItem = (tab, item) => {
+    useEffect(() => {
+        loadHospitalData();
+    }, []);
+
+    const openAddModal = (tab) => {
+        setEditingItem(null);
+        setModal(tab);
+    };
+
+    const openEditModal = (tab, item) => {
+        setEditingItem({ tab, item });
+        setModal(tab);
+    };
+
+    const updateItem = async (tab, updatedItem) => {
+        const parsed = { ...updatedItem };
+        if (parsed.total !== undefined && parsed.total !== '') parsed.total = Number(parsed.total);
+        if (parsed.available !== undefined && parsed.available !== '') parsed.available = Number(parsed.available);
+        if (parsed.qty !== undefined && parsed.qty !== '') parsed.qty = Number(parsed.qty);
+
+        const nextList = data[tab].map(item => String(item.id) === String(parsed.id) ? parsed : item);
+        const nextData = { ...data, [tab]: nextList };
+        setData(nextData);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(nextData));
+        setModal(null);
+        setEditingItem(null);
+
+        try {
+            await api.updateHospitalItem(tab, parsed.id, parsed);
+            if (addToast) addToast(`Updated ${tab.slice(0, -1)}: ${parsed.ward || parsed.unit || parsed.name} successfully`, 'success');
+        } catch (err) {
+            console.warn('Backend single item update failed, attempting full sync:', err.message);
+            try {
+                await api.updateHospitalResources(nextData);
+                if (addToast) addToast(`Updated ${tab.slice(0, -1)} successfully`, 'success');
+            } catch (syncErr) {
+                if (addToast) addToast('Saved to local cache. Backend sync error.', 'warning');
+            }
+        }
+    };
+
+    const addItem = async (tab, item) => {
         const parsed = { ...item, id: Date.now() };
         if (item.total !== undefined && item.total !== '') parsed.total = Number(item.total);
         if (item.available !== undefined && item.available !== '') parsed.available = Number(item.available);
         if (item.qty !== undefined && item.qty !== '') parsed.qty = Number(item.qty);
-        setData(prev => ({ ...prev, [tab]: [...prev[tab], parsed] }));
+
+        const nextData = { ...data, [tab]: [...data[tab], parsed] };
+        setData(nextData);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(nextData));
         setModal(null);
+        setEditingItem(null);
+
+        try {
+            await api.updateHospitalResources(nextData);
+            if (addToast) addToast(`Added new ${tab.slice(0, -1)} successfully`, 'success');
+        } catch (err) {
+            if (addToast) addToast('Saved to local cache', 'info');
+        }
     };
-    const removeItem = (tab, id) => setData(prev => ({ ...prev, [tab]: prev[tab].filter(i => i.id !== id) }));
+
+    const removeItem = async (tab, id) => {
+        const nextData = { ...data, [tab]: data[tab].filter(i => i.id !== id) };
+        setData(nextData);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(nextData));
+
+        try {
+            await api.updateHospitalResources(nextData);
+            if (addToast) addToast('Resource removed successfully', 'info');
+        } catch (err) {
+            if (addToast) addToast('Removed from local cache', 'info');
+        }
+    };
 
     const MODAL_FIELDS = {
         beds: [
@@ -113,9 +199,9 @@ export default function HospitalResources() {
         <div className="flex h-screen w-full overflow-hidden bg-[#08080A] text-[#E5E5E7] font-inter">
             <Sidebar />
             <TopNavbar />
-            <main className="flex-1 overflow-x-hidden overflow-y-auto relative z-10"
-                style={{ marginLeft: ml, marginTop: SZ.navbarH, height: `calc(100vh - ${SZ.navbarH}px)` }}>
-                <div className="p-8 lg:p-12 max-w-[1400px] mx-auto">
+            <main className={`flex-1 overflow-x-hidden overflow-y-auto relative z-10 ${isSidebarOpen ? 'ml-sidebar-open' : 'ml-sidebar-closed'}`}
+                style={{ marginTop: SZ.navbarH, height: `calc(100vh - ${SZ.navbarH}px)` }}>
+                <div className="p-4 sm:p-8 lg:p-12 max-w-[1400px] mx-auto">
 
                     {/* Header */}
                     <div className="mb-10">
@@ -161,7 +247,10 @@ export default function HospitalResources() {
                                 <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search..."
                                     className="w-full bg-white/5 border border-white/5 pl-10 pr-4 py-3 font-mono text-xs text-white focus:outline-none focus:border-[#00FFCC]/30 uppercase placeholder:text-white/10" />
                             </div>
-                            <button onClick={() => setModal(activeTab)}
+                            <button onClick={loadHospitalData} disabled={isSyncing} className="px-4 py-3 bg-white/5 border border-white/10 text-white/40 hover:text-white hover:border-white/20 transition-all flex items-center justify-center" title="Sync with Database">
+                                <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin text-[#00FFCC]' : ''}`} />
+                            </button>
+                            <button onClick={() => openAddModal(activeTab)}
                                 className="flex items-center gap-2 px-6 py-3 bg-[#00FFCC] text-black font-outfit font-black text-xs uppercase tracking-widest hover:brightness-110">
                                 <Plus className="w-4 h-4" /> Add
                             </button>
@@ -175,8 +264,11 @@ export default function HospitalResources() {
                                 const pct = Math.round(((b.total - b.available) / b.total) * 100);
                                 const color = STATUS_COLOR[b.status] || '#00FFCC';
                                 return (
-                                    <div key={b.id} className="bg-white/5 border border-white/5 p-6 relative hover:border-white/10 transition-all group">
-                                        <button onClick={() => { if (window.confirm('Remove this bed record?')) removeItem('beds', b.id); }} className="absolute top-4 right-4 text-white/10 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
+                                    <div key={b.id} onClick={() => openEditModal('beds', b)} className="bg-white/5 border border-white/5 p-6 relative hover:border-[#00FFCC]/40 hover:bg-white/[0.08] transition-all group cursor-pointer">
+                                        <div className="absolute top-4 right-4 flex items-center gap-1">
+                                            <button onClick={(e) => { e.stopPropagation(); openEditModal('beds', b); }} className="p-1.5 text-white/20 hover:text-[#00FFCC] transition-colors" title="Edit Ward"><Edit2 className="w-3.5 h-3.5" /></button>
+                                            <button onClick={(e) => { e.stopPropagation(); if (window.confirm('Remove this bed record?')) removeItem('beds', b.id); }} className="p-1.5 text-white/20 hover:text-red-500 transition-colors" title="Delete"><Trash2 className="w-3.5 h-3.5" /></button>
+                                        </div>
                                         <div className="w-12 h-12 border border-white/5 flex items-center justify-center mb-4" style={{ color }}>
                                             <BedDouble className="w-5 h-5" />
                                         </div>
@@ -188,7 +280,12 @@ export default function HospitalResources() {
                                         <div className="w-full h-1 bg-white/5 overflow-hidden mb-3">
                                             <div className="h-full transition-all" style={{ width: `${pct}%`, background: color }} />
                                         </div>
-                                        <Badge label={b.status} />
+                                        <div className="flex items-center justify-between">
+                                            <Badge label={b.status} />
+                                            <span className="text-[8px] font-mono text-white/20 group-hover:text-[#00FFCC]/80 transition-colors uppercase tracking-widest flex items-center gap-1">
+                                                <Edit2 className="w-2.5 h-2.5" /> Edit
+                                            </span>
+                                        </div>
                                     </div>
                                 );
                             })}
@@ -199,8 +296,11 @@ export default function HospitalResources() {
                     {activeTab === 'ambulances' && (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {filtered.ambulances.map(a => (
-                                <div key={a.id} className="bg-white/5 border border-white/5 p-6 hover:border-white/10 transition-all relative group">
-                                    <button onClick={() => { if (window.confirm('Remove this ambulance?')) removeItem('ambulances', a.id); }} className="absolute top-4 right-4 text-white/10 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
+                                <div key={a.id} onClick={() => openEditModal('ambulances', a)} className="bg-white/5 border border-white/5 p-6 hover:border-[#00FFCC]/40 hover:bg-white/[0.08] transition-all relative group cursor-pointer">
+                                    <div className="absolute top-4 right-4 flex items-center gap-1">
+                                        <button onClick={(e) => { e.stopPropagation(); openEditModal('ambulances', a); }} className="p-1.5 text-white/20 hover:text-[#00FFCC] transition-colors" title="Edit Ambulance"><Edit2 className="w-3.5 h-3.5" /></button>
+                                        <button onClick={(e) => { e.stopPropagation(); if (window.confirm('Remove this ambulance?')) removeItem('ambulances', a.id); }} className="p-1.5 text-white/20 hover:text-red-500 transition-colors" title="Delete"><Trash2 className="w-3.5 h-3.5" /></button>
+                                    </div>
                                     <div className="flex items-center gap-4 mb-5">
                                         <div className="w-12 h-12 bg-white/5 border border-white/5 flex items-center justify-center text-[#00FFCC]">
                                             <Ambulance className="w-5 h-5" />
@@ -214,7 +314,12 @@ export default function HospitalResources() {
                                         <span className="text-[9px] font-mono text-white/30 uppercase flex items-center gap-1">
                                             <MapPin className="w-3 h-3 text-[#00FFCC]" />{a.location}
                                         </span>
-                                        <Badge label={a.status} />
+                                        <div className="flex items-center gap-2">
+                                            <Badge label={a.status} />
+                                            <span className="text-[8px] font-mono text-white/20 group-hover:text-[#00FFCC]/80 transition-colors uppercase tracking-widest">
+                                                <Edit2 className="w-2.5 h-2.5 inline" />
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                             ))}
@@ -227,7 +332,7 @@ export default function HospitalResources() {
                             <table className="w-full text-left">
                                 <thead>
                                     <tr className="border-b border-white/5 font-mono text-[9px] text-white/20 uppercase tracking-widest">
-                                        {['Kit Type', 'Quantity', 'Expiry Date', 'Location', ''].map(h => (
+                                        {['Kit Type', 'Quantity', 'Expiry Date', 'Location', 'Actions'].map(h => (
                                             <th key={h} className="px-6 py-5 font-normal">{h}</th>
                                         ))}
                                     </tr>
@@ -238,15 +343,18 @@ export default function HospitalResources() {
                                         return filtered.kits.map(k => {
                                             const expiring = new Date(k.expiry) < threshold;
                                         return (
-                                            <tr key={k.id} className="border-b border-white/[0.03] hover:bg-white/[0.03] transition-all">
-                                                <td className="px-6 py-5 font-outfit font-black text-white uppercase">{k.name}</td>
+                                            <tr key={k.id} onClick={() => openEditModal('kits', k)} className="border-b border-white/[0.03] hover:bg-white/[0.06] transition-all cursor-pointer group">
+                                                <td className="px-6 py-5 font-outfit font-black text-white uppercase group-hover:text-[#00FFCC] transition-colors">{k.name}</td>
                                                 <td className="px-6 py-5 font-outfit font-black text-2xl text-[#00FFCC]">{k.qty}</td>
                                                 <td className="px-6 py-5">
                                                     <span className={`font-mono text-xs ${expiring ? 'text-red-400' : 'text-white/40'}`}>{k.expiry}</span>
                                                     {expiring && <span className="ml-2 text-[8px] font-mono text-red-500 uppercase">⚠ Expiring Soon</span>}
                                                 </td>
                                                 <td className="px-6 py-5 font-mono text-xs text-white/30 uppercase"><MapPin className="w-3 h-3 inline mr-1 text-[#00FFCC]" />{k.location}</td>
-                                                <td className="px-6 py-5"><button onClick={() => { if (window.confirm('Remove this kit?')) removeItem('kits', k.id); }}><Trash2 className="w-4 h-4 text-white/10 hover:text-red-500 transition-colors" /></button></td>
+                                                <td className="px-6 py-5 text-right whitespace-nowrap">
+                                                    <button onClick={(e) => { e.stopPropagation(); openEditModal('kits', k); }} className="mr-3 text-white/20 hover:text-[#00FFCC] transition-colors p-1" title="Edit Kit"><Edit2 className="w-4 h-4 inline" /></button>
+                                                    <button onClick={(e) => { e.stopPropagation(); if (window.confirm('Remove this kit?')) removeItem('kits', k.id); }} className="text-white/20 hover:text-red-500 transition-colors p-1" title="Delete"><Trash2 className="w-4 h-4 inline" /></button>
+                                                </td>
                                             </tr>
                                         );
                                         });
@@ -260,8 +368,11 @@ export default function HospitalResources() {
                     {activeTab === 'staff' && (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {filtered.staff.map(s => (
-                                <div key={s.id} className="bg-white/5 border border-white/5 p-6 hover:border-white/10 transition-all relative group">
-                                    <button onClick={() => { if (window.confirm('Remove this staff member?')) removeItem('staff', s.id); }} className="absolute top-4 right-4 text-white/10 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
+                                <div key={s.id} onClick={() => openEditModal('staff', s)} className="bg-white/5 border border-white/5 p-6 hover:border-[#00FFCC]/40 hover:bg-white/[0.08] transition-all relative group cursor-pointer">
+                                    <div className="absolute top-4 right-4 flex items-center gap-1">
+                                        <button onClick={(e) => { e.stopPropagation(); openEditModal('staff', s); }} className="p-1.5 text-white/20 hover:text-[#00FFCC] transition-colors" title="Edit Staff Member"><Edit2 className="w-3.5 h-3.5" /></button>
+                                        <button onClick={(e) => { e.stopPropagation(); if (window.confirm('Remove this staff member?')) removeItem('staff', s.id); }} className="p-1.5 text-white/20 hover:text-red-500 transition-colors" title="Delete"><Trash2 className="w-3.5 h-3.5" /></button>
+                                    </div>
                                     <div className="flex items-center gap-4 mb-5">
                                         <div className="w-12 h-12 bg-black border border-white/10 flex items-center justify-center font-outfit font-black text-xl text-white">
                                             {s.name.charAt(0)}
@@ -271,9 +382,14 @@ export default function HospitalResources() {
                                             <p className="text-[9px] font-mono text-white/30 uppercase tracking-widest">{s.role}</p>
                                         </div>
                                     </div>
-                                    <p className="text-[9px] font-mono text-white/20 uppercase tracking-widest mb-3">
-                                        <Clock className="w-3 h-3 inline mr-1" />{s.shift} Shift — {s.specialization}
-                                    </p>
+                                    <div className="flex items-center justify-between mb-3">
+                                        <p className="text-[9px] font-mono text-white/20 uppercase tracking-widest">
+                                            <Clock className="w-3 h-3 inline mr-1" />{s.shift} Shift — {s.specialization}
+                                        </p>
+                                        <span className="text-[8px] font-mono text-white/20 group-hover:text-[#00FFCC]/80 transition-colors uppercase tracking-widest">
+                                            <Edit2 className="w-2.5 h-2.5 inline" />
+                                        </span>
+                                    </div>
                                     <Badge label={s.status} />
                                 </div>
                             ))}
@@ -283,8 +399,20 @@ export default function HospitalResources() {
             </main>
 
             {modal && (
-                <CrudModal title={`Add ${modal}`} fields={MODAL_FIELDS[modal]}
-                    onSave={form => addItem(modal, form)} onClose={() => setModal(null)} />
+                <CrudModal
+                    title={editingItem ? `Edit ${editingItem.tab.slice(0, -1)}: ${editingItem.item.ward || editingItem.item.unit || editingItem.item.name}` : `Add ${modal.slice(0, -1)}`}
+                    fields={MODAL_FIELDS[modal]}
+                    initialData={editingItem ? editingItem.item : null}
+                    submitLabel={editingItem ? "Save Changes" : "Add"}
+                    onSave={form => {
+                        if (editingItem) {
+                            updateItem(modal, { ...editingItem.item, ...form });
+                        } else {
+                            addItem(modal, form);
+                        }
+                    }}
+                    onClose={() => { setModal(null); setEditingItem(null); }}
+                />
             )}
         </div>
     );

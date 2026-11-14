@@ -4,7 +4,7 @@ import {
     LayoutDashboard, AlertTriangle, Activity,
     Database, Settings, Shield, PlusSquare,
     Terminal, Lock, Radio, ChevronRight, Zap, LogOut,
-    Truck, Building2, ClipboardList
+    Truck, Building2, ClipboardList, X
 } from 'lucide-react';
 
 import { SZ } from '../constants';
@@ -19,7 +19,7 @@ const ALL_NAV = [
     { id: 'report',             icon: ClipboardList, label: 'Report Incident',      path: '/report',             roles: ['citizen','responder','hospital','admin'] },
     { id: 'org',                icon: Truck,         label: 'Org Management',       path: '/org',                roles: ['responder','admin'] },
     { id: 'hospital-resources', icon: Building2,     label: 'Hospital Resources',   path: '/hospital-resources', roles: ['hospital','admin'] },
-    { id: 'analytics',          icon: Activity,      label: 'Analytics',            path: '/analytics',          roles: ['admin'] },
+    { id: 'analytics',          icon: Activity,      label: 'Analytics',            path: '/analytics',          roles: ['admin', 'responder', 'hospital'] },
     { id: 'dashboard',          icon: LayoutDashboard,label: 'Admin Dashboard',     path: '/dashboard',          roles: ['admin'] },
     { id: 'settings',           icon: Settings,      label: 'Control Settings',     path: '/settings',           roles: ['citizen','responder','hospital','admin'] },
 ];
@@ -51,55 +51,70 @@ export default function Sidebar() {
     };
 
     return (
-        <aside
-            className={`fixed top-0 h-screen flex flex-col z-50 transition-all duration-500 overflow-hidden bg-[#08080A] border-r border-white/5 backdrop-blur-md group/aside will-change-transform ${isSidebarOpen ? 'w-sidebar-open left-0' : 'w-sidebar-closed left-[-100%] lg:left-0'}`}
-        >
-            {/* ── LOGO CLUSTER ── */}
-            <div className="flex items-center flex-shrink-0 relative overflow-hidden group/logo"
-                style={{ height: H_TOP }}>
-                <Link to="/" className={`flex items-center gap-6 px-8 transition-all duration-700 ${!isSidebarOpen && 'justify-center w-full px-0'}`}>
-                    <div className="relative">
-                        <div className="w-12 h-12 bg-white/5 border border-white/10 flex items-center justify-center group-hover/logo:border-[#00FFCC]/60 transition-all duration-500 shadow-[inset_0_0_20px_rgba(0,255,204,0.05)]">
-                            <Shield className="w-6 h-6 text-[#00FFCC] group-hover/logo:scale-110 transition-transform" />
+        <>
+            {/* Mobile Backdrop Overlay */}
+            {isSidebarOpen && (
+                <div 
+                    onClick={() => toggleSidebar()}
+                    className="fixed inset-0 bg-black/75 backdrop-blur-sm z-40 lg:hidden animate-fade-in"
+                    aria-hidden="true"
+                />
+            )}
+            <aside
+                className={`fixed top-0 h-screen flex flex-col z-50 transition-all duration-500 overflow-hidden bg-[#08080A] border-r border-white/5 backdrop-blur-md group/aside will-change-transform ${isSidebarOpen ? 'w-sidebar-open left-0' : 'w-sidebar-closed left-[-100%] lg:left-0'}`}
+            >
+                {/* ── LOGO CLUSTER ── */}
+                <div className="flex items-center flex-shrink-0 relative overflow-hidden group/logo"
+                    style={{ height: H_TOP }}>
+                    <Link to="/" className={`flex items-center gap-6 px-8 transition-all duration-700 ${!isSidebarOpen && 'justify-center w-full px-0'}`}>
+                        <div className="relative">
+                            <div className="w-12 h-12 bg-white/5 border border-white/10 flex items-center justify-center group-hover/logo:border-[#00FFCC]/60 transition-all duration-500 shadow-[inset_0_0_20px_rgba(0,255,204,0.05)]">
+                                <Shield className="w-6 h-6 text-[#00FFCC] group-hover/logo:scale-110 transition-transform" />
+                            </div>
+                            <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-[#00FFCC] shadow-[0_0_10px_#00FFCC] animate-pulse" />
                         </div>
-                        <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-[#00FFCC] shadow-[0_0_10px_#00FFCC] animate-pulse" />
-                    </div>
+                        {isSidebarOpen && (
+                            <div className="flex flex-col gap-0.5 leading-none">
+                                <span className="font-outfit font-black text-2xl tracking-tighter uppercase text-white whitespace-nowrap">CRISISCHAIN</span>
+                                <span className="text-[10px] font-mono font-bold text-blue-500 tracking-[0.5em] opacity-40 uppercase">ADMIN COMMAND SYSTEM</span>
+                            </div>
+                        )}
+                    </Link>
+
+                    {/* Mobile Close Button */}
                     {isSidebarOpen && (
-                        <div className="flex flex-col gap-0.5 leading-none">
-                            <span className="font-outfit font-black text-2xl tracking-tighter uppercase text-white whitespace-nowrap">CRISISCHAIN</span>
-                            <span className="text-[10px] font-mono font-bold text-blue-500 tracking-[0.5em] opacity-40 uppercase">ADMIN COMMAND SYSTEM</span>
-                        </div>
-                    )}
-                </Link>
-
-                {/* Mobile Close Button */}
-                {isSidebarOpen && (
-                    <button
-                        onClick={() => toggleSidebar()}
-                        className="lg:hidden ml-auto mr-8 w-10 h-10 flex items-center justify-center border border-white/10 text-white/40 hover:text-white"
-                    >
-                        <Lock className="w-4 h-4" />
-                    </button>
-                )}
-
-                {/* Visual Blade Accent */}
-                <div className="absolute top-0 right-0 w-[2px] h-full bg-gradient-to-b from-transparent via-[#00FFCC]/20 to-transparent" />
-            </div>
-
-            {/* ── NAVIGATION BLADE ── */}
-            <nav className="flex-1 py-16 px-5 space-y-6">
-                {NAV.map(({ id, icon: Icon, label, path }) => {
-                    const isActive = location.pathname === path;
-                    return (
                         <button
-                            key={id}
-                            onClick={() => navigate(path)}
-                            className={`
-                                group relative flex items-center w-full transition-all duration-700 rounded-sm
-                                ${isSidebarOpen ? 'px-8 py-5' : 'justify-center py-5'}
-                                ${isActive ? 'bg-white/[0.03] shadow-[inset_0_0_30px_rgba(255,255,255,0.02)]' : 'hover:bg-white/[0.01]'}
-                            `}
+                            onClick={() => toggleSidebar()}
+                            className="lg:hidden ml-auto mr-6 w-10 h-10 flex items-center justify-center border border-white/10 text-white/50 hover:text-white hover:bg-white/10 rounded transition-colors"
+                            aria-label="Close Sidebar"
                         >
+                            <X className="w-5 h-5" />
+                        </button>
+                    )}
+
+                    {/* Visual Blade Accent */}
+                    <div className="absolute top-0 right-0 w-[2px] h-full bg-gradient-to-b from-transparent via-[#00FFCC]/20 to-transparent" />
+                </div>
+
+                {/* ── NAVIGATION BLADE ── */}
+                <nav className="flex-1 py-16 px-5 space-y-6">
+                    {NAV.map(({ id, icon: Icon, label, path }) => {
+                        const isActive = location.pathname === path;
+                        return (
+                            <button
+                                key={id}
+                                onClick={() => {
+                                    navigate(path);
+                                    if (window.innerWidth < 1024 && isSidebarOpen) {
+                                        toggleSidebar();
+                                    }
+                                }}
+                                className={`
+                                    group relative flex items-center w-full transition-all duration-700 rounded-sm
+                                    ${isSidebarOpen ? 'px-8 py-5' : 'justify-center py-5'}
+                                    ${isActive ? 'bg-white/[0.03] shadow-[inset_0_0_30px_rgba(255,255,255,0.02)]' : 'hover:bg-white/[0.01]'}
+                                `}
+                            >
                             {/* Linear Status Indicator */}
                             {isActive && (
                                 <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-10 bg-[#00FFCC] blur-[4px] animate-pulse" />
@@ -206,5 +221,6 @@ export default function Sidebar() {
               .animate-width-reveal { animation: width-reveal 1s cubic-bezier(0.23, 1, 0.32, 1) forwards; }
             `}} />
         </aside>
+        </>
     );
 }

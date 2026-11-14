@@ -19,11 +19,25 @@ import {
   Droplets,
   Wind,
   HeartPulse,
-  Info
+  Info,
+  Globe,
+  Navigation,
+  Compass,
+  Crosshair,
+  RefreshCw
 } from 'lucide-react';
+import * as api from '../api/index.js';
 import { useDashboard } from '../context/DashboardContext';
 import { INCIDENT_TYPES, SEVERITIES } from '../lib/incidentTypes';
-import { captureBestEffortLocation, reverseGeocode } from '../lib/geolocation';
+import {
+  getDeviceLocation,
+  checkGeolocationPermission,
+  classifyAccuracy,
+  reverseGeocode,
+  parseCoordinates,
+  getApproximateLocationByIP
+} from '../lib/geolocation';
+import IncidentLocationMap from '../components/IncidentLocationMap';
 
 // Local icon-component lookup for the type picker (INCIDENT_TYPES only stores
 // the string iconName so it can be shared with plain JS/backend code).
@@ -39,10 +53,16 @@ export default function ReportIncident() {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [success, setSuccess] = useState(false);
+  
+  // Geolocation states
   const [locLoading, setLocLoading] = useState(false);
+  const [locStatusMessage, setLocStatusMessage] = useState(null);
+  const [permissionState, setPermissionState] = useState('prompt'); // 'granted', 'prompt', 'denied', 'unsupported'
   const [coords, setCoords] = useState(null);
+  const [locationSource, setLocationSource] = useState(null); // 'device', 'approximate-ip', 'map-pin', 'manual-coords'
+  
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const { addAlert, addToast } = useDashboard();
+  const { addAlert, addToast, user } = useDashboard();
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -51,50 +71,153 @@ export default function ReportIncident() {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
+  // Automatic location detection on mount
+  useEffect(() => {
+    let isMounted = true;
+
+    async function initAutoLocation() {
+      const perm = await checkGeolocationPermission();
+      if (!isMounted) return;
+      setPermissionState(perm);
+
+      // Attempt automatic location detection if permission is granted or promptable
+      if (perm === 'granted' || perm === 'prompt') {
+        fetchDeviceLocation({ isAuto: true });
+      }
+      // If permission is already denied, do NOT repeatedly prompt or show aggressive popups
+    }
+
+    initAutoLocation();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  // Handle manual typing in location field
+  const handleLocationChange = (val) => {
+    set('location', val);
+    const parsed = parseCoordinates(val);
+    if (parsed) {
+      setCoords({ lat: parsed.lat, lng: parsed.lng, accuracy: null });
+      setLocationSource('manual-coords');
+    } else if (coords && !val.includes(coords.lat.toFixed(3))) {
+      // User replaced or cleared coordinates with custom text
+      setCoords(null);
+      setLocationSource(null);
+    }
+  };
 
   const handleFiles = (fl) => {
     const arr = Array.from(fl).slice(0, 5);
     setFiles(prev => [...prev, ...arr].slice(0, 5));
   };
 
-  const fetchGPSLocation = async () => {
+  // High-accuracy device geolocation with controlled retry
+  const fetchDeviceLocation = async ({ isAuto = false } = {}) => {
     setLocLoading(true);
+    setLocStatusMessage('Acquiring high-accuracy position...');
     setErrors(e => ({ ...e, location: undefined }));
 
     try {
-      // Precise GPS first; if that's denied/unavailable/times out, this
-      // transparently falls back to an approximate IP-based location instead
-      // of just failing (previously a single high-accuracy attempt with no
-      // retry and no fallback — the #1 reason "USE GPS" appeared to do
-      // nothing on desktops/VMs without a GPS chip or with Location Services
-      // disabled).
-      const loc = await captureBestEffortLocation();
-      setCoords({ lat: loc.lat, lng: loc.lng });
+      const loc = await getDeviceLocation((msg) => setLocStatusMessage(msg));
+      
+      // If the device's Wi-Fi database reported an anomalous location thousands of miles away from system timezone
+      if (loc.isAnomalous) {
+        addToast(
+          `Wi-Fi database reported anomalous location (${loc.hoursDiff}h timezone difference from system clock). Auto-switching to verified network location...`,
+          'warning'
+        );
+        await fetchApproximateIpLocation();
+        return;
+      }
 
-      const placeName = await reverseGeocode(loc.lat, loc.lng);
-      const coordStr = `${loc.lat.toFixed(6)}, ${loc.lng.toFixed(6)}`;
-      const approxTag = loc.approx ? ' [Approximate — please refine]' : '';
+      const lat = loc.lat;
+      const lng = loc.lng;
+      const accuracy = loc.accuracy;
+
+      setCoords({ lat, lng, accuracy });
+      setLocationSource('device');
+      setPermissionState('granted');
+
+      setLocStatusMessage('Resolving place address...');
+      const placeName = await reverseGeocode(lat, lng);
+      const coordStr = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
       const finalLocString = placeName
-        ? `${placeName} (${coordStr})${approxTag}`
-        : `${coordStr}${approxTag}`;
+        ? `${placeName} (${coordStr})`
+        : coordStr;
 
       set('location', finalLocString);
       setLocLoading(false);
+      setLocStatusMessage(null);
 
-      if (loc.approx) {
-        addToast('Precise GPS unavailable — using an approximate IP-based location. Please refine the address.', 'info');
+      const accData = classifyAccuracy(accuracy);
+      if (accData.isPoor) {
+        addToast(`Device location reading has low accuracy (±${Math.round(accuracy)}m). Please verify or drag pin on map.`, 'warning');
       } else {
-        addToast('GPS Location Verified', 'success');
+        addToast(`Device Location Acquired (±${Math.round(accuracy)}m)`, 'success');
       }
     } catch (err) {
-      // Never overwrite whatever the user already typed with an error
-      // string — that used to pass validation as a "valid address".
       setLocLoading(false);
-      const message = err?.message || 'Unable to retrieve location';
-      addToast(message, 'error');
-      setErrors(e => ({ ...e, location: form.location.trim() ? undefined : message }));
+      setLocStatusMessage(null);
+      if (err.isDenied) {
+        setPermissionState('denied');
+        if (!isAuto) {
+          addToast('Location access was denied in browser permissions.', 'error');
+        }
+      } else if (!isAuto) {
+        addToast(err?.message || 'Unable to retrieve device position.', 'error');
+      }
     }
+  };
+
+  // Explicit approximate IP network location fallback (clearly labeled)
+  const fetchApproximateIpLocation = async () => {
+    setLocLoading(true);
+    setLocStatusMessage('Detecting approximate network location...');
+    setErrors(e => ({ ...e, location: undefined }));
+
+    try {
+      const ipLoc = await getApproximateLocationByIP();
+      const lat = ipLoc.lat;
+      const lng = ipLoc.lng;
+
+      setCoords({ lat, lng, accuracy: ipLoc.accuracy });
+      setLocationSource('approximate-ip');
+
+      const coordStr = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+      const label = ipLoc.label || `${ipLoc.city || 'Regional Hub'}, ${ipLoc.country || ''}`;
+      const finalLocString = `${label} (${coordStr}) [Approximate Network]`;
+
+      set('location', finalLocString);
+      addToast(`Approximate Network Location: ${label}. This reflects your ISP hub; please adjust pin on map if displaced.`, 'info');
+    } catch (err) {
+      addToast('Unable to detect network location. Please select your position on the map.', 'error');
+    } finally {
+      setLocLoading(false);
+      setLocStatusMessage(null);
+    }
+  };
+
+  // User clicked or dragged pin on the interactive map
+  const handleMapLocationSelect = async ({ lat, lng }) => {
+    const cleanLat = Number(lat);
+    const cleanLng = Number(lng);
+    if (isNaN(cleanLat) || isNaN(cleanLng)) return;
+
+    setCoords({ lat: cleanLat, lng: cleanLng, accuracy: 15 }); // Precise manual pin placement
+    setLocationSource('map-pin');
+
+    const coordStr = `${cleanLat.toFixed(6)}, ${cleanLng.toFixed(6)}`;
+    set('location', coordStr);
+
+    const placeName = await reverseGeocode(cleanLat, cleanLng);
+    if (placeName) {
+      set('location', `${placeName} (${coordStr})`);
+    }
+    addToast(`Position pinned on map (${cleanLat.toFixed(4)}, ${cleanLng.toFixed(4)})`, 'info');
   };
 
   const validate = () => {
@@ -114,19 +237,33 @@ export default function ReportIncident() {
     setLoading(true);
     
     try {
-      const isCritical = form.severity === 'critical';
-      const isHigh = form.severity === 'high';
+      // Resolve coordinates: use pinned coords or parse from location text
+      const resolvedCoords = coords || parseCoordinates(form.location);
       
-      const payload = {
-        type: form.disasterType,   // canonical value from INCIDENT_TYPES, e.g. "Fire"
-        location: form.location,
-        severity: form.severity,   // canonical value from SEVERITIES, e.g. "Critical"
-        description: form.description,
-        latitude: coords?.lat ?? null,
-        longitude: coords?.lng ?? null
-      };
+      let payload;
+      if (files.length > 0) {
+        // Build FormData when an image file is attached
+        const formData = new FormData();
+        formData.append('type', form.disasterType);
+        formData.append('location', form.location);
+        formData.append('severity', form.severity);
+        formData.append('description', form.description);
+        if (resolvedCoords?.lat != null) formData.append('latitude', resolvedCoords.lat);
+        if (resolvedCoords?.lng != null) formData.append('longitude', resolvedCoords.lng);
+        formData.append('image', files[0]);
+        payload = formData;
+      } else {
+        payload = {
+          type: form.disasterType,
+          location: form.location,
+          severity: form.severity,
+          description: form.description,
+          latitude: resolvedCoords?.lat ?? null,
+          longitude: resolvedCoords?.lng ?? null
+        };
+      }
       
-      console.log('Submitting emergency report:', payload);
+      console.log('Submitting emergency report payload');
       const res = await addAlert(payload);
       console.log('Report confirmed by backend:', res);
       
@@ -155,7 +292,7 @@ export default function ReportIncident() {
           Report ID: <span className="text-[#00FFCC] font-mono">{reportId}</span>
         </p>
         <div className="flex flex-col sm:flex-row gap-6 justify-center">
-          <button onClick={() => nav('/dashboard')} className="px-10 py-5 bg-[#00FFCC] text-black font-outfit font-black uppercase tracking-widest hover:brightness-110 transition-all">
+          <button onClick={() => nav(user?.role === 'admin' ? '/dashboard' : '/alerts')} className="px-10 py-5 bg-[#00FFCC] text-black font-outfit font-black uppercase tracking-widest hover:brightness-110 transition-all">
             View Updates
           </button>
           <button onClick={() => { setSuccess(false); setForm({ location: '', disasterType: '', severity: '', description: '' }); setFiles([]); setCoords(null); }} className="px-10 py-5 bg-white/5 border border-white/10 text-white font-outfit font-black uppercase tracking-widest hover:bg-white/10 transition-all">
@@ -180,15 +317,15 @@ export default function ReportIncident() {
       </div>
 
       {/* ── TACTICAL NAV ── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-black/40 backdrop-blur-3xl border-b border-white/5 py-6 px-8">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-black/40 backdrop-blur-3xl border-b border-white/5 py-4 sm:py-6 px-4 sm:px-8">
         <div className="max-w-[1400px] mx-auto flex items-center justify-between">
-           <Link to="/" className="flex items-center gap-4 group">
-            <div className="w-10 h-10 bg-white/5 border border-red-500/20 flex items-center justify-center group-hover:border-red-500/40 transition-all">
-              <Shield className="w-5 h-5 text-red-500" />
+           <Link to="/" className="flex items-center gap-3 sm:gap-4 group">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 bg-white/5 border border-red-500/20 flex items-center justify-center group-hover:border-red-500/40 transition-all flex-shrink-0">
+              <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
             </div>
             <div className="flex flex-col leading-none">
-              <span className="font-outfit font-black text-xl tracking-tighter uppercase">CRISISCHAIN</span>
-              <span className="text-[9px] font-mono text-red-400 tracking-[0.4em] opacity-60 uppercase">Emergency Help Portal</span>
+              <span className="font-outfit font-black text-lg sm:text-xl tracking-tighter uppercase">CRISISCHAIN</span>
+              <span className="text-[8px] sm:text-[9px] font-mono text-red-400 tracking-[0.4em] opacity-60 uppercase">Emergency Help Portal</span>
             </div>
           </Link>
           <div className="flex items-center gap-4">
@@ -196,23 +333,23 @@ export default function ReportIncident() {
                 <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
                 <span className="text-[9px] font-mono tracking-widest uppercase font-bold">Priority Line Active</span>
              </div>
-             <button onClick={() => nav('/')} className="px-6 py-2 border border-white/10 hover:bg-white/5 transition-all text-xs font-mono uppercase tracking-widest text-white/40">
+             <button onClick={() => nav('/')} className="px-4 sm:px-6 py-2 border border-white/10 hover:bg-white/5 transition-all text-xs font-mono uppercase tracking-widest text-white/40">
                ← CANCEL
              </button>
           </div>
         </div>
       </nav>
 
-      <main className="relative z-10 pt-32 pb-40 px-8">
+      <main className="relative z-10 pt-24 sm:pt-32 pb-40 px-4 sm:px-8">
         <div className="max-w-[1000px] mx-auto">
           
-          <div className="mb-20 text-center">
+          <div className="mb-12 sm:mb-20 text-center">
              <span className="text-[10px] font-mono text-red-500 tracking-[0.8em] uppercase block mb-6 animate-pulse">Emergency Report Mode</span>
-             <h1 className="font-outfit text-5xl md:text-[80px] font-black leading-[0.85] tracking-tighter uppercase mb-6">
+             <h1 className="font-outfit text-4xl sm:text-5xl md:text-[80px] font-black leading-[0.85] tracking-tighter uppercase mb-6">
                REPORT AN<br />
                <span className="text-white/10 stroke-text outline-white/20">EMERGENCY</span>
              </h1>
-             <p className="text-white/40 text-lg md:text-xl font-light max-w-2xl mx-auto uppercase tracking-wide">
+             <p className="text-white/40 text-base sm:text-lg md:text-xl font-light max-w-2xl mx-auto uppercase tracking-wide">
                Your report will be sent directly to local emergency responders.
              </p>
           </div>
@@ -225,16 +362,121 @@ export default function ReportIncident() {
                 <span className="text-[10px] font-mono text-[#00FFCC] uppercase tracking-widest">01_INCIDENT_LOCATION</span>
                 <div className="h-[1px] flex-1 bg-white/5" />
               </div>
-              <div className="space-y-3">
-                <div className="flex gap-4">
+              <div className="space-y-4">
+                {/* Location Input & Action Controls */}
+                <div className="flex flex-col sm:flex-row gap-3">
                   <div className="relative flex-1 group">
-                    <MapPin className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20 group-focus-within:text-red-500 transition-colors" />
-                    <input className="w-full bg-white/5 border border-white/5 focus:border-red-500/40 px-16 py-6 font-mono text-sm tracking-widest focus:outline-none transition-all placeholder:text-white/10" placeholder="ENTER ADDRESS OR COORDINATES" value={form.location} onChange={e => set('location', e.target.value)} />
+                    <MapPin className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20 group-focus-within:text-red-500 transition-colors" />
+                    <input
+                      className="w-full bg-white/5 border border-white/5 focus:border-red-500/40 px-12 sm:px-16 py-4 sm:py-6 font-mono text-sm tracking-widest focus:outline-none transition-all placeholder:text-white/10"
+                      placeholder="ENTER ADDRESS OR COORDINATES (OR USE DEVICE LOCATION)"
+                      value={form.location}
+                      onChange={e => handleLocationChange(e.target.value)}
+                    />
                   </div>
-                  <button type="button" onClick={fetchGPSLocation} disabled={locLoading} className="px-12 bg-white/5 border border-red-500/20 hover:bg-red-500/10 transition-all font-outfit font-black text-xs uppercase tracking-widest text-red-500">
-                    {locLoading ? 'SEARCHING...' : 'USE GPS'}
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => fetchDeviceLocation({ isAuto: false })}
+                      disabled={locLoading}
+                      title="Acquire high-accuracy device location"
+                      className="flex-1 sm:flex-none py-4 sm:py-0 px-5 sm:px-8 bg-white/5 border border-red-500/30 hover:bg-red-500/10 transition-all font-outfit font-black text-xs uppercase tracking-widest text-red-500 whitespace-nowrap flex items-center justify-center gap-2"
+                    >
+                      <Compass size={14} className={locLoading && locationSource !== 'approximate-ip' ? 'animate-spin' : ''} />
+                      {locLoading ? (locStatusMessage || 'LOCATING...') : 'USE DEVICE GPS'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={fetchApproximateIpLocation}
+                      disabled={locLoading}
+                      title="Fallback to approximate ISP network location"
+                      className="flex-1 sm:flex-none py-4 sm:py-0 px-4 sm:px-6 bg-teal-500/10 border border-teal-500/30 hover:bg-teal-500/20 transition-all font-outfit font-bold text-xs uppercase tracking-widest text-[#00FFCC] whitespace-nowrap flex items-center justify-center gap-1.5"
+                    >
+                      <Globe size={14} />
+                      <span className="hidden md:inline">APPROX</span> IP FALLBACK
+                    </button>
+                  </div>
                 </div>
+
+                {/* REAL-TIME PERMISSION ADVISORY IF BLOCKED */}
+                {permissionState === 'denied' && (
+                  <div className="p-3 bg-white/5 border border-white/10 rounded text-xs font-mono text-gray-300 flex items-center gap-2">
+                    <Info size={14} className="text-teal-400 flex-shrink-0" />
+                    <span>Browser location access is blocked. You can type an address or tap directly on the map below to pinpoint the incident.</span>
+                  </div>
+                )}
+
+                {/* PINNED LOCATION BADGE & SOURCE/ACCURACY METRICS */}
+                {coords && (
+                  <div className="space-y-2">
+                    <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-mono bg-[#0B1220] border border-white/10 px-4 py-2.5 rounded-lg">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <CheckCircle2 size={14} className="text-[#00FFCC]" />
+                        <span className="text-white font-bold">COORDINATES:</span>
+                        <span className="text-[#00FFCC] tracking-wider">{coords.lat.toFixed(6)}, {coords.lng.toFixed(6)}</span>
+                        
+                        {/* Reported accuracy tolerance tag */}
+                        {coords.accuracy != null && (
+                          <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded border ${classifyAccuracy(coords.accuracy).badgeColor}`}>
+                            {classifyAccuracy(coords.accuracy).label}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Explicit location source label */}
+                      <span className="text-[10px] uppercase font-mono font-bold px-2 py-0.5 rounded bg-white/5 border border-white/10 text-gray-300">
+                        SOURCE: {
+                          locationSource === 'device' ? 'DEVICE GEOLOCATION' :
+                          locationSource === 'approximate-ip' ? 'APPROXIMATE NETWORK (IP)' :
+                          locationSource === 'map-pin' ? 'MAP PIN (MANUAL)' :
+                          locationSource === 'manual-coords' ? 'MANUAL COORDS ENTRY' : 'USER SPECIFIED'
+                        }
+                      </span>
+                    </div>
+
+                    {/* POOR ACCURACY WARNING BANNER */}
+                    {coords.accuracy != null && classifyAccuracy(coords.accuracy).isPoor && (
+                      <div className="p-3 bg-amber-500/10 border border-amber-500/40 rounded-lg flex items-start gap-2.5 text-xs font-mono text-amber-300">
+                        <AlertTriangle size={15} className="text-amber-400 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <span className="font-bold uppercase tracking-wider block mb-0.5">LOW POSITIONING ACCURACY (±{Math.round(coords.accuracy)}m)</span>
+                          <span>Your device reported coarse positioning (typical of laptop Wi-Fi triangulation). Please tap or drag the red pin on the map below to confirm your exact location.</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* APPROXIMATE IP DISCLAIMER */}
+                    {locationSource === 'approximate-ip' && (
+                      <div className="p-3 bg-teal-500/10 border border-teal-500/30 rounded-lg flex items-start gap-2.5 text-xs font-mono text-teal-300">
+                        <Globe size={15} className="text-[#00FFCC] flex-shrink-0 mt-0.5" />
+                        <div>
+                          <span className="font-bold uppercase tracking-wider block mb-0.5">APPROXIMATE REGIONAL NETWORK ESTIMATE</span>
+                          <span>These coordinates represent your internet service provider's routing gateway and may be displaced from your actual street address. Please drag the pin on the map to adjust.</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* INTERACTIVE LEAFLET TACTICAL MAP PICKER */}
+                <div className="space-y-2 pt-2">
+                  <div className="flex items-center justify-between text-xs font-mono text-gray-400">
+                    <span className="flex items-center gap-1.5 text-[#00FFCC]">
+                      <MapPin size={13} /> INTERACTIVE TACTICAL PIN MAP
+                    </span>
+                    <span className="text-white/40 text-[10px]">
+                      Tap map or drag pin to choose exact incident spot
+                    </span>
+                  </div>
+
+                  <IncidentLocationMap
+                    coords={coords}
+                    onLocationSelect={handleMapLocationSelect}
+                    defaultCenter={coords ? [coords.lat, coords.lng] : [12.8245, 74.8763]}
+                    height="300px"
+                  />
+                </div>
+
                 {errors.location && <p className="text-[9px] font-mono text-red-500 uppercase tracking-widest ml-1">{errors.location}</p>}
               </div>
             </div>

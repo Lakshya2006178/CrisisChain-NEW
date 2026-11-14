@@ -4,6 +4,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import '../lib/leafletIconFix';
 import { parseAlertLatLng } from '../lib/geo';
+import { useDashboard } from '../context/DashboardContext';
 
 export const createNumberedIcon = (number, color) => {
     return L.divIcon({
@@ -29,12 +30,33 @@ export function MapUpdater({ alerts }) {
     return null;
 }
 
-export default function AlertsMapView({ alerts, center = [12.8719, 74.8422], zoom = 12, onMarkerClick }) {
+export default function AlertsMapView({ alerts, center = [12.8719, 74.8422], zoom = 12, onMarkerClick, theme: themeProp }) {
+    const dashboardContext = useDashboard();
+    const activeTheme = themeProp || dashboardContext?.theme || 'dark';
+    const isLight = activeTheme === 'light';
+
+    // CARTO Basemaps API key and dynamic theme styling
+    const cartoApiKey = import.meta.env.VITE_CARTO_API_KEY;
+    const keyParam = cartoApiKey ? `?key=${cartoApiKey}` : '';
+    const style = isLight ? 'light_all' : 'dark_all';
+    const tileUrl = `https://{s}.basemaps.cartocdn.com/${style}/{z}/{x}/{y}{r}.png${keyParam}`;
+
     return (
-        <MapContainer center={center} zoom={zoom} style={{ height: '100%', width: '100%', backgroundColor: '#0B1220' }}>
+        <MapContainer
+            center={center}
+            zoom={zoom}
+            style={{
+                height: '100%',
+                width: '100%',
+                backgroundColor: isLight ? '#E2E8F0' : '#0B1220'
+            }}
+        >
             <TileLayer
-                url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-                attribution='&copy; <a href="https://carto.com/attributions">CARTO</a>'
+                key={`${style}-${Boolean(cartoApiKey)}`}
+                url={tileUrl}
+                subdomains="abcd"
+                maxZoom={20}
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener noreferrer">CARTO</a>'
             />
             <MapUpdater alerts={alerts} />
             {alerts.map((alert, idx) => {

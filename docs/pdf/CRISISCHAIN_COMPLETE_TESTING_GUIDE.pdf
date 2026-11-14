@@ -1,0 +1,1087 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [7 0 R 9 0 R 11 0 R 13 0 R 15 0 R 17 0 R 19 0 R 21 0 R] /Count 8 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier /Encoding /WinAnsiEncoding >>
+endobj
+6 0 obj
+<< /Length 3824 >>
+stream
+0.08 0.22 0.45 rg
+BT /F2 18 Tf 45 766.89 Td (CrisisChain: Complete End-to-End Testing Guide &) Tj ET
+BT /F2 18 Tf 45 742.89 Td (Manual Execution Protocol) Tj ET
+0.08 0.22 0.45 RG 1.5 w
+45 722.89 m 550.28 722.89 l S
+0.15 0.15 0.15 rg
+BT /F1 9.5 Tf 45 712.89 Td (Document Version: 1.0.0) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 9.5 Tf 45 695.39 Td (Target Environment: Localhost / Pre-Release Staging) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 9.5 Tf 45 677.89 Td (Frontend URL: http://localhost:5173) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 9.5 Tf 45 660.39 Td (Backend API URL: http://localhost:5001/api) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 9.5 Tf 45 642.89 Td (Database: MySQL 8.0+ \(crisischain_db\)) Tj ET
+0.85 0.88 0.90 RG 0.5 w
+45 619.39 m 550.28 619.39 l S
+0.12 0.35 0.65 rg
+BT /F2 14 Tf 45 595.39 Td (1. Prerequisites & Environment Setup) Tj ET
+0.12 0.35 0.65 RG 0.8 w
+45 580.39 m 550.28 580.39 l S
+0.18 0.24 0.32 rg
+BT /F2 11 Tf 45 558.39 Td (1.1 Software Requirements) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 543.39 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 543.39 Td (Node.js: v18.0.0 to v24.x \(Tested with Node v24.19.0\)) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 527.89 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 527.89 Td (npm: v9.0.0+) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 512.39 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 512.39 Td (MySQL Server: 8.0.16 or higher \(Supports `CHECK` constraints, JSON, and transactions\)) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 496.89 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 496.89 Td (Web Browser: Google Chrome / Microsoft Edge / Mozilla Firefox with Developer Tools enabled) Tj ET
+0.18 0.24 0.32 rg
+BT /F2 11 Tf 45 469.39 Td (1.2 System Ports) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 454.39 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 454.39 Td (Port 5001: CrisisChain Express Backend Server) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 438.89 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 438.89 Td (Port 5173: CrisisChain Vite Frontend Development Server) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 423.39 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 423.39 Td (Port 3306: MySQL Database Service) Tj ET
+0.18 0.24 0.32 rg
+BT /F2 11 Tf 45 395.89 Td (1.3 Environment Configuration) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 9.5 Tf 45 380.89 Td (Ensure server/.env exists and contains:) Tj ET
+0.96 0.97 0.98 rg
+0.85 0.88 0.90 RG 0.5 w
+45 283.89 505.28 85.5 re B
+0.12 0.16 0.22 rg
+BT /F3 8 Tf 53 355.39 Td (PORT=5001) Tj ET
+BT /F3 8 Tf 53 344.89 Td (DB_HOST=localhost) Tj ET
+BT /F3 8 Tf 53 334.39 Td (DB_USER=root) Tj ET
+BT /F3 8 Tf 53 323.89 Td (DB_PASSWORD=your_mysql_password) Tj ET
+BT /F3 8 Tf 53 313.39 Td (DB_NAME=crisischain_db) Tj ET
+BT /F3 8 Tf 53 302.89 Td (JWT_SECRET=your_jwt_secret_key) Tj ET
+BT /F3 8 Tf 53 292.39 Td (CORS_ORIGIN=http://localhost:5173) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 9.5 Tf 45 271.89 Td (*\(Never commit .env with actual passwords to public Git repositories\).*) Tj ET
+0.85 0.88 0.90 RG 0.5 w
+45 248.39 m 550.28 248.39 l S
+0.12 0.35 0.65 rg
+BT /F2 14 Tf 45 224.39 Td (2. Server Startup Sequence) Tj ET
+0.12 0.35 0.65 RG 0.8 w
+45 209.39 m 550.28 209.39 l S
+0.18 0.24 0.32 rg
+BT /F2 11 Tf 45 187.39 Td (Step 1: Start MySQL) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 9.5 Tf 45 172.39 Td (Ensure MySQL service is running. In Windows PowerShell:) Tj ET
+0.96 0.97 0.98 rg
+0.85 0.88 0.90 RG 0.5 w
+45 138.39 505.28 22.5 re B
+0.12 0.16 0.22 rg
+BT /F3 8 Tf 53 146.89 Td (Get-Service -Name MySQL* | Start-Service) Tj ET
+0.18 0.24 0.32 rg
+BT /F2 11 Tf 45 114.38999999999999 Td (Step 2: Start Backend Server) Tj ET
+0.96 0.97 0.98 rg
+0.85 0.88 0.90 RG 0.5 w
+45 72.38999999999999 505.28 33 re B
+0.12 0.16 0.22 rg
+BT /F3 8 Tf 53 91.38999999999999 Td (cd C:\\Users\\LENOVO\\OneDrive\\Desktop\\CRISISCHAIN-MY\\server) Tj ET
+BT /F3 8 Tf 53 80.88999999999999 Td (node index.js) Tj ET
+0.15 0.15 0.15 rg
+0.55 0.55 0.55 rg
+BT /F1 8 Tf 495.28 25 Td (Page 1 of 8) Tj ET
+0.85 0.85 0.85 RG 0.5 w
+45 35 m 550.28 35 l S
+endstream
+endobj
+7 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 6 0 R >>
+endobj
+8 0 obj
+<< /Length 6640 >>
+stream
+0.5 0.5 0.5 rg
+BT /F1 8 Tf 45 806.89 Td (CRISISCHAIN COMPLETE TESTING GUIDE) Tj ET
+0.85 0.85 0.85 RG 0.5 w
+45 801.89 m 550.28 801.89 l S
+BT /F1 9.5 Tf 45 786.89 Td (*Expected Console Output:*) Tj ET
+0.96 0.97 0.98 rg
+0.85 0.88 0.90 RG 0.5 w
+45 731.89 505.28 43.5 re B
+0.12 0.16 0.22 rg
+BT /F3 8 Tf 53 761.39 Td (  MySQL connected to crisischain_db) Tj ET
+BT /F3 8 Tf 53 750.89 Td (   Server running on port 5001) Tj ET
+BT /F3 8 Tf 53 740.39 Td (   API: http://localhost:5001/api) Tj ET
+0.18 0.24 0.32 rg
+BT /F2 11 Tf 45 707.89 Td (Step 3: Start Frontend Client) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 9.5 Tf 45 692.89 Td (In a separate terminal:) Tj ET
+0.96 0.97 0.98 rg
+0.85 0.88 0.90 RG 0.5 w
+45 648.39 505.28 33 re B
+0.12 0.16 0.22 rg
+BT /F3 8 Tf 53 667.39 Td (cd C:\\Users\\LENOVO\\OneDrive\\Desktop\\CRISISCHAIN-MY) Tj ET
+BT /F3 8 Tf 53 656.89 Td (npm run dev) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 9.5 Tf 45 636.39 Td (*Expected Console Output:*) Tj ET
+0.96 0.97 0.98 rg
+0.85 0.88 0.90 RG 0.5 w
+45 591.89 505.28 33 re B
+0.12 0.16 0.22 rg
+BT /F3 8 Tf 53 610.89 Td (  VITE v8.0.10  ready in 450 ms) Tj ET
+BT /F3 8 Tf 53 600.39 Td (     Local:   http://localhost:5173/) Tj ET
+0.85 0.88 0.90 RG 0.5 w
+45 573.89 m 550.28 573.89 l S
+0.12 0.35 0.65 rg
+BT /F2 14 Tf 45 549.89 Td (3. Pre-Seeded Test Credentials) Tj ET
+0.12 0.35 0.65 RG 0.8 w
+45 534.89 m 550.28 534.89 l S
+0.12 0.22 0.38 rg
+45 512.89 505.28 16 re f
+0.82 0.85 0.88 RG 0.4 w
+45 512.89 505.28 16 re S
+1 1 1 rg
+BT /F2 8.5 Tf 50 516.89 Td (Role) Tj ET
+1 1 1 rg
+BT /F2 8.5 Tf 151.05599999999998 516.89 Td (Email) Tj ET
+1 1 1 rg
+BT /F2 8.5 Tf 252.112 516.89 Td (Password) Tj ET
+1 1 1 rg
+BT /F2 8.5 Tf 353.168 516.89 Td (Assigned Organiza..) Tj ET
+1 1 1 rg
+BT /F2 8.5 Tf 454.224 516.89 Td (Primary Workspace) Tj ET
+0.97 0.98 0.99 rg
+45 496.89 505.28 16 re f
+0.82 0.85 0.88 RG 0.4 w
+45 496.89 505.28 16 re S
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 50 500.89 Td (System Admin) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 151.05599999999998 500.89 Td (`admin@crisischai..) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 252.112 500.89 Td (`admin123`) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 353.168 500.89 Td (Crisis Command HQ) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 454.224 500.89 Td (`/dashboard`, `/a..) Tj ET
+0.82 0.85 0.88 RG 0.4 w
+45 480.89 505.28 16 re S
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 50 484.89 Td (Civilian Citizen) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 151.05599999999998 484.89 Td (`citizen@crisisch..) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 252.112 484.89 Td (`password123`) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 353.168 484.89 Td (N/A) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 454.224 484.89 Td (`/report`, `/aler..) Tj ET
+0.97 0.98 0.99 rg
+45 464.89 505.28 16 re f
+0.82 0.85 0.88 RG 0.4 w
+45 464.89 505.28 16 re S
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 50 468.89 Td (First Responder) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 151.05599999999998 468.89 Td (`ravi.paramedic@e..) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 252.112 468.89 Td (`password123`) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 353.168 468.89 Td (KMC Hospital Mang..) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 454.224 468.89 Td (`/org`, `/alerts`) Tj ET
+0.82 0.85 0.88 RG 0.4 w
+45 448.89 505.28 16 re S
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 50 452.89 Td (First Responder \(..) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 151.05599999999998 452.89 Td (`meera.fire@examp..) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 252.112 452.89 Td (`password123`) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 353.168 452.89 Td (Mangaluru Fire Se..) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 454.224 452.89 Td (`/org`, `/alerts`) Tj ET
+0.97 0.98 0.99 rg
+45 432.89 505.28 16 re f
+0.82 0.85 0.88 RG 0.4 w
+45 432.89 505.28 16 re S
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 50 436.89 Td (Hospital Represen..) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 151.05599999999998 436.89 Td (`anil.kmc@example..) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 252.112 436.89 Td (`password123`) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 353.168 436.89 Td (KMC Hospital Mang..) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 454.224 436.89 Td (`/hospital-resour..) Tj ET
+0.85 0.88 0.90 RG 0.5 w
+45 414.89 m 550.28 414.89 l S
+0.12 0.35 0.65 rg
+BT /F2 14 Tf 45 390.89 Td (4. Master Manual Testing Procedure \(Exact Execution Order\)) Tj ET
+0.12 0.35 0.65 RG 0.8 w
+45 375.89 m 550.28 375.89 l S
+0.96 0.97 0.98 rg
+0.85 0.88 0.90 RG 0.5 w
+45 223.39 505.28 148.5 re B
+0.12 0.16 0.22 rg
+BT /F3 8 Tf 53 357.89 Td (flowchart TD) Tj ET
+BT /F3 8 Tf 53 347.39 Td (    A[1. Landing Page & Public Report] --> B[2. Citizen Registration & Login]) Tj ET
+BT /F3 8 Tf 53 336.89 Td (    B --> C[3. Report Incident with Location & Image]) Tj ET
+BT /F3 8 Tf 53 326.39 Td (    C --> D[4. First Responder Registration with Org]) Tj ET
+BT /F3 8 Tf 53 315.89 Td (    D --> E[5. Admin Login & Tactical Dashboard]) Tj ET
+BT /F3 8 Tf 53 305.39 Td (    E --> F[6. Incident Card Navigation & Telemetry]) Tj ET
+BT /F3 8 Tf 53 294.89 Td (    F --> G[7. Assign Responder & Dispatch Status]) Tj ET
+BT /F3 8 Tf 53 284.39 Td (    G --> H[8. Resource Allocation to Incident]) Tj ET
+BT /F3 8 Tf 53 273.89 Td (    H --> I[9. Responder Mission Acceptance & Progression]) Tj ET
+BT /F3 8 Tf 53 263.39 Td (    I --> J[10. Mission Completion & Availability Recovery]) Tj ET
+BT /F3 8 Tf 53 252.89 Td (    J --> K[11. Hospital Representative Inventory Management]) Tj ET
+BT /F3 8 Tf 53 242.39 Td (    K --> L[12. Admin Incident Resolution & Stock Release]) Tj ET
+BT /F3 8 Tf 53 231.89 Td (    L --> M[13. Analytics & Notifications Audit]) Tj ET
+0.85 0.88 0.90 RG 0.5 w
+45 205.39 m 550.28 205.39 l S
+0.18 0.24 0.32 rg
+BT /F2 11 Tf 45 185.39 Td (PHASE 1: Public Landing Page & Incident Reporting) Tj ET
+0.25 0.25 0.25 rg
+BT /F2 10 Tf 45 160.39 Td (TC-01: Public Portal Exploration) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 146.39 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 146.39 Td (Role: Unauthenticated Guest) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 130.89 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 130.89 Td (Preconditions: Server and client running.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 115.38999999999999 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 115.38999999999999 Td (Steps:) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 99.88999999999999 Td (1.) Tj ET
+BT /F1 9.5 Tf 61 99.88999999999999 Td (Open browser and navigate to `http://localhost:5173/`.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 84.38999999999999 Td (2.) Tj ET
+BT /F1 9.5 Tf 61 84.38999999999999 Td (Verify navbar displays: Logo, `CRISISCHAIN`, Navigation links, `REPORT EMERGENCY` button, `LOGIN`) Tj ET
+BT /F1 9.5 Tf 61 70.88999999999999 Td (button.) Tj ET
+0.15 0.15 0.15 rg
+0.55 0.55 0.55 rg
+BT /F1 8 Tf 495.28 25 Td (Page 2 of 8) Tj ET
+0.85 0.85 0.85 RG 0.5 w
+45 35 m 550.28 35 l S
+endstream
+endobj
+9 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 8 0 R >>
+endobj
+10 0 obj
+<< /Length 6094 >>
+stream
+0.5 0.5 0.5 rg
+BT /F1 8 Tf 45 806.89 Td (CRISISCHAIN COMPLETE TESTING GUIDE) Tj ET
+0.85 0.85 0.85 RG 0.5 w
+45 801.89 m 550.28 801.89 l S
+BT /F2 9.5 Tf 47 786.89 Td (3.) Tj ET
+BT /F1 9.5 Tf 61 786.89 Td (Scroll down through Hero Section, Live Geospatial Radar, Active Protocols, and Regional Resource) Tj ET
+BT /F1 9.5 Tf 61 773.39 Td (Metrics.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 757.89 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 757.89 Td (Expected Result: Page renders with cyberpunk dark tactical theme, animated grid sweep, and zero) Tj ET
+BT /F1 9.5 Tf 61 744.39 Td (console errors.) Tj ET
+0.25 0.25 0.25 rg
+BT /F2 10 Tf 45 718.89 Td (TC-02: Public Emergency Report Submission \(Device GPS / Network IP\)) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 704.89 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 704.89 Td (Role: Civilian / Guest) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 689.39 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 689.39 Td (Preconditions: On Landing Page.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 673.89 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 673.89 Td (Steps:) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 658.39 Td (1.) Tj ET
+BT /F1 9.5 Tf 61 658.39 Td (Click `REPORT EMERGENCY` or navigate directly to `http://localhost:5173/report`.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 642.89 Td (2.) Tj ET
+BT /F1 9.5 Tf 61 642.89 Td (Observe the Section 01 Location input box.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 627.39 Td (3.) Tj ET
+BT /F1 9.5 Tf 61 627.39 Td (Click `USE DEVICE GPS`.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 611.89 Td (4.) Tj ET
+BT /F1 9.5 Tf 61 611.89 Td (If browser location access is granted, observe the coordinate acquisition.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 596.39 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 596.39 Td (*Note on Astronomical Anomaly Detector:* If the device's Wi-Fi database returns a reading displaced) Tj ET
+BT /F1 9.5 Tf 61 582.89 Td ($>3.5\\text{h}$ from the system timezone \(such as Brazil coordinates on an Indian system clock\), the) Tj ET
+BT /F1 9.5 Tf 61 569.39 Td (system triggers the toast: `Wi-Fi database reported anomalous location \(...\). Auto-switching to) Tj ET
+BT /F1 9.5 Tf 61 555.89 Td (verified network location...` and switches to the verified Indian regional network location.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 540.39 Td (5.) Tj ET
+BT /F1 9.5 Tf 61 540.39 Td (Click `APPROX IP FALLBACK` button to verify network-based ISP positioning.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 524.89 Td (6.) Tj ET
+BT /F1 9.5 Tf 61 524.89 Td (Scroll down to interactive Leaflet map. Click or drag the red tactical marker to adjust coordinates.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 509.39 Td (7.) Tj ET
+BT /F1 9.5 Tf 61 509.39 Td (Fill Section 02 Event Details:) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 493.89 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 493.89 Td (Select Incident Type: `Fire`) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 478.39 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 478.39 Td (Select Threat Level: `Critical` \(Red border\)) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 462.89 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 462.89 Td (Description: `High intensity commercial fire detected near commercial market complex.`) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 447.39 Td (8.) Tj ET
+BT /F1 9.5 Tf 61 447.39 Td (Attach incident photo via drag-and-drop or file picker \(JPG/PNG\).) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 431.89 Td (9.) Tj ET
+BT /F1 9.5 Tf 61 431.89 Td (Click `TRANSMIT EMERGENCY REPORT`.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 416.39 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 416.39 Td (Expected Result: Form validates, loading pulse displays `Submitting emergency report payload`, and) Tj ET
+BT /F1 9.5 Tf 61 402.89 Td (confirmation screen appears: `REPORT RECEIVED - HELP IS ON THE WAY` with Report ID \(e.g.) Tj ET
+BT /F1 9.5 Tf 61 389.39 Td (`#RI-XXXXXX`\).) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 373.89 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 373.89 Td (Database Verification:) Tj ET
+0.96 0.97 0.98 rg
+0.85 0.88 0.90 RG 0.5 w
+45 331.39 505.28 33 re B
+0.12 0.16 0.22 rg
+BT /F3 8 Tf 53 350.39 Td (  SELECT incident_id, title, incident_status, priority_level, latitude, longitude, image_url) Tj ET
+BT /F3 8 Tf 53 339.89 Td (  FROM incident ORDER BY incident_id DESC LIMIT 1;) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 9.5 Tf 45 319.39 Td (incident_status must be 'Reported' and image_url must point to /uploads/incident-....) Tj ET
+0.85 0.88 0.90 RG 0.5 w
+45 295.89 m 550.28 295.89 l S
+0.18 0.24 0.32 rg
+BT /F2 11 Tf 45 275.89 Td (PHASE 2: Authentication & Multi-Role Signup) Tj ET
+0.25 0.25 0.25 rg
+BT /F2 10 Tf 45 250.89 Td (TC-03: Civilian Signup & Session) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 236.89 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 236.89 Td (Role: New Citizen) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 221.39 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 221.39 Td (Steps:) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 205.89 Td (1.) Tj ET
+BT /F1 9.5 Tf 61 205.89 Td (Navigate to `http://localhost:5173/register`.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 190.39 Td (2.) Tj ET
+BT /F1 9.5 Tf 61 190.39 Td (Enter Full Name: `Aarav Sharma`, Phone: `9876500001`, Email: `aarav@example.com`, Password:) Tj ET
+BT /F1 9.5 Tf 61 176.89 Td (`Password@123`.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 161.39 Td (3.) Tj ET
+BT /F1 9.5 Tf 61 161.39 Td (Leave role as `CITIZEN`.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 145.89 Td (4.) Tj ET
+BT /F1 9.5 Tf 61 145.89 Td (Click `REGISTER`.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 130.39 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 130.39 Td (Expected Result: User is created and redirected to `/alerts`. JWT token is saved in) Tj ET
+BT /F1 9.5 Tf 61 116.88999999999999 Td (`localStorage.getItem\('token'\)`.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 101.38999999999999 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 101.38999999999999 Td (Database Verification:) Tj ET
+0.96 0.97 0.98 rg
+0.85 0.88 0.90 RG 0.5 w
+45 69.38999999999999 505.28 22.5 re B
+0.12 0.16 0.22 rg
+BT /F3 8 Tf 53 77.88999999999999 Td (  SELECT user_id, full_name, email, role FROM users WHERE email = 'aarav@example.com';) Tj ET
+0.55 0.55 0.55 rg
+BT /F1 8 Tf 495.28 25 Td (Page 3 of 8) Tj ET
+0.85 0.85 0.85 RG 0.5 w
+45 35 m 550.28 35 l S
+endstream
+endobj
+11 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 10 0 R >>
+endobj
+12 0 obj
+<< /Length 5650 >>
+stream
+0.5 0.5 0.5 rg
+BT /F1 8 Tf 45 806.89 Td (CRISISCHAIN COMPLETE TESTING GUIDE) Tj ET
+0.85 0.85 0.85 RG 0.5 w
+45 801.89 m 550.28 801.89 l S
+0.25 0.25 0.25 rg
+BT /F2 10 Tf 45 776.89 Td (TC-04: First Responder Registration with Organization Linkage) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 762.89 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 762.89 Td (Role: New First Responder) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 747.39 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 747.39 Td (Steps:) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 731.89 Td (1.) Tj ET
+BT /F1 9.5 Tf 61 731.89 Td (Log out or open an Incognito window. Navigate to `http://localhost:5173/register`.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 716.39 Td (2.) Tj ET
+BT /F1 9.5 Tf 61 716.39 Td (Enter Name: `Vikram Singh`, Phone: `9876500002`, Email: `vikram.fire@crisischain.org`, Password:) Tj ET
+BT /F1 9.5 Tf 61 702.89 Td (`Password@123`.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 687.39 Td (3.) Tj ET
+BT /F1 9.5 Tf 61 687.39 Td (Under Role dropdown, select `FIRST RESPONDER`.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 671.89 Td (4.) Tj ET
+BT /F1 9.5 Tf 61 671.89 Td (Notice the dynamic Organization dropdown appears:) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 9.5 Tf 45 656.39 Td (Select Mangaluru Fire and Emergency Services \(Org ID 6\).) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 638.89 Td (5.) Tj ET
+BT /F1 9.5 Tf 61 638.89 Td (Click `REGISTER`.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 623.39 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 623.39 Td (Expected Result: Registration completes successfully. Redirected to `/org`.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 607.89 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 607.89 Td (Database Verification:) Tj ET
+0.96 0.97 0.98 rg
+0.85 0.88 0.90 RG 0.5 w
+45 533.89 505.28 64.5 re B
+0.12 0.16 0.22 rg
+BT /F3 8 Tf 53 584.39 Td (  SELECT u.user_id, u.full_name, u.role, ap.authority_type, ap.availability_status, o.name) Tj ET
+BT /F3 8 Tf 53 573.89 Td (  FROM users u) Tj ET
+BT /F3 8 Tf 53 563.39 Td (  JOIN authority_profile ap ON u.user_id = ap.user_id) Tj ET
+BT /F3 8 Tf 53 552.89 Td (  JOIN organization o ON ap.org_id = o.org_id) Tj ET
+BT /F3 8 Tf 53 542.39 Td (  WHERE u.email = 'vikram.fire@crisischain.org';) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 9.5 Tf 45 521.89 Td (Both users and authority_profile rows exist; availability_status is 'Available'.) Tj ET
+0.25 0.25 0.25 rg
+BT /F2 10 Tf 45 494.39 Td (TC-05: Hospital Representative Registration) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 480.39 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 480.39 Td (Role: New Hospital Rep) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 464.89 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 464.89 Td (Steps:) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 449.39 Td (1.) Tj ET
+BT /F1 9.5 Tf 61 449.39 Td (Navigate to `http://localhost:5173/register`.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 433.89 Td (2.) Tj ET
+BT /F1 9.5 Tf 61 433.89 Td (Enter Name: `Dr. Ramesh Shenoy`, Phone: `9876500003`, Email: `ramesh.kmc@crisischain.org`, Password:) Tj ET
+BT /F1 9.5 Tf 61 420.39 Td (`Password@123`.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 404.89 Td (3.) Tj ET
+BT /F1 9.5 Tf 61 404.89 Td (Select Role: `HOSPITAL REPRESENTATIVE`.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 389.39 Td (4.) Tj ET
+BT /F1 9.5 Tf 61 389.39 Td (Select Organization: `KMC Hospital Mangaluru` \(Org ID 1\).) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 373.89 Td (5.) Tj ET
+BT /F1 9.5 Tf 61 373.89 Td (Click `REGISTER`.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 358.39 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 358.39 Td (Expected Result: User created with role `hospital`, linked to Org 1. Redirected to) Tj ET
+BT /F1 9.5 Tf 61 344.89 Td (`/hospital-resources`.) Tj ET
+0.85 0.88 0.90 RG 0.5 w
+45 323.39 m 550.28 323.39 l S
+0.18 0.24 0.32 rg
+BT /F2 11 Tf 45 303.39 Td (PHASE 3: Admin Operations & Incident Command) Tj ET
+0.25 0.25 0.25 rg
+BT /F2 10 Tf 45 278.39 Td (TC-06: Admin Login & Overview Dashboard) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 264.39 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 264.39 Td (Role: System Admin) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 248.89 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 248.89 Td (Steps:) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 233.39 Td (1.) Tj ET
+BT /F1 9.5 Tf 61 233.39 Td (Navigate to `http://localhost:5173/admin`.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 217.89 Td (2.) Tj ET
+BT /F1 9.5 Tf 61 217.89 Td (Enter Email: `admin@crisischain.com`, Password: `admin123`.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 202.39 Td (3.) Tj ET
+BT /F1 9.5 Tf 61 202.39 Td (Click `AUTHENTICATE COMMAND LINE`.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 186.89 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 186.89 Td (Expected Result: Redirects to `/dashboard`.) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 9.5 Tf 45 171.39 Td (Top status HUD displays SYSTEM ACTIVE, LIVE ALERTS, SAT_LINK: AETHER_GRID_STABLE.) Tj ET
+0.25 0.25 0.25 rg
+BT /F2 10 Tf 45 143.89 Td (TC-07: Admin Incident Card Click & URL Deep Linking) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 129.89 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 129.89 Td (Role: System Admin) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 114.38999999999999 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 114.38999999999999 Td (Steps:) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 98.88999999999999 Td (1.) Tj ET
+BT /F1 9.5 Tf 61 98.88999999999999 Td (On `/dashboard`, locate the `LIVE INCIDENTS` panel on the right.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 83.38999999999999 Td (2.) Tj ET
+BT /F1 9.5 Tf 61 83.38999999999999 Td (Click on the topmost incident card.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 67.88999999999999 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 67.88999999999999 Td (Expected Result:) Tj ET
+0.15 0.15 0.15 rg
+0.55 0.55 0.55 rg
+BT /F1 8 Tf 495.28 25 Td (Page 4 of 8) Tj ET
+0.85 0.85 0.85 RG 0.5 w
+45 35 m 550.28 35 l S
+endstream
+endobj
+13 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 12 0 R >>
+endobj
+14 0 obj
+<< /Length 5684 >>
+stream
+0.5 0.5 0.5 rg
+BT /F1 8 Tf 45 806.89 Td (CRISISCHAIN COMPLETE TESTING GUIDE) Tj ET
+0.85 0.85 0.85 RG 0.5 w
+45 801.89 m 550.28 801.89 l S
+BT /F1 9.5 Tf 45 786.89 Td (Browser navigates immediately to /alerts?id=1030 \(or the clicked ID\).) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 9.5 Tf 45 769.39 Td (The right panel immediately highlights that exact incident, displaying its Title, Location, Severity) Tj ET
+BT /F1 9.5 Tf 45 755.89 Td (badge, Map Pin, Description, and photo preview.) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 9.5 Tf 45 738.39 Td (Browser URL retains ?id=1030. Refreshing the page keeps the incident loaded.) Tj ET
+0.25 0.25 0.25 rg
+BT /F2 10 Tf 45 710.89 Td (TC-08: Dispatch Pending Status Verification) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 696.89 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 696.89 Td (Role: System Admin) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 681.39 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 681.39 Td (Steps:) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 665.89 Td (1.) Tj ET
+BT /F1 9.5 Tf 61 665.89 Td (On `/alerts` or `/dashboard`, inspect the status badge on the incident.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 650.39 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 650.39 Td (Expected Result:) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 634.89 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 634.89 Td (For newly reported incidents: Badge shows `ACTIVE_UNASSIGNED` in yellow border.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 619.39 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 619.39 Td (For incidents with units assigned: Badge shows `DISPATCH_PENDING` in cyan border.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 603.89 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 603.89 Td (For dispatched missions in progress: Badge shows `RESPONDERS_DISPATCHED` in blue border.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 588.39 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 588.39 Td (For resolved incidents: Badge shows `RESOLVED` in emerald border.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 572.89 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 572.89 Td (Notice: Incidents with assignments NO LONGER falsely show `RESOLVED`.) Tj ET
+0.85 0.88 0.90 RG 0.5 w
+45 551.39 m 550.28 551.39 l S
+0.18 0.24 0.32 rg
+BT /F2 11 Tf 45 531.39 Td (PHASE 4: Dispatch, Assignment & Resource Allocation) Tj ET
+0.25 0.25 0.25 rg
+BT /F2 10 Tf 45 506.39 Td (TC-09: Assign Responder Unit) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 492.39 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 492.39 Td (Role: System Admin) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 476.89 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 476.89 Td (Steps:) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 461.39 Td (1.) Tj ET
+BT /F1 9.5 Tf 61 461.39 Td (On `/alerts`, select the active reported incident.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 445.89 Td (2.) Tj ET
+BT /F1 9.5 Tf 61 445.89 Td (Click `+ ASSIGN RESPONDER` button.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 430.39 Td (3.) Tj ET
+BT /F1 9.5 Tf 61 430.39 Td (The `ASSIGN TACTICAL UNIT` modal appears.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 414.89 Td (4.) Tj ET
+BT /F1 9.5 Tf 61 414.89 Td (Verify that newly registered responder `Vikram Singh \(FireDept\)` appears in the available responders) Tj ET
+BT /F1 9.5 Tf 61 401.39 Td (list.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 385.89 Td (5.) Tj ET
+BT /F1 9.5 Tf 61 385.89 Td (Select `Vikram Singh` or `Ravi Kumar`.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 370.39 Td (6.) Tj ET
+BT /F1 9.5 Tf 61 370.39 Td (Click `CONFIRM ASSIGNMENT`.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 354.89 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 354.89 Td (Expected Result:) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 9.5 Tf 45 339.39 Td (Modal closes, toast confirms assignment.) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 9.5 Tf 45 321.89 Td (Under "Assigned Responders", responder card appears showing Name, Org, Phone number, and Mission Status:) Tj ET
+BT /F1 9.5 Tf 45 308.39 Td (Pending.) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 9.5 Tf 45 290.89 Td (Incident status badge updates to DISPATCH_PENDING.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 273.39 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 273.39 Td (Database Verification:) Tj ET
+0.96 0.97 0.98 rg
+0.85 0.88 0.90 RG 0.5 w
+45 199.39 505.28 64.5 re B
+0.12 0.16 0.22 rg
+BT /F3 8 Tf 53 249.89 Td (  SELECT ia.assignment_id, ia.incident_id, ia.assignment_status, u.full_name, ap.availability_status) Tj ET
+BT /F3 8 Tf 53 239.39 Td (  FROM incident_assignment ia) Tj ET
+BT /F3 8 Tf 53 228.89 Td (  JOIN authority_profile ap ON ia.authority_id = ap.authority_id) Tj ET
+BT /F3 8 Tf 53 218.39 Td (  JOIN users u ON ap.user_id = u.user_id) Tj ET
+BT /F3 8 Tf 53 207.89 Td (  WHERE ia.incident_id = 1030;) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 9.5 Tf 45 187.39 Td (ia.assignment_status is 'Pending'.) Tj ET
+0.25 0.25 0.25 rg
+BT /F2 10 Tf 45 159.89 Td (TC-10: Allocate Medical/Fire Resources) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 145.89 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 145.89 Td (Role: System Admin) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 130.39 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 130.39 Td (Steps:) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 114.88999999999999 Td (1.) Tj ET
+BT /F1 9.5 Tf 61 114.88999999999999 Td (On `/alerts` \(with the same incident selected\), click `+ ALLOCATE RESOURCE`.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 99.38999999999999 Td (2.) Tj ET
+BT /F1 9.5 Tf 61 99.38999999999999 Td (In the modal, select Resource Center \(e.g. `KMC Hospital Mangaluru`\).) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 83.88999999999999 Td (3.) Tj ET
+BT /F1 9.5 Tf 61 83.88999999999999 Td (Select Resource Type \(e.g. `ICU Beds` or `Ambulance`\).) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 68.38999999999999 Td (4.) Tj ET
+BT /F1 9.5 Tf 61 68.38999999999999 Td (Enter Quantity: `2`.) Tj ET
+0.15 0.15 0.15 rg
+0.55 0.55 0.55 rg
+BT /F1 8 Tf 495.28 25 Td (Page 5 of 8) Tj ET
+0.85 0.85 0.85 RG 0.5 w
+45 35 m 550.28 35 l S
+endstream
+endobj
+15 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 14 0 R >>
+endobj
+16 0 obj
+<< /Length 5437 >>
+stream
+0.5 0.5 0.5 rg
+BT /F1 8 Tf 45 806.89 Td (CRISISCHAIN COMPLETE TESTING GUIDE) Tj ET
+0.85 0.85 0.85 RG 0.5 w
+45 801.89 m 550.28 801.89 l S
+BT /F2 9.5 Tf 47 786.89 Td (5.) Tj ET
+BT /F1 9.5 Tf 61 786.89 Td (Click `ALLOCATE TO MISSION`.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 771.39 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 771.39 Td (Expected Result:) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 9.5 Tf 45 755.89 Td (Modal closes, success toast appears.) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 9.5 Tf 45 738.39 Td (Resource allocation row appears under "Allocated Resources" showing x2 ICU Beds, Center Name, and Active) Tj ET
+BT /F1 9.5 Tf 45 724.89 Td (status.) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 9.5 Tf 45 707.39 Td (In top incident telemetry, Resources shows 1 Allocated.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 689.89 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 689.89 Td (Database Verification:) Tj ET
+0.96 0.97 0.98 rg
+0.85 0.88 0.90 RG 0.5 w
+45 647.39 505.28 33 re B
+0.12 0.16 0.22 rg
+BT /F3 8 Tf 53 666.39 Td (  SELECT allocation_id, incident_id, resource_id, quantity_allocated, released_at) Tj ET
+BT /F3 8 Tf 53 655.89 Td (  FROM incident_resource_allocation WHERE incident_id = 1030;) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 9.5 Tf 45 635.39 Td (quantity_allocated = 2 and released_at IS NULL.) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 9.5 Tf 45 617.89 Td (Verify stock was deducted in resource:) Tj ET
+0.96 0.97 0.98 rg
+0.85 0.88 0.90 RG 0.5 w
+45 583.89 505.28 22.5 re B
+0.12 0.16 0.22 rg
+BT /F3 8 Tf 53 592.39 Td (  SELECT resource_type, quantity_available FROM resource WHERE resource_id = 1;) Tj ET
+0.85 0.88 0.90 RG 0.5 w
+45 565.89 m 550.28 565.89 l S
+0.18 0.24 0.32 rg
+BT /F2 11 Tf 45 545.89 Td (PHASE 5: Responder Execution & Availability Cycle) Tj ET
+0.25 0.25 0.25 rg
+BT /F2 10 Tf 45 520.89 Td (TC-11: Responder Mission Progression) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 506.89 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 506.89 Td (Role: First Responder \(`ravi.paramedic@example.com` or `vikram.fire@crisischain.org`\)) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 491.39 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 491.39 Td (Steps:) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 475.89 Td (1.) Tj ET
+BT /F1 9.5 Tf 61 475.89 Td (Log in as the assigned responder.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 460.39 Td (2.) Tj ET
+BT /F1 9.5 Tf 61 460.39 Td (Navigate to `/org` \(Tactical Responder Dashboard\).) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 444.89 Td (3.) Tj ET
+BT /F1 9.5 Tf 61 444.89 Td (Locate the "Assigned Missions" section.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 429.39 Td (4.) Tj ET
+BT /F1 9.5 Tf 61 429.39 Td (Observe the newly assigned incident with status `Pending`.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 413.89 Td (5.) Tj ET
+BT /F1 9.5 Tf 61 413.89 Td (Click `ACCEPT MISSION`.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 398.39 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 398.39 Td (Status updates to `Accepted`.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 382.89 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 382.89 Td (Responder's profile availability changes to `Busy`.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 367.39 Td (6.) Tj ET
+BT /F1 9.5 Tf 61 367.39 Td (Click `EN ROUTE`.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 351.89 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 351.89 Td (Status updates to `EnRoute`. Incident status becomes `InProgress`.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 336.39 Td (7.) Tj ET
+BT /F1 9.5 Tf 61 336.39 Td (Click `ARRIVED ON SCENE`.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 320.89 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 320.89 Td (Status updates to `Arrived`.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 305.39 Td (8.) Tj ET
+BT /F1 9.5 Tf 61 305.39 Td (Click `MARK COMPLETED`.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 289.89 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 289.89 Td (Status updates to `Completed`.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 274.39 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 274.39 Td (Expected Result:) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 9.5 Tf 45 258.89 Td (Mission transitions through all 5 operational phases with live timestamp logging.) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 9.5 Tf 45 241.39 Td (Responder availability status returns to Available.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 223.89 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 223.89 Td (Database Verification:) Tj ET
+0.96 0.97 0.98 rg
+0.85 0.88 0.90 RG 0.5 w
+45 160.39 505.28 54 re B
+0.12 0.16 0.22 rg
+BT /F3 8 Tf 53 200.39 Td (  SELECT ap.availability_status, ia.assignment_status, ia.accepted_at, ia.arrived_at, ia.completed_at) Tj ET
+BT /F3 8 Tf 53 189.89 Td (  FROM authority_profile ap) Tj ET
+BT /F3 8 Tf 53 179.39 Td (  JOIN incident_assignment ia ON ap.authority_id = ia.authority_id) Tj ET
+BT /F3 8 Tf 53 168.89 Td (  WHERE ap.authority_id = \(SELECT authority_id FROM authority_profile WHERE user_id = 3\);) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 9.5 Tf 45 148.39 Td (ap.availability_status must be 'Available'. ia.assignment_status must be 'Completed'.) Tj ET
+0.85 0.88 0.90 RG 0.5 w
+45 124.88999999999999 m 550.28 124.88999999999999 l S
+0.18 0.24 0.32 rg
+BT /F2 11 Tf 45 104.88999999999999 Td (PHASE 6: Hospital Resource Inventory Management) Tj ET
+0.25 0.25 0.25 rg
+BT /F2 10 Tf 45 79.88999999999999 Td (TC-12: Hospital Resource Live Editing & Persistence) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 65.88999999999999 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 65.88999999999999 Td (Role: Hospital Representative \(`anil.kmc@example.com`\)) Tj ET
+0.15 0.15 0.15 rg
+0.55 0.55 0.55 rg
+BT /F1 8 Tf 495.28 25 Td (Page 6 of 8) Tj ET
+0.85 0.85 0.85 RG 0.5 w
+45 35 m 550.28 35 l S
+endstream
+endobj
+17 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 16 0 R >>
+endobj
+18 0 obj
+<< /Length 7570 >>
+stream
+0.5 0.5 0.5 rg
+BT /F1 8 Tf 45 806.89 Td (CRISISCHAIN COMPLETE TESTING GUIDE) Tj ET
+0.85 0.85 0.85 RG 0.5 w
+45 801.89 m 550.28 801.89 l S
+BT /F2 9.5 Tf 47 786.89 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 786.89 Td (Steps:) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 771.39 Td (1.) Tj ET
+BT /F1 9.5 Tf 61 771.39 Td (Log in and navigate to `http://localhost:5173/hospital-resources`.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 755.89 Td (2.) Tj ET
+BT /F1 9.5 Tf 61 755.89 Td (Verify the 4 tabs: `Beds`, `Ambulances`, `Medical Kits`, `Staff Duty`.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 740.39 Td (3.) Tj ET
+BT /F1 9.5 Tf 61 740.39 Td (Under `Beds` tab, click directly on the `ICU` bed card or click `EDIT`.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 724.89 Td (4.) Tj ET
+BT /F1 9.5 Tf 61 724.89 Td (In the pre-filled modal:) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 709.39 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 709.39 Td (Change `Available Beds` from `18` to `22`.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 693.89 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 693.89 Td (Change `Status` to `Available`.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 678.39 Td (5.) Tj ET
+BT /F1 9.5 Tf 61 678.39 Td (Click `SAVE CHANGES`.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 662.89 Td (6.) Tj ET
+BT /F1 9.5 Tf 61 662.89 Td (Verify UI updates immediately to `22 Available`.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 647.39 Td (7.) Tj ET
+BT /F1 9.5 Tf 61 647.39 Td (Press browser Refresh \(F5\).) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 631.89 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 631.89 Td (Expected Result:) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 9.5 Tf 45 616.39 Td (After page refresh, ICU beds remain 22 Available.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 598.89 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 598.89 Td (Database Verification:) Tj ET
+0.96 0.97 0.98 rg
+0.85 0.88 0.90 RG 0.5 w
+45 556.39 505.28 33 re B
+0.12 0.16 0.22 rg
+BT /F3 8 Tf 53 575.39 Td (  SELECT beds FROM hospital_resources WHERE org_id = 1;) Tj ET
+BT /F3 8 Tf 53 564.89 Td (  SELECT resource_type, quantity_available FROM resource WHERE center_id = 1 AND resource_type LIKE '%ICU Bed%) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 9.5 Tf 45 544.39 Td (Both the JSON document in hospital_resources and the row in resource show 22.) Tj ET
+0.85 0.88 0.90 RG 0.5 w
+45 520.89 m 550.28 520.89 l S
+0.18 0.24 0.32 rg
+BT /F2 11 Tf 45 500.89 Td (PHASE 7: Incident Resolution & Resource Stock Recovery) Tj ET
+0.25 0.25 0.25 rg
+BT /F2 10 Tf 45 475.89 Td (TC-13: Admin Final Resolution & Stock Release) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 461.89 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 461.89 Td (Role: System Admin) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 446.39 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 446.39 Td (Steps:) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 430.89 Td (1.) Tj ET
+BT /F1 9.5 Tf 61 430.89 Td (Log in as `admin@crisischain.com` and navigate to `/alerts?id=1030`.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 415.39 Td (2.) Tj ET
+BT /F1 9.5 Tf 61 415.39 Td (Click the green `RESOLVE INCIDENT` button.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 399.89 Td (3.) Tj ET
+BT /F1 9.5 Tf 61 399.89 Td (Confirm the action.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 384.39 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 384.39 Td (Expected Result:) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 368.89 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 368.89 Td (Incident status updates to `Resolved`.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 353.39 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 353.39 Td (Status badge shows `RESOLVED` in emerald border.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 337.89 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 337.89 Td (Any remaining active assignments on this incident are marked `Completed`.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 322.39 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 322.39 Td (Assigned responders' availability status is reset to `Available`.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 306.89 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 306.89 Td (Allocated resources are marked `Released` \(`released_at = NOW\(\)`\).) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 291.39 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 291.39 Td (The deducted stock \(e.g. 2 ICU beds\) is automatically returned to `resource.quantity_available`.) Tj ET
+0.15 0.15 0.15 rg
+BT /F2 9.5 Tf 47 275.89 Td ( ) Tj ET
+BT /F1 9.5 Tf 61 275.89 Td (Database Verification:) Tj ET
+0.96 0.97 0.98 rg
+0.85 0.88 0.90 RG 0.5 w
+45 222.89 505.28 43.5 re B
+0.12 0.16 0.22 rg
+BT /F3 8 Tf 53 252.39 Td (  SELECT incident_status, resolved_at FROM incident WHERE incident_id = 1030;) Tj ET
+BT /F3 8 Tf 53 241.89 Td (  SELECT assignment_status FROM incident_assignment WHERE incident_id = 1030;) Tj ET
+BT /F3 8 Tf 53 231.39 Td (  SELECT status, released_at FROM incident_resource_allocation WHERE incident_id = 1030;) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 9.5 Tf 45 210.89 Td (incident_status = 'Resolved', resolved_at IS NOT NULL, released_at IS NOT NULL.) Tj ET
+0.85 0.88 0.90 RG 0.5 w
+45 187.39 m 550.28 187.39 l S
+0.12 0.35 0.65 rg
+BT /F2 14 Tf 45 163.39 Td (5. Verification Matrix: Automated vs Manual vs Physical) Tj ET
+0.12 0.35 0.65 RG 0.8 w
+45 148.39 m 550.28 148.39 l S
+0.12 0.22 0.38 rg
+45 126.38999999999999 505.28 16 re f
+0.82 0.85 0.88 RG 0.4 w
+45 126.38999999999999 505.28 16 re S
+1 1 1 rg
+BT /F2 8.5 Tf 50 130.39 Td (Test Area) Tj ET
+1 1 1 rg
+BT /F2 8.5 Tf 151.05599999999998 130.39 Td (Automated Script ..) Tj ET
+1 1 1 rg
+BT /F2 8.5 Tf 252.112 130.39 Td (Manual Browser Ve..) Tj ET
+1 1 1 rg
+BT /F2 8.5 Tf 353.168 130.39 Td (Physical Device R..) Tj ET
+1 1 1 rg
+BT /F2 8.5 Tf 454.224 130.39 Td (Status) Tj ET
+0.97 0.98 0.99 rg
+45 110.38999999999999 505.28 16 re f
+0.82 0.85 0.88 RG 0.4 w
+45 110.38999999999999 505.28 16 re S
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 50 114.38999999999999 Td (API Health & Endp..) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 151.05599999999998 114.38999999999999 Td (  Verified \(`test..) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 252.112 114.38999999999999 Td (Optional) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 353.168 114.38999999999999 Td (No) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 454.224 114.38999999999999 Td (PASSED) Tj ET
+0.82 0.85 0.88 RG 0.4 w
+45 94.38999999999999 505.28 16 re S
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 50 98.38999999999999 Td (Database Transact..) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 151.05599999999998 98.38999999999999 Td (  Verified \(`chec..) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 252.112 98.38999999999999 Td (Optional) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 353.168 98.38999999999999 Td (No) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 454.224 98.38999999999999 Td (PASSED) Tj ET
+0.97 0.98 0.99 rg
+45 78.38999999999999 505.28 16 re f
+0.82 0.85 0.88 RG 0.4 w
+45 78.38999999999999 505.28 16 re S
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 50 82.38999999999999 Td (Vite Production B..) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 151.05599999999998 82.38999999999999 Td (  Verified \(`npm ..) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 252.112 82.38999999999999 Td (No) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 353.168 82.38999999999999 Td (No) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 454.224 82.38999999999999 Td (PASSED) Tj ET
+0.82 0.85 0.88 RG 0.4 w
+45 62.389999999999986 505.28 16 re S
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 50 66.38999999999999 Td (Astronomical Anom..) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 151.05599999999998 66.38999999999999 Td (  Verified \(`veri..) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 252.112 66.38999999999999 Td (Optional) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 353.168 66.38999999999999 Td (No) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 454.224 66.38999999999999 Td (PASSED) Tj ET
+0.55 0.55 0.55 rg
+BT /F1 8 Tf 495.28 25 Td (Page 7 of 8) Tj ET
+0.85 0.85 0.85 RG 0.5 w
+45 35 m 550.28 35 l S
+endstream
+endobj
+19 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 18 0 R >>
+endobj
+20 0 obj
+<< /Length 1991 >>
+stream
+0.5 0.5 0.5 rg
+BT /F1 8 Tf 45 806.89 Td (CRISISCHAIN COMPLETE TESTING GUIDE) Tj ET
+0.85 0.85 0.85 RG 0.5 w
+45 801.89 m 550.28 801.89 l S
+0.97 0.98 0.99 rg
+45 774.89 505.28 16 re f
+0.82 0.85 0.88 RG 0.4 w
+45 774.89 505.28 16 re S
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 50 778.89 Td (UI Card Navigatio..) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 151.05599999999998 778.89 Td (N/A) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 252.112 778.89 Td (   User Manual Ch..) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 353.168 778.89 Td (No) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 454.224 778.89 Td (READY TO TEST) Tj ET
+0.82 0.85 0.88 RG 0.4 w
+45 758.89 505.28 16 re S
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 50 762.89 Td (Modal Forms & Tab..) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 151.05599999999998 762.89 Td (N/A) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 252.112 762.89 Td (   User Manual Ch..) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 353.168 762.89 Td (No) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 454.224 762.89 Td (READY TO TEST) Tj ET
+0.97 0.98 0.99 rg
+45 742.89 505.28 16 re f
+0.82 0.85 0.88 RG 0.4 w
+45 742.89 505.28 16 re S
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 50 746.89 Td (Hardware GPS Geol..) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 151.05599999999998 746.89 Td (N/A) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 252.112 746.89 Td (   User Manual Ch..) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 353.168 746.89 Td (Yes \(Laptop Wi-Fi..) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 454.224 746.89 Td (READY TO TEST) Tj ET
+0.82 0.85 0.88 RG 0.4 w
+45 726.89 505.28 16 re S
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 50 730.89 Td (Camera Photo Upload) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 151.05599999999998 730.89 Td (N/A) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 252.112 730.89 Td (   User Manual Ch..) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 353.168 730.89 Td (Yes \(Camera / Pho..) Tj ET
+0.15 0.15 0.15 rg
+BT /F1 8.5 Tf 454.224 730.89 Td (READY TO TEST) Tj ET
+0.55 0.55 0.55 rg
+BT /F1 8 Tf 495.28 25 Td (Page 8 of 8) Tj ET
+0.85 0.85 0.85 RG 0.5 w
+45 35 m 550.28 35 l S
+endstream
+endobj
+21 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> >> /Contents 20 0 R >>
+endobj
+xref
+0 22
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000163 00000 n 
+0000000260 00000 n 
+0000000362 00000 n 
+0000000457 00000 n 
+0000004333 00000 n 
+0000004485 00000 n 
+0000011177 00000 n 
+0000011329 00000 n 
+0000017476 00000 n 
+0000017630 00000 n 
+0000023333 00000 n 
+0000023487 00000 n 
+0000029224 00000 n 
+0000029378 00000 n 
+0000034868 00000 n 
+0000035022 00000 n 
+0000042645 00000 n 
+0000042799 00000 n 
+0000044843 00000 n 
+trailer
+<< /Size 22 /Root 1 0 R >>
+startxref
+44997
+%%EOF

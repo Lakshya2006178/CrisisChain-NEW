@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useDashboard } from '../../context/DashboardContext';
-import { ShieldAlert, Zap, Clock, Terminal, Activity, ChevronRight, Activity as Heartbeat } from 'lucide-react';
+import { ShieldAlert, Zap, Clock, Terminal, Activity, ChevronRight, Activity as Heartbeat, Camera } from 'lucide-react';
 import * as api from '../../api/index.js';
 
 export default function LiveAlertsPanel() {
@@ -45,12 +45,17 @@ export default function LiveAlertsPanel() {
             <div className="flex-1 overflow-y-auto custom-scrollbar divide-y divide-white/[0.03]">
                 {alerts.map((alert, idx) => {
                     const Icon = getIcon(alert.iconName);
+                    const targetId = alert.numeric_id || alert.id;
+                    const statusKey = (alert.status || '').toLowerCase();
                     return (
                         <div
                             key={alert.id}
-                            onClick={() => addToast(`Uplink: ${alert.type}`, 'info')}
+                            onClick={() => {
+                                navigate(`/alerts?id=${encodeURIComponent(targetId)}`);
+                            }}
+                            title="Click to view complete incident telemetry, responder units & resource allocations"
                             className={`
-                                group/alert flex items-start gap-5 px-6 py-5 cursor-pointer transition-all duration-500 hover:bg-white/[0.03] relative border-l-2
+                                group/alert flex items-start gap-5 px-6 py-5 cursor-pointer transition-all duration-500 hover:bg-white/[0.04] relative border-l-2
                                 ${alert.critical ? 'border-l-red-500 bg-red-500/[0.02]' : 'border-l-blue-500/40'}
                             `}
                         >
@@ -65,27 +70,41 @@ export default function LiveAlertsPanel() {
                             {/* Content Block */}
                             <div className="flex-1 min-w-0 flex flex-col gap-2">
                                 <div className="flex items-center justify-between">
-                                    <h5 className={`font-poppins font-black text-lg tracking-tight uppercase leading-none ${alert.critical ? 'text-white' : 'text-[#D1D5DB] text-blue-100'}`}>
+                                    <h5 className={`font-poppins font-black text-lg tracking-tight uppercase leading-none group-hover/alert:text-[#00FFCC] transition-colors ${alert.critical ? 'text-white' : 'text-[#D1D5DB] text-blue-100'}`}>
                                         {alert.type}
                                     </h5>
-                                    <span className="font-mono text-[9px] text-[#6B7280] tracking-widest font-bold uppercase transition-transform group-hover/alert:translate-x-2">[{alert.time}]</span>
+                                    <div className="flex items-center gap-2">
+                                        <span className="font-mono text-[9px] text-[#6B7280] tracking-widest font-bold uppercase">[{alert.time}]</span>
+                                        <ChevronRight size={14} className="text-white/20 group-hover/alert:text-[#00FFCC] group-hover/alert:translate-x-1 transition-all" />
+                                    </div>
                                 </div>
                                 <p className="font-mono text-[10px] text-white/30 uppercase italic tracking-tighter line-clamp-1">LOCATION: {alert.location}</p>
                                 
-                                <div className="flex items-center gap-4 mt-2">
+                                <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-2">
                                     <div className="px-3 py-1 bg-[#1F2937] border border-[#1F2937] font-mono text-[8px] font-black tracking-widest uppercase text-[#6B7280]">
                                         ID: {alert.id}
                                     </div>
-                                    <div className={`px-3 py-1 border font-mono text-[8px] font-black tracking-widest uppercase ${alert.critical ? 'border-red-500/20 text-red-500 bg-red-500/5' : 'border-blue-500/20 text-blue-400 bg-blue-500/5'}`}>
-                                        {alert.status === 'reported' ? 'ACTIVE_UNASSIGNED' : 
-                                         alert.status === 'responding' || alert.status === 'inprogress' ? 'RESPONDERS_DISPATCHED' : 
+                                    {alert.image_url && (
+                                        <div className="px-2 py-1 bg-teal-500/10 border border-teal-500/30 font-mono text-[8px] font-black tracking-widest uppercase text-teal-400 flex items-center gap-1">
+                                            <Camera size={10} /> PHOTO
+                                        </div>
+                                    )}
+                                    <div className={`px-3 py-1 border font-mono text-[8px] font-black tracking-widest uppercase ${
+                                        statusKey === 'reported' ? 'border-yellow-500/30 text-yellow-400 bg-yellow-500/5' :
+                                        statusKey === 'assigned' ? 'border-cyan-500/30 text-cyan-400 bg-cyan-500/5' :
+                                        statusKey === 'responding' || statusKey === 'inprogress' ? 'border-blue-500/30 text-blue-400 bg-blue-500/5' :
+                                        'border-emerald-500/30 text-emerald-400 bg-emerald-500/5'
+                                    }`}>
+                                        {statusKey === 'reported' ? 'ACTIVE_UNASSIGNED' : 
+                                         statusKey === 'assigned' ? 'DISPATCH_PENDING' :
+                                         statusKey === 'responding' || statusKey === 'inprogress' ? 'RESPONDERS_DISPATCHED' : 
                                          'RESOLVED'}
                                     </div>
                                     
                                     {/* Responder Actions */}
                                     {(user?.role === 'responder' || user?.role === 'admin') && (
                                        <div className="flex gap-2">
-                                          {alert.status === 'reported' && (
+                                          {statusKey === 'reported' && (
                                             <button 
                                               onClick={async (e) => { 
                                                 e.stopPropagation(); 
@@ -93,12 +112,12 @@ export default function LiveAlertsPanel() {
                                                 refreshData();
                                                 addToast('Units Dispatched', 'success');
                                               }}
-                                              className="px-3 py-1 bg-blue-600 text-white font-mono text-[8px] font-black uppercase hover:bg-blue-700"
+                                              className="px-3 py-1 bg-blue-600 text-white font-mono text-[8px] font-black uppercase hover:bg-blue-700 transition-colors"
                                             >
                                               Dispatch
                                             </button>
                                           )}
-                                          {alert.status === 'responding' && (
+                                          {(statusKey === 'responding' || statusKey === 'inprogress' || statusKey === 'assigned') && (
                                             <button 
                                               onClick={async (e) => { 
                                                 e.stopPropagation(); 
@@ -106,7 +125,7 @@ export default function LiveAlertsPanel() {
                                                 refreshData();
                                                 addToast('Incident Resolved', 'success');
                                               }}
-                                              className="px-3 py-1 bg-green-600 text-white font-mono text-[8px] font-black uppercase hover:bg-green-700"
+                                              className="px-3 py-1 bg-green-600 text-white font-mono text-[8px] font-black uppercase hover:bg-green-700 transition-colors"
                                             >
                                               Resolve
                                             </button>
