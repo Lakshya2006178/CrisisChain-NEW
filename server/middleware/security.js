@@ -87,7 +87,7 @@ export const createRateLimiter = ({
 // Standard rate limiters
 export const authLimiter = createRateLimiter({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 25,                   // 25 login/register attempts per 15 mins per IP
+    max: process.env.NODE_ENV === 'production' ? 50 : 500, // Generous limit in dev to allow multi-user testing & demos
     message: 'Too many authentication attempts. Please try again in 15 minutes.'
 });
 

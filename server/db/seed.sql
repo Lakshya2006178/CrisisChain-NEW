@@ -50,13 +50,14 @@ INSERT INTO resource (resource_id, center_id, resource_type, quantity_available)
  (15,7,'Patrol Cars',15),(16,7,'Officers',50);
 
 -- 5. USERS (login = email + password) -------------------------------------------
+-- admin: admin123  |  other demo users: password123
 INSERT INTO users (user_id, full_name, email, phone_number, password_hash, role) VALUES
- (1,'System Admin','admin@crisischain.com','9000000001','$2a$10$X/wVNxhDkVeugtVE17RJo.OtatnhxCGq8/pYW6bfVM3nW21pzwrmS','admin'),
- (2,'Asha Rao','asha@example.com','9000000002','$2a$10$X/wVNxhDkVeugtVE17RJo.OtatnhxCGq8/pYW6bfVM3nW21pzwrmS','citizen'),
- (3,'Ravi Kumar','ravi.paramedic@example.com','9000000003','$2a$10$X/wVNxhDkVeugtVE17RJo.OtatnhxCGq8/pYW6bfVM3nW21pzwrmS','responder'),
- (4,'Meera Shetty','meera.fire@example.com','9000000004','$2a$10$X/wVNxhDkVeugtVE17RJo.OtatnhxCGq8/pYW6bfVM3nW21pzwrmS','responder'),
- (5,'Dr. Anil Hegde','anil.kmc@example.com','9000000005','$2a$10$X/wVNxhDkVeugtVE17RJo.OtatnhxCGq8/pYW6bfVM3nW21pzwrmS','hospital'),
- (6,'Inspector Dsouza','dsouza.police@example.com','9000000006','$2a$10$X/wVNxhDkVeugtVE17RJo.OtatnhxCGq8/pYW6bfVM3nW21pzwrmS','responder');
+ (1,'System Admin','admin@crisischain.com','9000000001','$2a$10$TJxwrIgJx10QNluoEYkjte3acrYvpfMqEP1r/JBz/vqXNRpt1P.B2','admin'),
+ (2,'Asha Rao','asha@example.com','9000000002','$2a$10$GRXwKj/vVGbrVHjqTFTk0.ibVnf/ngziPK2EQXEQKkNM7RwgiIBGO','citizen'),
+ (3,'Ravi Kumar','ravi.paramedic@example.com','9000000003','$2a$10$GRXwKj/vVGbrVHjqTFTk0.ibVnf/ngziPK2EQXEQKkNM7RwgiIBGO','responder'),
+ (4,'Meera Shetty','meera.fire@example.com','9000000004','$2a$10$GRXwKj/vVGbrVHjqTFTk0.ibVnf/ngziPK2EQXEQKkNM7RwgiIBGO','responder'),
+ (5,'Dr. Anil Hegde','anil.kmc@example.com','9000000005','$2a$10$GRXwKj/vVGbrVHjqTFTk0.ibVnf/ngziPK2EQXEQKkNM7RwgiIBGO','hospital'),
+ (6,'Inspector Dsouza','dsouza.police@example.com','9000000006','$2a$10$GRXwKj/vVGbrVHjqTFTk0.ibVnf/ngziPK2EQXEQKkNM7RwgiIBGO','responder');
 
 -- 6. AUTHORITY PROFILES (responders and hospital staff, linked to organizations) -
 INSERT INTO authority_profile (authority_id, user_id, org_id, authority_type, credential_id, availability_status) VALUES

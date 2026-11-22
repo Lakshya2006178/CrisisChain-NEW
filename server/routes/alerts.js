@@ -10,5 +10,6 @@ router.get('/stats', getStats);
 router.get('/', getAlerts);
 router.post('/', optionalAuth, handleIncidentUpload('image'), createAlert);
 router.patch('/:id/status', auth, authorize(['admin', 'responder']), updateAlertStatus);
+router.put('/:id/status', auth, authorize(['admin', 'responder']), updateAlertStatus);
 
 export default router;

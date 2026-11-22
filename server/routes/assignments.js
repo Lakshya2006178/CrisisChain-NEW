@@ -23,8 +23,9 @@ router.get('/:id', auth, getAssignmentById);
 // Create new assignment (Admin only)
 router.post('/', auth, authorize(['admin']), createAssignment);
 
-// Update assignment status (Admin or assigned responder)
+// Update assignment status (Admin or assigned responder - support both PATCH and PUT)
 router.patch('/:id/status', auth, authorize(['admin', 'responder']), updateAssignmentStatus);
+router.put('/:id/status', auth, authorize(['admin', 'responder']), updateAssignmentStatus);
 
 // Delete / unassign (Admin only)
 router.delete('/:id', auth, authorize(['admin']), deleteAssignment);
