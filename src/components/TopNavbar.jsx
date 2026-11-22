@@ -90,7 +90,7 @@ export default function TopNavbar({ fullWidth }) {
 
     return (
         <header
-            className={`fixed top-0 right-0 z-50 flex items-center transition-all duration-500 border-b border-white/5 px-2.5 sm:px-4 md:px-10 gap-2 sm:gap-4 md:gap-8 bg-black/95 backdrop-blur-md will-change-transform ${fullWidth ? 'left-0' : (isSidebarOpen ? 'left-sidebar-open' : 'left-sidebar-closed')}`}
+            className={`fixed top-0 right-0 z-50 flex items-center transition-all duration-500 border-b border-slate-200 dark:border-white/5 px-2.5 sm:px-4 md:px-10 gap-2 sm:gap-4 md:gap-8 bg-white/95 dark:bg-[#08080A]/95 backdrop-blur-md will-change-transform ${fullWidth ? 'left-0' : (isSidebarOpen ? 'left-sidebar-open' : 'left-sidebar-closed')}`}
             style={{
                 height: H_NAV,
             }}
@@ -99,63 +99,62 @@ export default function TopNavbar({ fullWidth }) {
             {!fullWidth && (
             <button
                 onClick={toggleSidebar}
-                className="group flex flex-col gap-1.5 sm:gap-2 w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12 items-center justify-center bg-white/5 hover:bg-red-600 border border-white/5 hover:border-transparent transition-all duration-500 flex-shrink-0"
+                className="w-10 h-10 flex items-center justify-center rounded-lg border border-slate-300 dark:border-white/10 bg-white dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-700 dark:text-slate-200 transition-all duration-200 flex-shrink-0 shadow-xs"
                 aria-label="Toggle Navigation"
+                title="Toggle Sidebar"
             >
-                <div className={`h-[1px] bg-white group-hover:bg-white transition-all duration-500 ${isSidebarOpen ? 'w-5 sm:w-6' : 'w-3.5 sm:w-4 translate-x-1'}`} />
-                <div className={`h-[1px] bg-white group-hover:bg-white transition-all duration-500 ${isSidebarOpen ? 'w-3.5 sm:w-4' : 'w-5 sm:w-7'}`} />
-                <div className={`h-[1px] bg-white group-hover:bg-white transition-all duration-500 ${isSidebarOpen ? 'w-5 sm:w-6' : 'w-3.5 sm:w-4 -translate-x-1'}`} />
+                <Menu className="w-5 h-5 text-slate-700 dark:text-slate-200" />
             </button>
             )}
 
             {/* Omni-Search */}
             <div className="hidden md:flex flex-1 max-w-2xl relative group/search">
-                <div className="absolute left-6 top-1/2 -translate-y-1/2 flex items-center gap-4">
-                   <Search className="w-4 h-4 text-white/20 group-focus-within/search:text-red-500 transition-colors" />
+                <div className="absolute left-5 top-1/2 -translate-y-1/2 flex items-center gap-4">
+                   <Search className="w-4 h-4 text-slate-400 group-focus-within/search:text-teal-600 dark:group-focus-within/search:text-[#00FFCC] transition-colors" />
                 </div>
                 <input
                     type="text"
-                    placeholder="Search for resources, alerts, or organizations..."
-                    className="w-full bg-white/[0.02] border border-white/5 focus:border-red-500/20 focus:bg-red-500/[0.01] px-16 lg:px-16 py-3.5 font-mono text-[10px] font-black tracking-widest text-[#E5E5E7] placeholder:text-white/10 focus:outline-none transition-all duration-1000 uppercase"
+                    placeholder="Search resources, alerts, or facilities..."
+                    className="w-full bg-slate-100 dark:bg-white/[0.04] border border-slate-200 dark:border-white/10 rounded-lg focus:border-teal-500/50 focus:bg-white dark:focus:bg-white/[0.08] px-12 py-2.5 font-mono text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none transition-all duration-200"
                 />
             </div>
 
             {/* Strategic Feed (Header) */}
-            <div className="hidden xl:flex items-center gap-16 font-mono text-[9px] tracking-[0.5em] text-white/20 uppercase border-r border-white/5 pr-12 py-3">
-               <div className="flex flex-col items-start gap-2">
-                    <div className="flex items-center gap-3">
-                       <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_10px_#10b981]" />
-                       <span className="text-white/40 font-black">OPERATIONS ACTIVE</span>
+            <div className="hidden xl:flex items-center gap-12 font-mono text-[9px] tracking-[0.3em] text-slate-500 dark:text-white/40 uppercase border-r border-slate-200 dark:border-white/10 pr-10 py-2">
+               <div className="flex flex-col items-start gap-1.5">
+                    <div className="flex items-center gap-2.5">
+                       <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_#10b981]" />
+                       <span className="text-slate-800 dark:text-white/80 font-bold">SYSTEM ACTIVE</span>
                     </div>
-                   <div className="flex items-center gap-3">
-                      <Activity className="w-3.5 h-3.5 text-blue-500" />
-                      <span>Connectivity: 98%</span>
+                   <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+                      <Activity className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />
+                      <span>Grid: 99.8% Online</span>
                    </div>
                </div>
                
-               <div className="flex flex-col items-center gap-2">
-                  <div className="flex items-baseline gap-4">
-                    <span className="text-lg font-outfit font-black text-white tracking-widest leading-none">{timeStr}</span>
-                    <span className="text-[10px] text-red-500 font-black italic">UTC</span>
+               <div className="flex flex-col items-center gap-1">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-lg font-outfit font-black text-slate-900 dark:text-white tracking-wider leading-none">{timeStr}</span>
+                    <span className="text-[10px] text-teal-600 dark:text-[#00FFCC] font-bold">IST</span>
                   </div>
-                  <span className="text-[8px] text-white/40 font-black tracking-[0.8em]">{dateStr}</span>
+                  <span className="text-[8px] text-slate-500 dark:text-white/40 font-bold tracking-widest">{dateStr}</span>
                </div>
             </div>
 
             {/* Action Cluster */}
-            <div className="flex items-center gap-2 sm:gap-3 md:gap-6 ml-auto relative">
+            <div className="flex items-center gap-2 sm:gap-3 md:gap-4 ml-auto relative">
                 
                 {/* THEME TOGGLE BUTTON */}
                 <button
                     onClick={toggleTheme}
                     title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
-                    className="relative w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12 flex items-center justify-center transition-all duration-500 group border border-white/5 bg-white/[0.02] hover:border-amber-500/40 hover:bg-amber-500/[0.02] flex-shrink-0"
+                    className="relative w-9 h-9 sm:w-11 sm:h-11 flex items-center justify-center transition-all duration-300 rounded-lg border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/[0.04] hover:border-teal-500/40 hover:bg-teal-500/10 flex-shrink-0"
                     aria-label="Toggle Theme"
                 >
                     {theme === 'light' ? (
-                        <Moon className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400 group-hover:scale-110 transition-all" />
+                        <Moon className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600 group-hover:scale-110 transition-all" />
                     ) : (
-                        <Sun className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400/80 group-hover:text-amber-400 group-hover:scale-110 transition-all" />
+                        <Sun className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400 group-hover:scale-110 transition-all" />
                     )}
                 </button>
 
@@ -164,9 +163,9 @@ export default function TopNavbar({ fullWidth }) {
                     <button 
                         onClick={toggleNotif}
                         title="Notifications Feed"
-                        className={`relative w-9 h-9 sm:w-11 sm:h-11 md:w-12 md:h-12 flex items-center justify-center transition-all duration-500 group border border-white/5 flex-shrink-0 ${isNotifOpen ? 'bg-red-600 border-transparent' : 'bg-white/[0.02] hover:border-red-500/40 hover:bg-red-500/[0.02]'}`}
+                        className={`relative w-9 h-9 sm:w-11 sm:h-11 flex items-center justify-center transition-all duration-300 rounded-lg border flex-shrink-0 ${isNotifOpen ? 'bg-teal-600 text-white border-transparent' : 'border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/[0.04] hover:border-teal-500/40 hover:bg-teal-500/10'}`}
                     >
-                        <Bell className={`w-4 h-4 sm:w-5 sm:h-5 transition-colors ${isNotifOpen ? 'text-white font-black' : (unreadCount > 0 ? 'text-[#00FFCC]' : 'text-white/20 group-hover:text-red-500')}`} />
+                        <Bell className={`w-4 h-4 sm:w-5 sm:h-5 transition-colors ${isNotifOpen ? 'text-white' : (unreadCount > 0 ? 'text-teal-600 dark:text-[#00FFCC]' : 'text-slate-600 dark:text-slate-300 hover:text-teal-600')}`} />
                         {unreadCount > 0 && !isNotifOpen && (
                             <span className="absolute top-1 right-1 sm:top-1.5 sm:right-1.5 min-w-[16px] h-[16px] sm:min-w-[18px] sm:h-[18px] px-1 bg-red-500 shadow-[0_0_10px_#ef4444] text-[8px] sm:text-[9px] font-mono font-black text-white rounded-full flex items-center justify-center animate-pulse">
                                 {unreadCount > 9 ? '9+' : unreadCount}
@@ -185,28 +184,28 @@ export default function TopNavbar({ fullWidth }) {
 
                     {/* DROPDOWN / MOBILE DRAWER PANEL */}
                     {isNotifOpen && (
-                        <div className="fixed inset-x-3 top-20 max-h-[calc(100vh-6rem)] sm:inset-auto sm:right-4 sm:top-20 sm:w-[420px] sm:max-h-[520px] bg-[#0E1015] border border-white/10 shadow-[0_30px_70px_rgba(0,0,0,0.8)] z-[210] animate-fade-in overflow-hidden flex flex-col rounded-md">
-                            <div className="px-4 sm:px-6 py-3.5 sm:py-5 border-b border-white/5 flex items-center justify-between bg-white/[0.02] flex-shrink-0">
+                        <div className="fixed inset-x-3 top-20 max-h-[calc(100vh-6rem)] sm:inset-auto sm:right-4 sm:top-20 sm:w-[420px] sm:max-h-[520px] bg-white dark:bg-[#0E1015] border border-slate-200 dark:border-white/10 shadow-2xl z-[210] animate-fade-in overflow-hidden flex flex-col rounded-xl">
+                            <div className="px-4 sm:px-6 py-3.5 sm:py-5 border-b border-slate-200 dark:border-white/5 flex items-center justify-between bg-slate-50 dark:bg-white/[0.02] flex-shrink-0">
                                 <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                                     <Bell size={15} className="text-red-500 flex-shrink-0" />
-                                    <span className="font-outfit font-black text-xs sm:text-sm text-white uppercase tracking-wider truncate">Tactical Notifications</span>
+                                    <span className="font-outfit font-black text-xs sm:text-sm text-slate-900 dark:text-white uppercase tracking-wider truncate">Tactical Notifications</span>
                                 </div>
                                 <div className="flex items-center gap-2 flex-shrink-0">
-                                    <span className="font-mono text-[9px] px-2 py-0.5 rounded bg-white/5 text-white/50 uppercase tracking-widest whitespace-nowrap">
+                                    <span className="font-mono text-[9px] px-2 py-0.5 rounded bg-slate-200 dark:bg-white/5 text-slate-700 dark:text-white/50 uppercase tracking-widest whitespace-nowrap">
                                         {unreadCount} Unread
                                     </span>
                                     {unreadCount > 0 && (
                                         <button 
                                             onClick={markAllNotificationsRead}
                                             title="Mark all notifications as read"
-                                            className="font-mono text-[8px] sm:text-[9px] text-[#00FFCC] hover:underline uppercase tracking-wider whitespace-nowrap"
+                                            className="font-mono text-[8px] sm:text-[9px] text-teal-600 dark:text-[#00FFCC] hover:underline uppercase tracking-wider whitespace-nowrap"
                                         >
                                             Mark All Read
                                         </button>
                                     )}
                                     <button 
                                         onClick={() => setIsNotifOpen(false)}
-                                        className="sm:hidden p-1 text-white/40 hover:text-white transition-colors"
+                                        className="sm:hidden p-1 text-slate-400 dark:text-white/40 hover:text-slate-700 dark:hover:text-white transition-colors"
                                         title="Close notifications"
                                         aria-label="Close"
                                     >
@@ -229,32 +228,32 @@ export default function TopNavbar({ fullWidth }) {
                                                     setIsNotifOpen(false);
                                                     if (n.incident_id) navigate(`/alerts?id=${encodeURIComponent(n.incident_id)}`);
                                                 }}
-                                                className={`p-3.5 sm:p-4 border-b border-white/[0.03] transition-colors group/notif cursor-pointer flex gap-3 relative ${
-                                                    isUnread ? 'bg-white/[0.03] hover:bg-white/[0.05] border-l-2 border-l-red-500' : 'hover:bg-white/[0.02] opacity-75'
+                                                className={`p-3.5 sm:p-4 border-b border-slate-100 dark:border-white/[0.03] transition-colors group/notif cursor-pointer flex gap-3 relative ${
+                                                    isUnread ? 'bg-red-50/50 dark:bg-white/[0.03] hover:bg-red-50 dark:hover:bg-white/[0.05] border-l-2 border-l-red-500' : 'hover:bg-slate-50 dark:hover:bg-white/[0.02] opacity-80'
                                                 }`}
                                             >
                                                 <div className={`mt-0.5 w-8 h-8 flex-shrink-0 flex items-center justify-center border rounded ${
-                                                    isUnread ? 'border-red-500/30 bg-red-500/10' : 'border-white/10 bg-white/5'
+                                                    isUnread ? 'border-red-500/30 bg-red-500/10' : 'border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5'
                                                 }`}>
                                                     {getNotifIcon(n.type || n.notification_type)}
                                                 </div>
 
                                                 <div className="flex-1 min-w-0 space-y-1">
                                                     <div className="flex justify-between items-baseline gap-2">
-                                                        <span className="font-outfit font-black text-xs text-white uppercase tracking-tight truncate">
+                                                        <span className="font-outfit font-black text-xs text-slate-900 dark:text-white uppercase tracking-tight truncate">
                                                             {n.title || n.type}
                                                         </span>
-                                                        <span className="font-mono text-[8px] text-white/30 uppercase flex-shrink-0 whitespace-nowrap">
+                                                        <span className="font-mono text-[8px] text-slate-400 dark:text-white/30 uppercase flex-shrink-0 whitespace-nowrap">
                                                             {formatTimeAgo(n.created_at)}
                                                         </span>
                                                     </div>
                                                     
-                                                    <p className="font-mono text-[10px] text-white/60 leading-relaxed break-words">
+                                                    <p className="font-mono text-[10px] text-slate-600 dark:text-white/60 leading-relaxed break-words">
                                                         {n.message}
                                                     </p>
 
                                                     {n.incident_display_id && (
-                                                        <span className="inline-block font-mono text-[8px] text-[#00FFCC] bg-[#00FFCC]/10 px-1.5 py-0.5 mt-1 tracking-wider uppercase">
+                                                        <span className="inline-block font-mono text-[8px] text-teal-700 dark:text-[#00FFCC] bg-teal-500/10 px-1.5 py-0.5 mt-1 tracking-wider uppercase rounded">
                                                             {n.incident_display_id}
                                                         </span>
                                                     )}
@@ -268,7 +267,7 @@ export default function TopNavbar({ fullWidth }) {
                                                                 markNotificationRead(notifId);
                                                             }}
                                                             title="Mark as read"
-                                                            className="p-1 sm:p-1 hover:bg-white/10 rounded text-white/50 hover:text-[#00FFCC] transition-colors"
+                                                            className="p-1 sm:p-1 hover:bg-slate-200 dark:hover:bg-white/10 rounded text-slate-500 dark:text-white/50 hover:text-teal-600 dark:hover:text-[#00FFCC] transition-colors"
                                                         >
                                                             <Check size={13} />
                                                         </button>
@@ -279,7 +278,7 @@ export default function TopNavbar({ fullWidth }) {
                                                             deleteNotificationItem(notifId);
                                                         }}
                                                         title="Delete notification"
-                                                        className="p-1 sm:p-1 hover:bg-red-500/20 rounded text-white/40 hover:text-red-400 transition-colors"
+                                                        className="p-1 sm:p-1 hover:bg-red-500/20 rounded text-slate-400 dark:text-white/40 hover:text-red-500 transition-colors"
                                                     >
                                                         <Trash2 size={13} />
                                                     </button>
@@ -288,17 +287,17 @@ export default function TopNavbar({ fullWidth }) {
                                         );
                                     })
                                 ) : (
-                                    <div className="p-12 text-center text-[10px] font-mono text-white/20 uppercase tracking-[0.5em]">
+                                    <div className="p-12 text-center text-[10px] font-mono text-slate-400 dark:text-white/20 uppercase tracking-[0.5em]">
                                         NO NOTIFICATIONS
                                     </div>
                                 )}
                             </div>
 
-                            <div className="p-3 bg-white/[0.01] border-t border-white/5 flex gap-2 flex-shrink-0">
+                            <div className="p-3 bg-slate-50 dark:bg-white/[0.01] border-t border-slate-200 dark:border-white/5 flex gap-2 flex-shrink-0">
                                 {unreadCount > 0 && (
                                     <button 
                                         onClick={markAllNotificationsRead} 
-                                        className="flex-1 py-2 sm:py-2.5 bg-white/5 border border-white/10 hover:bg-white/10 transition-all font-mono text-[8px] font-black text-white/60 hover:text-white uppercase tracking-widest"
+                                        className="flex-1 py-2 sm:py-2.5 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 transition-all font-mono text-[8px] font-bold text-slate-700 dark:text-white/60 hover:text-slate-900 dark:hover:text-white uppercase tracking-widest rounded"
                                     >
                                         Mark All Read
                                     </button>
@@ -306,7 +305,7 @@ export default function TopNavbar({ fullWidth }) {
                                 <Link 
                                     to="/alerts" 
                                     onClick={() => setIsNotifOpen(false)} 
-                                    className="flex-1 py-2 sm:py-2.5 bg-red-600 hover:bg-red-500 text-white font-mono text-[8px] font-black uppercase tracking-widest text-center transition-all flex items-center justify-center"
+                                    className="flex-1 py-2 sm:py-2.5 bg-red-600 hover:bg-red-500 text-white font-mono text-[8px] font-bold uppercase tracking-widest text-center transition-all flex items-center justify-center rounded"
                                 >
                                     Emergency Feed
                                 </Link>
@@ -338,33 +337,33 @@ export default function TopNavbar({ fullWidth }) {
 
                     {/* USER DROPDOWN */}
                     {isUserOpen && (
-                        <div className="absolute right-0 top-16 w-full min-w-[200px] bg-[#0E1015] border border-white/10 shadow-[0_30px_70px_rgba(0,0,0,0.8)] z-[210] animate-fade-in overflow-hidden">
-                             <Link to="/settings" onClick={() => setIsUserOpen(false)} className="flex items-center gap-4 px-6 py-4 hover:bg-white/5 transition-colors border-b border-white/5 group/link">
-                                <Settings size={14} className="text-white/20 group-hover/link:text-white transition-colors" />
-                                <span className="font-mono text-[9px] font-black text-white/40 group-hover/link:text-white uppercase tracking-widest">Settings</span>
+                        <div className="absolute right-0 top-16 w-full min-w-[200px] bg-white dark:bg-[#0E1015] border border-slate-200 dark:border-white/10 shadow-2xl rounded-xl z-[210] animate-fade-in overflow-hidden">
+                             <Link to="/settings" onClick={() => setIsUserOpen(false)} className="flex items-center gap-4 px-6 py-4 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors border-b border-slate-100 dark:border-white/5 group/link">
+                                <Settings size={14} className="text-slate-400 dark:text-white/20 group-hover/link:text-slate-900 dark:group-hover/link:text-white transition-colors" />
+                                <span className="font-mono text-[9px] font-bold text-slate-700 dark:text-white/60 group-hover/link:text-slate-900 dark:group-hover/link:text-white uppercase tracking-widest">Settings</span>
                              </Link>
                              <button
                                 onClick={toggleTheme}
-                                className="w-full flex items-center justify-between px-6 py-4 hover:bg-white/5 transition-colors border-b border-white/5 group/theme text-left"
+                                className="w-full flex items-center justify-between px-6 py-4 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors border-b border-slate-100 dark:border-white/5 group/theme text-left"
                              >
                                 <div className="flex items-center gap-4">
                                     {theme === 'light' ? (
-                                        <Moon size={14} className="text-blue-400" />
+                                        <Moon size={14} className="text-blue-500" />
                                     ) : (
                                         <Sun size={14} className="text-amber-400" />
                                     )}
-                                    <span className="font-mono text-[9px] font-black text-white/40 group-hover/theme:text-white uppercase tracking-widest">Theme</span>
+                                    <span className="font-mono text-[9px] font-bold text-slate-700 dark:text-white/60 group-hover/theme:text-slate-900 dark:group-hover/theme:text-white uppercase tracking-widest">Theme</span>
                                 </div>
-                                <span className="font-mono text-[8px] px-2 py-0.5 border border-white/10 uppercase tracking-widest text-white/60">
+                                <span className="font-mono text-[8px] px-2 py-0.5 border border-slate-200 dark:border-white/10 rounded uppercase tracking-widest text-slate-600 dark:text-white/60 bg-slate-50 dark:bg-transparent">
                                     {theme === 'light' ? 'Light' : 'Dark'}
                                 </span>
                              </button>
                              <button 
                                 onClick={handleLogout}
-                                className="w-full flex items-center gap-4 px-6 py-5 hover:bg-red-600/10 transition-colors group/logout"
+                                className="w-full flex items-center gap-4 px-6 py-4 hover:bg-red-500/10 transition-colors group/logout"
                              >
                                  <LogOut size={14} className="text-red-500" />
-                                <span className="font-mono text-[9px] font-black text-red-500 uppercase tracking-widest">Logout</span>
+                                <span className="font-mono text-[9px] font-bold text-red-600 uppercase tracking-widest">Logout</span>
                              </button>
                         </div>
                     )}

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useDashboard } from '../context/DashboardContext';
+import { fetchStats } from '../api/index.js';
 import { 
   Shield, 
   Mail, 
@@ -9,20 +10,13 @@ import {
   EyeOff, 
   ArrowRight, 
   AlertTriangle,
-  Zap,
   Activity,
   ChevronLeft,
-  Globe,
-  Terminal,
-  Briefcase
 } from 'lucide-react';
 
-const ROLES = ['Civilian / Victim', 'First Responder', 'Hospital representative', 'Government Official'];
-
-
-const LIVE_STATS = [
-  { label: 'ACTIVE INCIDENTS', value: '24', color: '#ef4444' },
-  { label: 'RESPONDERS ONLINE', value: '312', color: '#00F0FF' },
+const DEFAULT_STATS = [
+  { label: 'ACTIVE INCIDENTS', value: '—', color: '#ef4444' },
+  { label: 'RESPONDERS ONLINE', value: '—', color: '#00F0FF' },
   { label: 'LIVES PROTECTED', value: '10K+', color: '#10b981' },
 ];
 
@@ -36,6 +30,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [liveStats, setLiveStats] = useState(DEFAULT_STATS);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -43,6 +38,20 @@ export default function LoginPage() {
       setMousePos({ x: e.clientX, y: e.clientY });
     };
     window.addEventListener('mousemove', handleMouseMove);
+
+    // Fetch real stats from backend
+    fetchStats()
+      .then(({ data }) => {
+        setLiveStats([
+          { label: 'ACTIVE INCIDENTS', value: String(data.active ?? '—'), color: '#ef4444' },
+          { label: 'RESPONDERS ONLINE', value: String(data.responders_online ?? data.total ?? '—'), color: '#00F0FF' },
+          { label: 'LIVES PROTECTED', value: data.total ? `${data.total}+` : '10K+', color: '#10b981' },
+        ]);
+      })
+      .catch(() => {
+        // Backend offline — keep default fallback values
+      });
+
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
@@ -114,7 +123,7 @@ export default function LoginPage() {
 
         {/* Live Stats */}
         <div className="grid grid-cols-1 gap-4 mb-12">
-          {LIVE_STATS.map(({label, value, color}) => (
+          {liveStats.map(({label, value, color}) => (
             <div key={label} className="p-6 bg-white/5 border border-white/5 backdrop-blur-xl flex flex-col items-start gap-1 group hover:border-[#00FFCC]/20 transition-all">
               <span className="text-[10px] font-mono text-white/20 tracking-widest uppercase">{label}</span>
               <span className="text-4xl font-outfit font-black tracking-tighter text-white group-hover:text-[#00FFCC] transition-colors">{value}</span>

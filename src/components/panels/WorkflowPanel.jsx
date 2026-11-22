@@ -12,11 +12,11 @@ export default function WorkflowPanel() {
     const { workflowId, advanceWorkflow } = useDashboard();
 
     return (
-        <div className="flex h-full w-full items-stretch divide-x divide-white/5 overflow-x-auto custom-scrollbar">
+        <div className="flex h-full w-full items-stretch divide-x divide-slate-200 dark:divide-white/5 overflow-x-auto custom-scrollbar">
             {/* Header Label */}
-            <div className="flex-shrink-0 flex flex-col justify-center px-8 bg-white/[0.02]">
-                <div className="h-1 w-8 bg-[#14B8A6] mb-4" />
-                <p className="font-mono text-[10px] text-[#9CA3AF] tracking-[0.5em] uppercase vertical-text">
+            <div className="flex-shrink-0 flex flex-col justify-center px-8 bg-slate-50/80 dark:bg-white/[0.02]">
+                <div className="h-1 w-8 bg-teal-500 dark:bg-[#14B8A6] mb-4" />
+                <p className="font-mono text-[10px] text-slate-400 dark:text-[#9CA3AF] tracking-[0.5em] uppercase vertical-text">
                     STATUS
                 </p>
             </div>
@@ -35,47 +35,47 @@ export default function WorkflowPanel() {
                                 onClick={() => { if (isActive && step.id < 4) advanceWorkflow(); }}
                                 className={`
                                     group/step relative flex flex-col justify-center gap-4 px-10 py-8 text-left transition-all duration-700 w-[280px] h-full
-                                    ${isActive ? 'bg-[#14B8A6]/[0.03] shadow-[inset_0_0_40px_rgba(0,255,204,0.02)]' : 'hover:bg-white/[0.02]'}
-                                    ${isDimmed ? 'opacity-30 grayscale' : ''}
+                                    ${isActive ? 'bg-teal-500/10 dark:bg-[#14B8A6]/[0.03] shadow-[inset_0_0_40px_rgba(20,184,166,0.05)]' : 'hover:bg-slate-50 dark:hover:bg-white/[0.02]'}
+                                    ${isDimmed ? 'opacity-60 dark:opacity-40' : ''}
                                 `}
                             >
                                 {/* Step Indicator */}
                                 <div className="absolute top-4 left-10 flex items-center gap-2">
-                                    <div className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-[#14B8A6] animate-pulse shadow-[0_0_8px_#00FFCC]' : isCompleted ? 'bg-white/40' : 'bg-white/10'}`} />
-                                    <span className="font-mono text-[9px] text-[#6B7280] tracking-widest uppercase">STEP 0{step.id}</span>
+                                    <div className={`w-2 h-2 rounded-full ${isActive ? 'bg-teal-500 animate-pulse shadow-[0_0_8px_#14B8A6]' : isCompleted ? 'bg-teal-600 dark:bg-white/40' : 'bg-slate-300 dark:bg-white/10'}`} />
+                                    <span className="font-mono text-[9px] text-slate-500 dark:text-[#6B7280] font-bold tracking-widest uppercase">STEP 0{step.id}</span>
                                 </div>
 
                                 {/* Icon & Title */}
                                 <div className="flex items-start gap-5">
                                     <div className={`
-                                        flex-shrink-0 w-12 h-12 flex items-center justify-center border transition-all duration-500
-                                        ${isActive ? 'bg-[#14B8A6]/10 border-[#14B8A6]/40 text-[#14B8A6]' : isCompleted ? 'bg-[#1F2937] border-[#374151] text-[#D1D5DB]' : 'bg-transparent border-[#1F2937] text-[#6B7280]'}
+                                        flex-shrink-0 w-12 h-12 flex items-center justify-center border transition-all duration-500 rounded-lg
+                                        ${isActive ? 'bg-teal-500/15 border-teal-500/50 text-teal-600 dark:text-[#14B8A6]' : isCompleted ? 'bg-slate-100 dark:bg-[#1F2937] border-slate-300 dark:border-[#374151] text-slate-700 dark:text-[#D1D5DB]' : 'bg-slate-50 dark:bg-transparent border-slate-200 dark:border-[#1F2937] text-slate-400 dark:text-[#6B7280]'}
                                     `}>
                                         <Icon className="w-6 h-6" />
                                     </div>
                                     <div className="flex-1 min-w-0 pt-1">
-                                        <h4 className={`font-poppins font-black text-lg tracking-tight uppercase leading-none mb-1 ${isActive ? 'text-white' : 'text-[#9CA3AF]'}`}>
+                                        <h4 className={`font-poppins font-black text-lg tracking-tight uppercase leading-none mb-1 ${isActive ? 'text-slate-900 dark:text-white' : 'text-slate-700 dark:text-[#9CA3AF]'}`}>
                                             {step.title}
                                         </h4>
-                                        <p className={`font-mono text-[9px] font-bold tracking-[0.2em] mb-3 ${isActive ? 'text-[#14B8A6]' : 'text-[#6B7280]'}`}>
+                                        <p className={`font-mono text-[9px] font-bold tracking-[0.2em] mb-3 ${isActive ? 'text-teal-600 dark:text-[#14B8A6]' : 'text-slate-500 dark:text-[#6B7280]'}`}>
                                             {step.sub}
                                         </p>
                                     </div>
                                 </div>
 
-                                <p className="text-[10px] leading-relaxed text-[#9CA3AF] font-inter uppercase italic group-hover/step:text-[#D1D5DB] transition-colors">
+                                <p className="text-[10px] leading-relaxed text-slate-600 dark:text-[#9CA3AF] font-inter uppercase italic group-hover/step:text-slate-900 dark:group-hover/step:text-[#D1D5DB] transition-colors">
                                     {step.desc}
                                 </p>
 
                                 {isActive && (
-                                    <div className="absolute bottom-0 left-0 h-1 bg-[#14B8A6] animate-progress-glow" style={{ width: '40%' }} />
+                                    <div className="absolute bottom-0 left-0 h-1 bg-teal-500 dark:bg-[#14B8A6] animate-progress-glow" style={{ width: '40%' }} />
                                 )}
                             </button>
 
                             {/* Chevron Divider */}
                             {idx < STEPS.length - 1 && (
                                 <div className="flex-shrink-0 h-full flex items-center px-2">
-                                    <ChevronRight className="w-4 h-4 text-white/5" />
+                                    <ChevronRight className="w-4 h-4 text-slate-300 dark:text-white/10" />
                                 </div>
                             )}
                         </div>

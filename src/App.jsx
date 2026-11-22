@@ -18,9 +18,9 @@ import HospitalResources from './pages/HospitalResources';
 
 function SuspenseFallback() {
   return (
-    <div className="h-screen w-screen bg-[#08080A] flex flex-col items-center justify-center gap-4">
-      <div className="w-12 h-12 border-t-2 border-[#00FFCC] rounded-full animate-spin" />
-      <span className="font-mono text-[9px] text-[#00FFCC] animate-pulse uppercase tracking-[0.4em]">SYNCING_CORTEX...</span>
+    <div className="h-screen w-screen bg-slate-50 dark:bg-[#08080A] flex flex-col items-center justify-center gap-4">
+      <div className="w-12 h-12 border-t-2 border-teal-600 dark:border-[#00FFCC] rounded-full animate-spin" />
+      <span className="font-mono text-[9px] text-teal-600 dark:text-[#00FFCC] animate-pulse uppercase tracking-[0.4em]">SYNCING_CORTEX...</span>
     </div>
   );
 }

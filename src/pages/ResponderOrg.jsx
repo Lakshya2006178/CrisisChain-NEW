@@ -6,7 +6,8 @@ import TopNavbar from '../components/TopNavbar';
 import { SZ } from '../constants';
 import {
     Truck, Wrench, Users, ClipboardList, Plus, Trash2,
-    Clock, MapPin, Search, Loader2, CheckCircle, Navigation, AlertCircle
+    Clock, MapPin, Search, Loader2, CheckCircle, Navigation, AlertCircle,
+    Shield, ShieldAlert, Activity
 } from 'lucide-react';
 import { Badge, CrudModal } from '../components/CrudModal';
 
@@ -42,7 +43,6 @@ const TABS = [
 
 export default function ResponderOrg() {
     const { isSidebarOpen, user, addToast } = useDashboard();
-    const ml = isSidebarOpen ? SZ.sidebarOpen : SZ.sidebarClosed;
     const [activeTab, setActiveTab] = useState('fleet');
     const [search, setSearch] = useState('');
     const [assignments, setAssignments] = useState([]);
@@ -136,111 +136,166 @@ export default function ResponderOrg() {
     };
 
     return (
-        <div className="flex h-screen w-full overflow-hidden bg-[#08080A] text-[#E5E5E7] font-inter">
+        <div className="flex h-screen w-full overflow-hidden bg-[#EEF2F6] dark:bg-[#08080A] text-slate-800 dark:text-[#E5E5E7] font-inter">
             <Sidebar />
             <TopNavbar />
             <main className={`flex-1 overflow-x-hidden overflow-y-auto relative z-10 ${isSidebarOpen ? 'ml-sidebar-open' : 'ml-sidebar-closed'}`}
                 style={{ marginTop: SZ.navbarH, height: `calc(100vh - ${SZ.navbarH}px)` }}>
-                <div className="p-4 sm:p-8 lg:p-12 max-w-[1400px] mx-auto">
+                <div className="p-4 sm:p-6 lg:p-8 max-w-[1400px] mx-auto space-y-6">
 
-                    {/* Header */}
-                    <div className="mb-10">
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="h-[1px] w-8 bg-[#00FFCC]/40" />
-                            <span className="text-[10px] font-mono tracking-[0.6em] text-[#00FFCC] uppercase">Responder_Org_Management</span>
+                    {/* Executive Header */}
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-white/10">
+                        <div>
+                            <div className="flex items-center gap-2 mb-1.5">
+                                <span className="inline-block w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
+                                <span className="text-[11px] font-mono tracking-widest text-teal-600 dark:text-[#00FFCC] font-bold uppercase">
+                                    TACTICAL COMMAND & FLEET LOGISTICS
+                                </span>
+                            </div>
+                            <h1 className="font-poppins text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+                                Responder & Fleet Management
+                            </h1>
+                            <p className="text-xs sm:text-sm text-slate-600 dark:text-gray-400 mt-1">
+                                Real-time dispatch telemetry, vehicle readiness status, supply caches, and duty personnel rosters.
+                            </p>
                         </div>
-                        <h1 className="font-outfit text-5xl lg:text-6xl font-black tracking-tighter uppercase leading-none">
-                            ORG<br />
-                            <span className="bg-gradient-to-r from-[#00FFCC] via-white to-white/40 bg-clip-text text-transparent italic">COMMAND</span>
-                        </h1>
+                        <div className="flex items-center gap-3">
+                            <button
+                                onClick={() => setModal(activeTab)}
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-xs font-semibold shadow-xs hover:shadow-sm transition-all"
+                            >
+                                <Plus size={15} /> Add {activeTab === 'fleet' ? 'Vehicle' : activeTab === 'equipment' ? 'Equipment' : activeTab === 'personnel' ? 'Personnel' : 'Incident'}
+                            </button>
+                        </div>
                     </div>
 
-                    {/* Stats Row */}
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+                    {/* Stats Grid */}
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                         {[
-                            { label: 'Vehicles', value: data.fleet.length, sub: `${data.fleet.filter(f => f.status === 'Available').length} available` },
-                            { label: 'Equipment', value: data.equipment.reduce((a, e) => a + Number(e.qty), 0), sub: 'total items' },
-                            { label: 'Personnel', value: data.personnel.length, sub: `${data.personnel.filter(p => p.status === 'On Duty').length} on duty` },
-                            { label: 'Incidents', value: data.incidents.length, sub: `${data.incidents.filter(i => i.status === 'Active').length} active` },
+                            { label: 'Vehicles', value: data.fleet.length, sub: `${data.fleet.filter(f => f.status === 'Available').length} available`, icon: Truck, color: 'text-teal-600 dark:text-teal-400', bg: 'bg-teal-100 dark:bg-teal-500/10' },
+                            { label: 'Equipment Items', value: data.equipment.reduce((a, e) => a + Number(e.qty), 0), sub: 'total inventory count', icon: Wrench, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-100 dark:bg-blue-500/10' },
+                            { label: 'Active Personnel', value: data.personnel.length, sub: `${data.personnel.filter(p => p.status === 'On Duty').length} on active duty`, icon: Users, color: 'text-indigo-600 dark:text-indigo-400', bg: 'bg-indigo-100 dark:bg-indigo-500/10' },
+                            { label: 'Logged Missions', value: data.incidents.length, sub: `${data.incidents.filter(i => i.status === 'Active').length} currently active`, icon: ClipboardList, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-100 dark:bg-emerald-500/10' },
                         ].map(s => (
-                            <div key={s.label} className="bg-white/5 border border-white/5 p-6">
-                                <p className="text-[9px] font-mono text-white/20 uppercase tracking-widest mb-2">{s.label}</p>
-                                <p className="font-outfit font-black text-4xl text-white tracking-tighter">{s.value}</p>
-                                <p className="text-[9px] font-mono text-[#00FFCC]/60 mt-1 uppercase tracking-widest">{s.sub}</p>
+                            <div key={s.label} className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-[#1F2937] rounded-xl p-5 shadow-xs flex items-center justify-between">
+                                <div>
+                                    <p className="text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wider">{s.label}</p>
+                                    <p className="font-poppins font-bold text-2xl sm:text-3xl text-slate-900 dark:text-white mt-1">{s.value}</p>
+                                    <p className="text-[11px] font-mono text-teal-600 dark:text-teal-400 font-medium mt-1">{s.sub}</p>
+                                </div>
+                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${s.bg} ${s.color}`}>
+                                    <s.icon size={22} />
+                                </div>
                             </div>
                         ))}
                     </div>
 
-                    {/* Tab Bar + Search + Add */}
-                    <div className="flex flex-wrap items-center gap-4 mb-8">
-                        <div className="flex gap-2 flex-wrap">
+                    {/* Tab Navigation & Search */}
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+                        <div className="inline-flex p-1 rounded-xl bg-slate-200/80 dark:bg-white/5 border border-slate-300 dark:border-white/10 gap-1 overflow-x-auto">
                             {TABS.map(({ id, label, icon: Icon }) => (
-                                <button key={id} onClick={() => { setActiveTab(id); setSearch(''); }}
-                                    className={`flex items-center gap-3 px-6 py-3 font-mono text-[10px] font-black uppercase tracking-widest border transition-all ${activeTab === id ? 'bg-[#00FFCC] text-black border-transparent' : 'bg-white/5 border-white/5 text-white/40 hover:text-white hover:border-white/10'}`}>
-                                    <Icon className="w-4 h-4" />{label}
+                                <button
+                                    key={id}
+                                    onClick={() => { setActiveTab(id); setSearch(''); }}
+                                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
+                                        activeTab === id
+                                            ? 'bg-teal-600 text-white dark:bg-teal-500/20 dark:text-[#00FFCC] shadow-xs'
+                                            : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                                    }`}
+                                >
+                                    <Icon size={14} /> {label}
                                 </button>
                             ))}
                         </div>
-                        <div className="flex-1 flex gap-4 min-w-[200px]">
-                            <div className="relative flex-1">
-                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
-                                <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search..."
-                                    className="w-full bg-white/5 border border-white/5 pl-10 pr-4 py-3 font-mono text-xs text-white focus:outline-none focus:border-[#00FFCC]/30 uppercase placeholder:text-white/10" />
-                            </div>
-                            <button onClick={() => setModal(activeTab)}
-                                className="flex items-center gap-2 px-6 py-3 bg-[#00FFCC] text-black font-outfit font-black text-xs uppercase tracking-widest hover:brightness-110">
-                                <Plus className="w-4 h-4" /> Add
-                            </button>
+
+                        <div className="relative min-w-[240px] sm:w-72">
+                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-gray-500" />
+                            <input
+                                value={search}
+                                onChange={e => setSearch(e.target.value)}
+                                placeholder="Search vehicles, equipment..."
+                                className="w-full bg-white dark:bg-[#111827] border border-slate-200 dark:border-[#1F2937] pl-10 pr-4 py-2 rounded-xl text-xs text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-gray-500 focus:outline-none focus:border-teal-500 shadow-2xs"
+                            />
                         </div>
                     </div>
 
                     {/* ── FLEET TAB ── */}
                     {activeTab === 'fleet' && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {filtered.fleet.map(v => (
-                                <div key={v.id} className="bg-white/5 border border-white/5 p-6 hover:border-[#00FFCC]/20 transition-all group relative">
-                                    <button onClick={() => { if (window.confirm('Remove this vehicle?')) removeItem('fleet', v.id); }} className="absolute top-4 right-4 text-white/10 hover:text-red-500 transition-colors"><Trash2 className="w-4 h-4" /></button>
-                                    <div className="flex items-start gap-4 mb-5">
-                                        <div className="w-12 h-12 bg-white/5 border border-white/5 flex items-center justify-center text-[#00FFCC]">
-                                            <Truck className="w-5 h-5" />
-                                        </div>
-                                        <div>
-                                            <h3 className="font-outfit font-black text-lg text-white uppercase tracking-tight">{v.name}</h3>
-                                            <p className="text-[9px] font-mono text-white/20 uppercase tracking-widest">{v.reg}</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-[9px] font-mono text-white/30 uppercase">{v.type}</span>
-                                        <Badge label={v.status} />
-                                    </div>
-                                    <p className="text-[9px] font-mono text-white/20 mt-3 uppercase tracking-widest">Last service: {v.lastService}</p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                            {filtered.fleet.length === 0 ? (
+                                <div className="col-span-full py-12 text-center text-slate-400 dark:text-gray-500 bg-white dark:bg-[#111827] border border-slate-200 dark:border-[#1F2937] rounded-xl">
+                                    No fleet vehicles matched your search.
                                 </div>
-                            ))}
+                            ) : (
+                                filtered.fleet.map(v => (
+                                    <div key={v.id} className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-[#1F2937] rounded-xl p-5 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all relative group">
+                                        <button
+                                            onClick={() => { if (window.confirm('Remove this vehicle?')) removeItem('fleet', v.id); }}
+                                            className="absolute top-4 right-4 text-slate-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400 transition-colors p-1"
+                                            title="Delete vehicle"
+                                        >
+                                            <Trash2 size={15} />
+                                        </button>
+                                        <div className="flex items-start gap-4 mb-4">
+                                            <div className="w-11 h-11 bg-teal-50 dark:bg-white/5 border border-teal-100 dark:border-white/10 rounded-xl flex items-center justify-center text-teal-600 dark:text-[#00FFCC] flex-shrink-0">
+                                                <Truck size={20} />
+                                            </div>
+                                            <div className="pr-6">
+                                                <h3 className="font-poppins font-bold text-base text-slate-900 dark:text-white truncate">{v.name}</h3>
+                                                <p className="text-xs font-mono text-slate-500 dark:text-gray-400 uppercase tracking-wider">{v.reg}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-white/5">
+                                            <span className="text-xs font-medium text-slate-600 dark:text-gray-400">{v.type}</span>
+                                            <Badge label={v.status} />
+                                        </div>
+                                        <p className="text-[11px] font-mono text-slate-500 dark:text-gray-500 mt-2.5">Last service: {v.lastService}</p>
+                                    </div>
+                                ))
+                            )}
                         </div>
                     )}
 
                     {/* ── EQUIPMENT TAB ── */}
                     {activeTab === 'equipment' && (
-                        <div className="bg-white/5 border border-white/5 overflow-hidden">
-                            <table className="w-full text-left">
+                        <div className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-[#1F2937] rounded-xl shadow-xs overflow-hidden">
+                            <table className="w-full text-left border-collapse">
                                 <thead>
-                                    <tr className="border-b border-white/5 font-mono text-[9px] text-white/20 uppercase tracking-widest">
-                                        {['Equipment', 'Qty', 'Condition', 'Location', 'Next Inspection', ''].map(h => (
-                                            <th key={h} className="px-6 py-5 font-normal">{h}</th>
+                                    <tr className="border-b border-slate-200 dark:border-[#1F2937] bg-slate-50/70 dark:bg-white/[0.02] text-xs font-semibold text-slate-600 dark:text-gray-400">
+                                        {['Equipment Name', 'Quantity', 'Condition', 'Storage Location', 'Next Inspection', 'Actions'].map(h => (
+                                            <th key={h} className="px-6 py-4">{h}</th>
                                         ))}
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    {filtered.equipment.map(e => (
-                                        <tr key={e.id} className="border-b border-white/[0.03] hover:bg-white/[0.03] transition-all">
-                                            <td className="px-6 py-5 font-outfit font-black text-white uppercase">{e.name}</td>
-                                            <td className="px-6 py-5 font-outfit font-black text-2xl text-[#00FFCC]">{e.qty}</td>
-                                            <td className="px-6 py-5"><Badge label={e.condition} /></td>
-                                            <td className="px-6 py-5 font-mono text-xs text-white/40 uppercase"><MapPin className="w-3 h-3 inline mr-1 text-[#00FFCC]" />{e.location}</td>
-                                            <td className="px-6 py-5 font-mono text-xs text-white/30">{e.nextInspection}</td>
-                                            <td className="px-6 py-5"><button onClick={() => { if (window.confirm('Remove this equipment?')) removeItem('equipment', e.id); }}><Trash2 className="w-4 h-4 text-white/10 hover:text-red-500 transition-colors" /></button></td>
+                                <tbody className="divide-y divide-slate-100 dark:divide-white/5">
+                                    {filtered.equipment.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={6} className="px-6 py-8 text-center text-slate-400 dark:text-gray-500 text-sm">
+                                                No equipment matched your search.
+                                            </td>
                                         </tr>
-                                    ))}
+                                    ) : (
+                                        filtered.equipment.map(e => (
+                                            <tr key={e.id} className="hover:bg-slate-50/60 dark:hover:bg-white/[0.02] transition-colors">
+                                                <td className="px-6 py-4 font-semibold text-sm text-slate-900 dark:text-white">{e.name}</td>
+                                                <td className="px-6 py-4 font-poppins font-bold text-lg text-teal-700 dark:text-[#00FFCC]">{e.qty}</td>
+                                                <td className="px-6 py-4"><Badge label={e.condition} /></td>
+                                                <td className="px-6 py-4 text-xs font-mono text-slate-600 dark:text-gray-400">
+                                                    <MapPin className="w-3.5 h-3.5 inline mr-1 text-teal-600 dark:text-[#00FFCC]" />{e.location}
+                                                </td>
+                                                <td className="px-6 py-4 text-xs font-mono text-slate-500 dark:text-gray-500">{e.nextInspection}</td>
+                                                <td className="px-6 py-4">
+                                                    <button
+                                                        onClick={() => { if (window.confirm('Remove this equipment item?')) removeItem('equipment', e.id); }}
+                                                        className="text-slate-400 hover:text-red-600 dark:text-gray-500 dark:hover:text-red-400 transition-colors p-1"
+                                                        title="Delete equipment"
+                                                    >
+                                                        <Trash2 size={15} />
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
                                 </tbody>
                             </table>
                         </div>
@@ -248,25 +303,39 @@ export default function ResponderOrg() {
 
                     {/* ── PERSONNEL TAB ── */}
                     {activeTab === 'personnel' && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {filtered.personnel.map(p => (
-                                <div key={p.id} className="bg-white/5 border border-white/5 p-6 hover:border-white/10 transition-all relative group">
-                                    <button onClick={() => { if (window.confirm('Remove this person?')) removeItem('personnel', p.id); }} className="absolute top-4 right-4 text-white/10 hover:text-red-500 transition-colors"><Trash2 className="w-4 h-4" /></button>
-                                    <div className="flex items-center gap-4 mb-5">
-                                        <div className="w-12 h-12 bg-black border border-white/10 flex items-center justify-center font-outfit font-black text-xl text-white">
-                                            {p.name.charAt(0)}
-                                        </div>
-                                        <div>
-                                            <h3 className="font-outfit font-black text-base text-white uppercase">{p.name}</h3>
-                                            <p className="text-[9px] font-mono text-white/30 uppercase tracking-widest">{p.rank}</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-[9px] font-mono text-white/20 uppercase"><Clock className="w-3 h-3 inline mr-1" />{p.shift} shift</span>
-                                        <Badge label={p.status} />
-                                    </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                            {filtered.personnel.length === 0 ? (
+                                <div className="col-span-full py-12 text-center text-slate-400 dark:text-gray-500 bg-white dark:bg-[#111827] border border-slate-200 dark:border-[#1F2937] rounded-xl">
+                                    No personnel matched your search.
                                 </div>
-                            ))}
+                            ) : (
+                                filtered.personnel.map(p => (
+                                    <div key={p.id} className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-[#1F2937] rounded-xl p-5 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all relative group">
+                                        <button
+                                            onClick={() => { if (window.confirm('Remove this person?')) removeItem('personnel', p.id); }}
+                                            className="absolute top-4 right-4 text-slate-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400 transition-colors p-1"
+                                            title="Delete personnel"
+                                        >
+                                            <Trash2 size={15} />
+                                        </button>
+                                        <div className="flex items-center gap-4 mb-4">
+                                            <div className="w-11 h-11 bg-teal-50 dark:bg-white/5 border border-teal-100 dark:border-white/10 rounded-xl flex items-center justify-center font-poppins font-bold text-base text-teal-700 dark:text-white flex-shrink-0">
+                                                {p.name.charAt(0)}
+                                            </div>
+                                            <div className="pr-6">
+                                                <h3 className="font-poppins font-bold text-base text-slate-900 dark:text-white truncate">{p.name}</h3>
+                                                <p className="text-xs text-slate-500 dark:text-gray-400">{p.rank}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-white/5">
+                                            <span className="text-xs text-slate-600 dark:text-gray-400 flex items-center gap-1">
+                                                <Clock className="w-3.5 h-3.5" /> {p.shift} shift
+                                            </span>
+                                            <Badge label={p.status} />
+                                        </div>
+                                    </div>
+                                ))
+                            )}
                         </div>
                     )}
 
@@ -274,12 +343,12 @@ export default function ResponderOrg() {
                     {activeTab === 'incidents' && (
                         <div className="space-y-4">
                             {isLoadingAssignments ? (
-                                <div className="p-12 text-center text-white/40 flex items-center justify-center gap-3 bg-white/5 border border-white/5">
-                                    <Loader2 size={18} className="animate-spin text-[#00FFCC]" />
+                                <div className="p-12 text-center text-slate-400 dark:text-gray-500 flex items-center justify-center gap-3 bg-white dark:bg-[#111827] border border-slate-200 dark:border-[#1F2937] rounded-xl">
+                                    <Loader2 size={18} className="animate-spin text-teal-600 dark:text-[#00FFCC]" />
                                     <span className="font-mono text-xs uppercase tracking-widest">Loading mission assignments...</span>
                                 </div>
                             ) : assignments.length === 0 ? (
-                                <div className="p-12 text-center text-white/30 font-mono text-xs uppercase tracking-widest bg-white/5 border border-white/5">
+                                <div className="p-12 text-center text-slate-400 dark:text-gray-500 font-mono text-xs uppercase tracking-widest bg-white dark:bg-[#111827] border border-slate-200 dark:border-[#1F2937] rounded-xl">
                                     No active incident assignments found
                                 </div>
                             ) : (
@@ -296,46 +365,46 @@ export default function ResponderOrg() {
                                     .map(a => {
                                         const isMyAssignment = user?.user_id === a.responder?.user_id;
                                         const statusColors = {
-                                            'Pending': 'border-amber-500/40 text-amber-400 bg-amber-500/10',
-                                            'Accepted': 'border-blue-500/40 text-blue-400 bg-blue-500/10',
-                                            'EnRoute': 'border-purple-500/40 text-purple-400 bg-purple-500/10',
-                                            'Arrived': 'border-teal-500/40 text-teal-400 bg-teal-500/10',
-                                            'Completed': 'border-emerald-500/40 text-emerald-400 bg-emerald-500/10',
-                                            'Rejected': 'border-red-500/40 text-red-400 bg-red-500/10'
+                                            'Pending': 'border-amber-300 dark:border-amber-500/40 text-amber-800 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10',
+                                            'Accepted': 'border-blue-300 dark:border-blue-500/40 text-blue-800 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10',
+                                            'EnRoute': 'border-purple-300 dark:border-purple-500/40 text-purple-800 dark:text-purple-400 bg-purple-50 dark:bg-purple-500/10',
+                                            'Arrived': 'border-teal-300 dark:border-teal-500/40 text-teal-800 dark:text-teal-400 bg-teal-50 dark:bg-teal-500/10',
+                                            'Completed': 'border-emerald-300 dark:border-emerald-500/40 text-emerald-800 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10',
+                                            'Rejected': 'border-red-300 dark:border-red-500/40 text-red-800 dark:text-red-400 bg-red-50 dark:bg-red-500/10'
                                         };
                                         return (
-                                            <div key={a.assignment_id} className="bg-white/5 border border-white/5 p-6 hover:border-white/10 transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
-                                                <div className="flex items-start gap-6">
-                                                    <div className={`w-2 h-14 ${
+                                            <div key={a.assignment_id} className="bg-white dark:bg-[#111827] border border-slate-200 dark:border-[#1F2937] rounded-xl p-5 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
+                                                <div className="flex items-start gap-4">
+                                                    <div className={`w-1.5 h-12 rounded-full flex-shrink-0 ${
                                                         a.incident?.priority === 'Critical' ? 'bg-red-500' :
-                                                        a.incident?.priority === 'High' ? 'bg-amber-500' : 'bg-[#00FFCC]'
+                                                        a.incident?.priority === 'High' ? 'bg-amber-500' : 'bg-teal-500'
                                                     }`} />
                                                     <div>
-                                                        <div className="flex items-center gap-3">
-                                                            <span className="font-mono text-[9px] px-2 py-0.5 bg-white/5 border border-white/10 text-[#00FFCC] font-black uppercase">
+                                                        <div className="flex items-center gap-2 flex-wrap">
+                                                            <span className="font-mono text-[10px] px-2 py-0.5 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-teal-700 dark:text-[#00FFCC] font-bold rounded">
                                                                 {a.incident?.code}
                                                             </span>
-                                                            <span className="font-mono text-[9px] text-white/30 uppercase tracking-widest">
+                                                            <span className="text-[11px] font-mono text-slate-500 dark:text-gray-400 uppercase tracking-wider">
                                                                 {a.incident?.type}
                                                             </span>
-                                                            <span className="font-mono text-[9px] text-red-400 uppercase">
+                                                            <span className="text-[11px] font-bold text-red-600 dark:text-red-400">
                                                                 {a.incident?.priority} Priority
                                                             </span>
                                                         </div>
-                                                        <h3 className="font-outfit font-black text-xl text-white uppercase tracking-tight mt-1">
+                                                        <h3 className="font-poppins font-bold text-lg text-slate-900 dark:text-white mt-1">
                                                             {a.incident?.title}
                                                         </h3>
-                                                        <div className="flex items-center gap-4 text-[10px] font-mono text-white/40 mt-1">
+                                                        <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-gray-400 mt-1">
                                                             <span className="flex items-center gap-1">
-                                                                <MapPin size={11} className="text-red-400" /> {a.incident?.location}
+                                                                <MapPin size={12} className="text-red-500" /> {a.incident?.location}
                                                             </span>
-                                                            <span>• Assigned: {a.responder?.name} ({a.responder?.authority_type})</span>
+                                                            <span>• Assigned: <strong className="text-slate-800 dark:text-gray-200">{a.responder?.name}</strong> ({a.responder?.authority_type})</span>
                                                         </div>
                                                     </div>
                                                 </div>
 
-                                                <div className="flex items-center gap-4 flex-wrap lg:flex-nowrap">
-                                                    <span className={`px-3 py-1 font-mono text-[10px] font-black uppercase tracking-widest border ${statusColors[a.assignment_status] || 'border-white/10 text-white/50'}`}>
+                                                <div className="flex items-center gap-3 flex-wrap lg:flex-nowrap">
+                                                    <span className={`px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-wider rounded border ${statusColors[a.assignment_status] || 'border-slate-200 text-slate-600 dark:border-white/10 dark:text-white/50'}`}>
                                                         {a.assignment_status === 'EnRoute' ? 'En Route' : a.assignment_status}
                                                     </span>
 
@@ -347,14 +416,14 @@ export default function ResponderOrg() {
                                                                     <button
                                                                         onClick={() => handleUpdateAssignmentStatus(a.assignment_id, 'Accepted')}
                                                                         disabled={updatingAssignmentId === a.assignment_id}
-                                                                        className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white font-mono text-[9px] font-black uppercase tracking-widest transition-colors disabled:opacity-50"
+                                                                        className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold transition-colors disabled:opacity-50"
                                                                     >
                                                                         Accept
                                                                     </button>
                                                                     <button
                                                                         onClick={() => handleUpdateAssignmentStatus(a.assignment_id, 'Rejected')}
                                                                         disabled={updatingAssignmentId === a.assignment_id}
-                                                                        className="px-3 py-1.5 bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white font-mono text-[9px] font-black uppercase tracking-widest transition-colors disabled:opacity-50"
+                                                                        className="px-3 py-1.5 bg-red-100 hover:bg-red-600 text-red-700 hover:text-white dark:bg-red-600/20 dark:hover:bg-red-600 dark:text-red-400 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50 border border-red-200 dark:border-transparent"
                                                                     >
                                                                         Reject
                                                                     </button>
@@ -364,7 +433,7 @@ export default function ResponderOrg() {
                                                                 <button
                                                                     onClick={() => handleUpdateAssignmentStatus(a.assignment_id, 'EnRoute')}
                                                                     disabled={updatingAssignmentId === a.assignment_id}
-                                                                    className="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white font-mono text-[9px] font-black uppercase tracking-widest transition-colors disabled:opacity-50"
+                                                                    className="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-xs font-semibold transition-colors disabled:opacity-50"
                                                                 >
                                                                     En Route →
                                                                 </button>
@@ -373,7 +442,7 @@ export default function ResponderOrg() {
                                                                 <button
                                                                     onClick={() => handleUpdateAssignmentStatus(a.assignment_id, 'Arrived')}
                                                                     disabled={updatingAssignmentId === a.assignment_id}
-                                                                    className="px-3 py-1.5 bg-teal-600 hover:bg-teal-500 text-white font-mono text-[9px] font-black uppercase tracking-widest transition-colors disabled:opacity-50"
+                                                                    className="px-3 py-1.5 bg-teal-600 hover:bg-teal-500 text-white rounded-lg text-xs font-semibold transition-colors disabled:opacity-50"
                                                                 >
                                                                     Mark Arrived 📍
                                                                 </button>
@@ -382,7 +451,7 @@ export default function ResponderOrg() {
                                                                 <button
                                                                     onClick={() => handleUpdateAssignmentStatus(a.assignment_id, 'Completed')}
                                                                     disabled={updatingAssignmentId === a.assignment_id}
-                                                                    className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-mono text-[9px] font-black uppercase tracking-widest transition-colors disabled:opacity-50"
+                                                                    className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold transition-colors disabled:opacity-50"
                                                                 >
                                                                     Complete Mission ✓
                                                                 </button>

@@ -48,14 +48,14 @@ function SystemGridOverlay({ mousePos }) {
 
 function PanelContainer({ children, label = "LIVE DATA", status = "STABLE", accent = "#00FFCC" }) {
   return (
-    <div className="group relative h-full bg-[#0E1015]/95 border border-white/5 hover:border-white/10 transition-all duration-300 overflow-hidden flex flex-col rounded-sm will-change-transform">
-      <div className="px-4 md:px-6 py-4 flex items-center justify-between bg-white/[0.04] border-b border-white/5 relative z-20">
+    <div className="group relative h-full bg-white dark:bg-[#0E1015]/95 border border-slate-200 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10 shadow-xs transition-all duration-300 overflow-hidden flex flex-col rounded-xl will-change-transform">
+      <div className="px-4 md:px-6 py-4 flex items-center justify-between bg-slate-50/80 dark:bg-white/[0.04] border-b border-slate-200 dark:border-white/5 relative z-20">
          <div className="flex items-center gap-3">
-            <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: accent, boxShadow: `0 0 8px ${accent}` }} />
-            <span className="font-mono text-[9px] font-black text-white/40 tracking-[0.3em] uppercase">{label}</span>
+            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: accent, boxShadow: `0 0 8px ${accent}` }} />
+            <span className="font-mono text-[10px] font-black text-slate-700 dark:text-white/60 tracking-[0.3em] uppercase">{label}</span>
          </div>
          <div className="hidden sm:flex items-center gap-3">
-            <span className="font-mono text-[7px] text-white/20 uppercase tracking-widest">{status}</span>
+            <span className="font-mono text-[8px] font-bold text-slate-500 dark:text-white/30 uppercase tracking-widest">{status}</span>
          </div>
       </div>
       <div className="flex-1 relative z-10 overflow-hidden">
@@ -67,18 +67,25 @@ function PanelContainer({ children, label = "LIVE DATA", status = "STABLE", acce
 
 function StatCard({ label, value, trend, icon: Icon, color }) {
   return (
-    <div className="bg-[#14171F] border border-white/5 p-6 flex flex-col gap-3 group hover:border-white/10 transition-all">
+    <div className="bg-white dark:bg-[#14171F] border border-slate-200 dark:border-white/5 p-6 flex flex-col gap-3 group hover:border-slate-300 dark:hover:border-white/10 rounded-xl shadow-xs transition-all">
        <div className="flex justify-between items-start">
-          <div className="p-2 bg-white/5 border border-white/5 text-white/20 group-hover:text-white transition-colors">
-             <Icon size={16} />
+          <div 
+            className="p-2.5 rounded-lg border transition-colors"
+            style={{ 
+              backgroundColor: `${color}15`,
+              borderColor: `${color}30`,
+              color: color
+            }}
+          >
+             <Icon size={18} />
           </div>
-          <span className={`text-[9px] font-mono font-bold px-2 py-0.5 border ${trend > 0 ? 'text-emerald-500 border-emerald-500/20 bg-emerald-500/5' : 'text-red-500 border-red-500/20 bg-red-500/5'}`}>
+          <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${trend > 0 ? 'text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10' : 'text-rose-600 dark:text-rose-400 border-rose-500/30 bg-rose-500/10'}`}>
             {trend > 0 ? '+' : ''}{trend}%
           </span>
        </div>
        <div className="mt-2">
-          <span className="block text-[8px] font-mono text-white/30 uppercase tracking-[0.3em] mb-1">{label}</span>
-          <span className="text-3xl font-outfit font-black text-white tracking-tighter">{value}</span>
+          <span className="block text-[10px] font-mono font-bold text-slate-500 dark:text-white/40 uppercase tracking-[0.2em] mb-1">{label}</span>
+          <span className="text-3xl font-outfit font-black text-slate-900 dark:text-white tracking-tight">{value}</span>
        </div>
     </div>
   );
@@ -101,7 +108,7 @@ export default function DashboardMain() {
   }, []);
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[#08080A] text-[#E5E5E7] font-inter">
+    <div className="flex h-screen w-screen overflow-hidden bg-[#EEF2F6] dark:bg-[#08080A] text-slate-900 dark:text-[#E5E5E7] font-inter">
       
       <SystemGridOverlay mousePos={mousePos} />
 
@@ -119,20 +126,20 @@ export default function DashboardMain() {
         <div className="max-w-[1920px] mx-auto fluid-p">
           
           {/* Functional Dashboard Header */}
-          <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between border-b border-white/5 pb-8">
+          <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between border-b border-slate-200 dark:border-white/5 pb-8">
              <div className="space-y-2">
                  <div className="flex items-center gap-3">
-                  <Shield size={14} className="text-[#00FFCC]" />
-                  <span className="text-[10px] font-mono font-bold tracking-[0.4em] text-[#00FFCC] uppercase">OVERVIEW</span>
+                  <Shield size={14} className="text-teal-600 dark:text-[#00FFCC]" />
+                  <span className="text-[10px] font-mono font-bold tracking-[0.4em] text-teal-600 dark:text-[#00FFCC] uppercase">OVERVIEW</span>
                 </div>
-                <h1 className="font-outfit text-4xl font-black tracking-tighter uppercase text-white">ADMIN DASHBOARD</h1>
+                <h1 className="font-outfit text-4xl font-black tracking-tight uppercase text-slate-900 dark:text-white">ADMIN DASHBOARD</h1>
              </div>
              
              <div className="flex gap-4 mt-6 md:mt-0">
-                 <button className="px-6 py-2.5 bg-white/5 border border-white/10 hover:bg-white/10 transition-all font-mono text-[9px] font-black tracking-widest uppercase">
+                 <button className="px-6 py-2.5 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-700 dark:text-slate-200 transition-all font-mono text-[10px] font-bold tracking-widest uppercase rounded shadow-xs">
                     Export
                  </button>
-                 <Link to="/report" className="px-6 py-2.5 bg-[#00FFCC] text-black hover:brightness-110 transition-all font-mono text-[9px] font-black tracking-widest uppercase shadow-[0_0_20px_rgba(0,255,204,0.2)] text-center">
+                 <Link to="/report" className="px-6 py-2.5 bg-teal-600 dark:bg-[#00FFCC] text-white dark:text-black font-semibold hover:brightness-110 transition-all font-mono text-[10px] tracking-widest uppercase shadow-sm dark:shadow-[0_0_20px_rgba(0,255,204,0.2)] text-center rounded">
                     Report Incident
                  </Link>
              </div>
@@ -201,12 +208,12 @@ export default function DashboardMain() {
           </div>
 
           {/* Footer Metadata */}
-          <div className="mt-20 flex flex-col md:flex-row justify-between items-center gap-8 border-t border-white/5 pt-10 pb-10">
-              <div className="flex gap-10 text-[9px] font-mono text-white/10 uppercase tracking-[0.5em] font-black">
+          <div className="mt-20 flex flex-col md:flex-row justify-between items-center gap-8 border-t border-slate-200 dark:border-white/5 pt-10 pb-10">
+              <div className="flex gap-10 text-[9px] font-mono text-slate-400 dark:text-white/20 uppercase tracking-[0.5em] font-black">
                  <span className="flex items-center gap-3"><Clock size={12} />NETWORK STATUS: 99.9%</span>
                  <span className="flex items-center gap-3"><Lock size={12} />SECURE CONNECTION</span>
               </div>
-              <div className="text-[9px] font-mono text-white/5 uppercase tracking-[0.8em] font-black">
+              <div className="text-[9px] font-mono text-slate-400 dark:text-white/20 uppercase tracking-[0.8em] font-black">
                  CRISISCHAIN // DISASTER RESPONSE // V5.0
               </div>
           </div>

@@ -1,4 +1,22 @@
 import pool from '../config/db.js';
+import { insertNotification } from './notificationController.js';
+
+/**
+ * Calculates the great-circle distance between two points in kilometers
+ * using the Haversine formula.
+ */
+function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
+    if (lat1 == null || lon1 == null || lat2 == null || lon2 == null) return Infinity;
+    const R = 6371; // Earth radius in km
+    const dLat = (lat2 - lat1) * (Math.PI / 180);
+    const dLon = (lon2 - lon1) * (Math.PI / 180);
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+}
 
 // Canonical type/severity vocabulary — MUST match src/lib/incidentTypes.js on
 // the frontend. Kept as a separate copy because this is a standalone Node
@@ -63,6 +81,12 @@ const formatIncidentRow = (row) => {
         ? `${row.active_allocations} Allocated`
         : (row.incident_status === 'Resolved' ? 'Released' : (row.incident_status === 'Assigned' ? 'Units Assigned' : 'None Allocated'));
 
+    const isMajorDisaster = Boolean(
+        row.is_major_disaster ||
+        (row.title && row.title.includes('[MAJOR DISASTER]')) ||
+        (row.description && row.description.includes('MAJOR DISASTER'))
+    );
+
     return {
         id: `AL-${row.incident_id}`,
         incident_id: `AL-${row.incident_id}`,
@@ -78,7 +102,7 @@ const formatIncidentRow = (row) => {
         time: formatTimeAgo(row.created_at),
         timestamp: row.created_at ? new Date(row.created_at).toISOString() : new Date().toISOString(),
         iconName: row.icon_name || iconNameForType(row.type_name),
-        color: colorForSeverity(row.priority_level),
+        color: isMajorDisaster ? '#dc2626' : colorForSeverity(row.priority_level),
         latitude: lat,
         longitude: lng,
         coordinates: hasCoords ? `${lat}, ${lng}` : null,
@@ -87,6 +111,8 @@ const formatIncidentRow = (row) => {
         active_allocations: Number(row.active_allocations || 0),
         active_assignments: Number(row.active_assignments || 0),
         reporter_id: row.reporter_id,
+        is_major_disaster: isMajorDisaster,
+        cluster_count: Number(row.cluster_count || (isMajorDisaster ? 3 : 1)),
         created_at: row.created_at,
         resolved_at: row.resolved_at,
         updated_at: row.updated_at
@@ -154,6 +180,25 @@ export const getAlerts = async (req, res) => {
         `;
 
         const [rows] = await pool.query(sql, params);
+
+        // Dynamic Spatial Clustering: detect if 3 or more active incidents cluster within 2km radius
+        const activeCoords = rows.filter(r => r.incident_status !== 'Resolved' && r.latitude != null && r.longitude != null);
+        for (const row of rows) {
+            if (row.incident_status !== 'Resolved' && row.latitude != null && row.longitude != null) {
+                const cluster = activeCoords.filter(other =>
+                    getDistanceFromLatLonInKm(Number(row.latitude), Number(row.longitude), Number(other.latitude), Number(other.longitude)) <= 2.0
+                );
+                if (cluster.length >= 3) {
+                    row.is_major_disaster = true;
+                    row.cluster_count = cluster.length;
+                    row.priority_level = 'Critical';
+                }
+            } else if (row.title && row.title.includes('[MAJOR DISASTER]')) {
+                row.is_major_disaster = true;
+                row.cluster_count = 3;
+            }
+        }
+
         const formatted = rows.map(formatIncidentRow);
         res.json(formatted);
     } catch (err) {
@@ -246,6 +291,43 @@ export const createAlert = async (req, res) => {
         conn = await pool.getConnection();
         await conn.beginTransaction();
 
+        // 7.1 Automatic Clustering Logic: Check for Multiple Alerts within 2km radius
+        let clusterElevated = false;
+        let nearbyIncidentIds = [];
+        let nearbyCount = 0;
+
+        if (hasCoords) {
+            const [activeNearbyRows] = await conn.execute(`
+                SELECT incident_id, title, priority_level, latitude, longitude 
+                FROM incident 
+                WHERE incident_status != 'Resolved' 
+                  AND latitude IS NOT NULL 
+                  AND longitude IS NOT NULL
+            `);
+
+            const nearby = activeNearbyRows.filter(r => 
+                getDistanceFromLatLonInKm(finalLat, finalLng, Number(r.latitude), Number(r.longitude)) <= 2.0
+            );
+
+            nearbyCount = nearby.length;
+            // If there are already >= 2 active reports within 2km, this 3rd report forms a Major Disaster Cluster (>= 3 reports)
+            if (nearbyCount >= 2) {
+                clusterElevated = true;
+                nearbyIncidentIds = nearby.map(r => r.incident_id);
+            }
+        }
+
+        const effectiveSeverity = clusterElevated ? 'Critical' : normalizedSeverity;
+        let finalTitle = incidentTitle;
+        if (clusterElevated && !finalTitle.includes('[MAJOR DISASTER]')) {
+            finalTitle = `[MAJOR DISASTER] ${finalTitle}`.substring(0, 150);
+        }
+
+        let finalDescription = trimmedDesc;
+        if (clusterElevated) {
+            finalDescription = `${trimmedDesc}\n[AUTOMATIC ESCALATION: Cluster of ${nearbyCount + 1} active reports detected within 2km radius. Threat elevated to Major Disaster.]`;
+        }
+
         const insertIncidentSql = `
             INSERT INTO incident 
                 (reporter_id, type_id, title, description, location_text, latitude, longitude, image_url, incident_status, priority_level)
@@ -255,13 +337,13 @@ export const createAlert = async (req, res) => {
         const [insertResult] = await conn.execute(insertIncidentSql, [
             reporterId,
             typeRecord.type_id,
-            incidentTitle,
-            trimmedDesc,
+            finalTitle,
+            finalDescription,
             trimmedLocation,
             finalLat,
             finalLng,
             imageUrl,
-            normalizedSeverity
+            effectiveSeverity
         ]);
 
         const incidentId = insertResult.insertId;
@@ -269,35 +351,77 @@ export const createAlert = async (req, res) => {
         const insertLogSql = `
             INSERT INTO incident_report_log 
                 (incident_id, logged_by, log_type, old_value, new_value, notes)
-            VALUES (?, ?, 'StatusChange', NULL, 'Reported', 'Emergency incident reported')
+            VALUES (?, ?, 'StatusChange', NULL, 'Reported', ?)
         `;
 
-        await conn.execute(insertLogSql, [incidentId, reporterId]);
+        const logNotes = clusterElevated
+            ? `Emergency incident reported [AUTOMATIC ESCALATION: Cluster of ${nearbyCount + 1} reports within 2km detected. Elevated to Major Disaster]`
+            : 'Emergency incident reported';
+
+        await conn.execute(insertLogSql, [incidentId, reporterId, logNotes]);
+
+        // If a cluster formed, escalate all prior active incidents in this 2km cluster to Critical
+        if (clusterElevated && nearbyIncidentIds.length > 0) {
+            for (const nId of nearbyIncidentIds) {
+                await conn.execute(`
+                    UPDATE incident 
+                    SET priority_level = 'Critical',
+                        title = CASE WHEN title NOT LIKE '[MAJOR DISASTER]%' THEN CONCAT('[MAJOR DISASTER] ', title) ELSE title END
+                    WHERE incident_id = ? AND incident_status != 'Resolved'
+                `, [nId]);
+
+                await conn.execute(`
+                    INSERT INTO incident_report_log 
+                        (incident_id, logged_by, log_type, old_value, new_value, notes)
+                    VALUES (?, NULL, 'SystemEvent', 'Escalated', 'Critical', 'AUTOMATIC CLUSTERING ESCALATION: Multi-alert cluster (3+ reports within 2km) triggered Major Disaster status.')
+                `, [nId]);
+            }
+        }
 
         await conn.commit();
+
+        // Dispatch notifications to admins for major disaster escalation
+        if (clusterElevated) {
+            try {
+                const [adminUsers] = await pool.query('SELECT user_id FROM users WHERE role = "admin" AND is_active = 1');
+                for (const adm of adminUsers) {
+                    await insertNotification({
+                        recipient_id: adm.user_id,
+                        incident_id: incidentId,
+                        notification_type: 'Alert',
+                        title: '⚠️ MAJOR DISASTER ESCALATION DETECTED',
+                        message: `High-density cluster of ${nearbyCount + 1} reports detected within 2km radius around "${trimmedLocation}". Incident AL-${incidentId} and surrounding units elevated to Major Disaster (Critical Priority).`
+                    });
+                }
+            } catch (notifErr) {
+                console.warn('Failed to dispatch disaster cluster notifications:', notifErr.message);
+            }
+        }
 
         const newIncident = {
             id: `AL-${incidentId}`,
             incident_id: `AL-${incidentId}`,
             numeric_id: incidentId,
             type: typeRecord.type_name,
-            title: incidentTitle,
+            title: finalTitle,
             location: trimmedLocation,
-            severity: normalizedSeverity,
+            severity: effectiveSeverity,
             status: 'Reported',
             incident_status: 'Reported',
             db_status: 'Reported',
-            description: trimmedDesc,
+            description: finalDescription,
             time: 'Just now',
             timestamp: new Date().toISOString(),
             iconName: typeRecord.icon_name || iconNameForType(typeRecord.type_name),
-            color: colorForSeverity(normalizedSeverity),
+            color: clusterElevated ? '#dc2626' : colorForSeverity(effectiveSeverity),
             latitude: finalLat,
             longitude: finalLng,
             coordinates: hasCoords ? `${finalLat}, ${finalLng}` : null,
             image_url: imageUrl,
             resources: 'None Allocated',
             reporter_id: reporterId,
+            is_major_disaster: clusterElevated,
+            cluster_count: clusterElevated ? nearbyCount + 1 : 1,
             created_at: new Date(),
             resolved_at: null
         };

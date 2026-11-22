@@ -80,9 +80,8 @@ export default function IncidentLocationMap({
   const hasCoords = coords && coords.lat != null && coords.lng != null && !isNaN(coords.lat) && !isNaN(coords.lng);
   const activeCenter = hasCoords ? [coords.lat, coords.lng] : defaultCenter;
 
-  const cartoApiKey = import.meta.env.VITE_CARTO_API_KEY;
-  const keyParam = cartoApiKey ? `?key=${cartoApiKey}` : '';
-  const tileUrl = `https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png${keyParam}`;
+  // 100% free, reliable live colorful OpenStreetMap street tiles (zero watermark, no API key needed)
+  const tileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 
   const dragHandlers = useMemo(() => ({
     dragend(e) {
@@ -103,9 +102,9 @@ export default function IncidentLocationMap({
       >
         <TileLayer
           url={tileUrl}
-          subdomains="abcd"
-          maxZoom={20}
-          attribution='&copy; <a href="https://carto.com/" target="_blank">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
+          subdomains="abc"
+          maxZoom={19}
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors'
         />
 
         <MapClickHandler onLocationSelect={onLocationSelect} />

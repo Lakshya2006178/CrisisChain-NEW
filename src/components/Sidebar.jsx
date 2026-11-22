@@ -61,22 +61,22 @@ export default function Sidebar() {
                 />
             )}
             <aside
-                className={`fixed top-0 h-screen flex flex-col z-50 transition-all duration-500 overflow-hidden bg-[#08080A] border-r border-white/5 backdrop-blur-md group/aside will-change-transform ${isSidebarOpen ? 'w-sidebar-open left-0' : 'w-sidebar-closed left-[-100%] lg:left-0'}`}
+                className={`fixed top-0 h-screen flex flex-col z-50 transition-all duration-500 overflow-hidden bg-white dark:bg-[#08080A] border-r border-slate-200 dark:border-white/5 shadow-sm dark:shadow-none backdrop-blur-md group/aside will-change-transform ${isSidebarOpen ? 'w-sidebar-open left-0' : 'w-sidebar-closed left-[-100%] lg:left-0'}`}
             >
                 {/* ── LOGO CLUSTER ── */}
                 <div className="flex items-center flex-shrink-0 relative overflow-hidden group/logo"
                     style={{ height: H_TOP }}>
                     <Link to="/" className={`flex items-center gap-6 px-8 transition-all duration-700 ${!isSidebarOpen && 'justify-center w-full px-0'}`}>
                         <div className="relative">
-                            <div className="w-12 h-12 bg-white/5 border border-white/10 flex items-center justify-center group-hover/logo:border-[#00FFCC]/60 transition-all duration-500 shadow-[inset_0_0_20px_rgba(0,255,204,0.05)]">
-                                <Shield className="w-6 h-6 text-[#00FFCC] group-hover/logo:scale-110 transition-transform" />
+                            <div className="w-11 h-11 bg-teal-500/10 dark:bg-white/5 border border-teal-500/20 dark:border-white/10 rounded-lg flex items-center justify-center group-hover/logo:border-[#00FFCC]/60 transition-all duration-300">
+                                <Shield className="w-6 h-6 text-teal-600 dark:text-[#00FFCC] group-hover/logo:scale-110 transition-transform" />
                             </div>
-                            <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-[#00FFCC] shadow-[0_0_10px_#00FFCC] animate-pulse" />
+                            <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-[#00FFCC] rounded-full shadow-[0_0_10px_#00FFCC] animate-pulse" />
                         </div>
                         {isSidebarOpen && (
                             <div className="flex flex-col gap-0.5 leading-none">
-                                <span className="font-outfit font-black text-2xl tracking-tighter uppercase text-white whitespace-nowrap">CRISISCHAIN</span>
-                                <span className="text-[10px] font-mono font-bold text-blue-500 tracking-[0.5em] opacity-40 uppercase">ADMIN COMMAND SYSTEM</span>
+                                <span className="font-outfit font-black text-2xl tracking-tighter uppercase text-slate-900 dark:text-white whitespace-nowrap">CRISISCHAIN</span>
+                                <span className="text-[10px] font-mono font-bold text-teal-700 dark:text-teal-400 tracking-[0.3em] uppercase">COMMAND NETWORK</span>
                             </div>
                         )}
                     </Link>
@@ -97,7 +97,7 @@ export default function Sidebar() {
                 </div>
 
                 {/* ── NAVIGATION BLADE ── */}
-                <nav className="flex-1 py-16 px-5 space-y-6">
+                <nav className="flex-1 py-4 px-3 space-y-1.5 overflow-y-auto">
                     {NAV.map(({ id, icon: Icon, label, path }) => {
                         const isActive = location.pathname === path;
                         return (
@@ -110,45 +110,34 @@ export default function Sidebar() {
                                     }
                                 }}
                                 className={`
-                                    group relative flex items-center w-full transition-all duration-700 rounded-sm
-                                    ${isSidebarOpen ? 'px-8 py-5' : 'justify-center py-5'}
-                                    ${isActive ? 'bg-white/[0.03] shadow-[inset_0_0_30px_rgba(255,255,255,0.02)]' : 'hover:bg-white/[0.01]'}
+                                    group relative flex items-center w-full transition-all duration-150 rounded-lg
+                                    ${isSidebarOpen ? 'px-3.5 py-2.5' : 'justify-center py-2.5'}
+                                    ${isActive 
+                                        ? 'bg-teal-50 dark:bg-teal-500/15 text-teal-800 dark:text-[#00FFCC] font-bold border-l-4 border-teal-600 dark:border-[#00FFCC] shadow-xs' 
+                                        : 'text-slate-700 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/[0.05] hover:text-slate-900 dark:hover:text-white font-medium'}
                                 `}
                             >
-                            {/* Linear Status Indicator */}
-                            {isActive && (
-                                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-10 bg-[#00FFCC] blur-[4px] animate-pulse" />
-                            )}
-
-                            <Icon className={`flex-shrink-0 transition-all duration-500 ${isActive ? 'text-[#00FFCC] scale-110 drop-shadow-[0_0_10px_rgba(0,255,204,0.3)]' : 'text-white/10 group-hover:text-white/50'}`}
-                                size={24} />
+                            <div className="w-6 h-6 flex items-center justify-center flex-shrink-0">
+                                <Icon className={`transition-all duration-150 ${isActive ? 'text-teal-600 dark:text-[#00FFCC]' : 'text-slate-600 dark:text-slate-400 group-hover:text-teal-600 dark:group-hover:text-white'}`}
+                                    size={18} />
+                            </div>
 
                             {isSidebarOpen && (
-                                <div className="ml-8 flex flex-col items-start min-w-0">
-                                    <span className={`text-[11px] font-mono font-black tracking-[0.4em] uppercase transition-all duration-700 ${isActive ? 'text-white' : 'text-white/10 group-hover:text-white/30'}`}>
+                                <div className="ml-3 flex flex-col items-start min-w-0 flex-1">
+                                    <span className={`text-xs font-bold tracking-wide uppercase truncate transition-colors duration-150 ${isActive ? 'text-slate-900 dark:text-white' : 'text-slate-700 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white'}`}>
                                         {label}
                                     </span>
-                                    {isActive && (
-                                        <div className="h-[1px] w-full bg-gradient-to-r from-[#00FFCC]/40 to-transparent mt-2 animate-width-reveal" />
-                                    )}
                                 </div>
                             )}
 
                             {isActive && isSidebarOpen && (
-                                <ChevronRight size={14} className="ml-auto text-[#00FFCC]/40" />
+                                <ChevronRight size={14} className="ml-auto text-teal-600 dark:text-[#00FFCC]/70" />
                             )}
 
                             {/* Floating Metadata Tooltip (Closed Mode) */}
                             {!isSidebarOpen && (
-                                <div className="absolute left-[80px] p-6 bg-[#0A0A0B] border border-white/10 shadow-2xl opacity-0 pointer-events-none group-hover:opacity-100 transition-all duration-500 translate-x-4 group-hover:translate-x-0 z-[100] min-w-[200px]">
-                                    <div className="flex items-center gap-4 mb-4">
-                                        <div className="w-1.5 h-1.5 bg-[#00FFCC] rounded-full" />
-                                        <span className="text-[10px] font-mono font-black tracking-[0.4em] text-white uppercase">{label}</span>
-                                    </div>
-                                    <p className="text-[8px] font-mono text-white/20 uppercase tracking-widest leading-relaxed">
-                                        Status: Verified<br />
-                                        Encryption: Active
-                                    </p>
+                                <div className="absolute left-[72px] px-3 py-1.5 bg-slate-900 dark:bg-black text-white text-xs font-medium rounded-md shadow-xl opacity-0 pointer-events-none group-hover:opacity-100 transition-all duration-150 translate-x-1 group-hover:translate-x-0 z-[100] whitespace-nowrap">
+                                    {label}
                                 </div>
                             )}
                         </button>
@@ -157,53 +146,45 @@ export default function Sidebar() {
             </nav>
 
             {/* ── SECURITY / IDENT / STATUS ── */}
-            <div className="p-8 border-t border-white/5 space-y-10 pb-16 bg-white/[0.01]">
-                <div className={`flex flex-col gap-8 ${!isSidebarOpen && 'items-center'}`}>
-                    {/* Status Nodes */}
-                    <div className={`flex items-center gap-6 transition-all duration-500 ${isSidebarOpen ? 'px-8' : 'justify-center'}`}>
-                        <div className="w-11 h-11 bg-white/5 border border-white/5 flex items-center justify-center relative group/status">
-                            <Radio size={20} className="text-[#00FFCC] animate-pulse" />
-                            <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-green-500 rounded-full shadow-[0_0_12px_#22c55e]" />
+            <div className="p-3 border-t border-slate-200 dark:border-white/10 space-y-2 bg-slate-100/50 dark:bg-white/[0.01]">
+                {/* Status Beacon */}
+                <div className={`flex items-center gap-2.5 ${isSidebarOpen ? 'px-2 py-1' : 'justify-center py-1'}`}>
+                    <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_#10b981]" />
+                    {isSidebarOpen && (
+                        <div className="flex items-center justify-between w-full">
+                            <span className="text-[10px] font-mono text-slate-500 dark:text-white/40 uppercase tracking-wider">System Grid</span>
+                            <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 uppercase tracking-wider font-bold">Online</span>
                         </div>
-                        {isSidebarOpen && (
-                            <div className="flex flex-col text-left">
-                                <span className="text-[11px] font-mono font-black text-white/40 uppercase tracking-widest">System Status</span>
-                                <span className="text-[9px] font-mono text-emerald-500 uppercase tracking-widest font-black animate-pulse">Connected</span>
-                            </div>
-                        )}
-                    </div>
+                    )}
                 </div>
 
                 {/* User Profile Card */}
-                <div className={`p-6 bg-white/[0.03] border border-white/5 relative group/user cursor-pointer overflow-hidden ${!isSidebarOpen && 'lg:p-0 lg:border-none lg:bg-transparent lg:flex lg:justify-center'}`}>
-                    <div className="absolute inset-0 bg-gradient-to-tr from-[#00FFCC]/5 to-transparent opacity-0 group-hover/user:opacity-100 transition-opacity" />
-                    <div className="flex items-center gap-6 relative z-10 w-full">
-                        <div className="w-12 h-12 bg-black border border-white/10 flex items-center justify-center font-outfit font-black text-2xl text-white group-hover/user:border-[#00FFCC]/40 transition-all">
+                <div className={`p-2 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-white/[0.03] shadow-xs relative group/user ${!isSidebarOpen && 'flex justify-center'}`}>
+                    <div className="flex items-center gap-2.5 relative z-10 w-full">
+                        <div className="w-8 h-8 rounded-md bg-teal-600 text-white flex items-center justify-center font-bold text-sm flex-shrink-0">
                             {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
                         </div>
                         {isSidebarOpen ? (
-                            <div className="flex items-center justify-between flex-1">
-                                <div className="flex flex-col gap-1 leading-none">
-                                    <span className="text-[13px] font-outfit font-black text-white uppercase tracking-wider">{user?.name || 'Unknown User'}</span>
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
-                                        <span className="text-[9px] font-mono text-white/20 uppercase tracking-[0.2em]">Role: {user?.role || 'Responder'}</span>
-                                    </div>
+                            <div className="flex items-center justify-between flex-1 min-w-0">
+                                <div className="flex flex-col min-w-0 leading-tight">
+                                    <span className="text-xs font-bold text-slate-900 dark:text-white truncate">{user?.name || 'User'}</span>
+                                    <span className="text-[10px] text-slate-500 dark:text-slate-400 capitalize truncate">{user?.role || 'Responder'}</span>
                                 </div>
                                 <button
                                     onClick={(e) => { e.stopPropagation(); handleLogout(); }}
-                                    className="p-2 text-white/10 hover:text-red-500 transition-colors"
-                                    title="Logout Session"
+                                    className="p-1.5 text-slate-400 hover:text-red-500 rounded transition-colors ml-1"
+                                    title="Logout"
                                 >
-                                    <LogOut size={16} />
+                                    <LogOut size={14} />
                                 </button>
                             </div>
                         ) : (
                             <button
                                 onClick={handleLogout}
-                                className="absolute inset-0 z-20 flex items-center justify-center opacity-0 hover:opacity-100 bg-red-600/10 transition-opacity"
+                                className="absolute inset-0 z-20 flex items-center justify-center opacity-0 hover:opacity-100 bg-red-600/10 rounded transition-opacity"
+                                title="Logout"
                             >
-                                <LogOut size={16} className="text-red-500" />
+                                <LogOut size={14} className="text-red-500" />
                             </button>
                         )}
                     </div>

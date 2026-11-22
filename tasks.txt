@@ -2,7 +2,7 @@ fix the pages (like authorities etc.)
 live map recognition of disasters
 authorities should be alerted with emergencies
 
-mutiple alerts= major disasters logic
+mutiple alerts= major disasters logic [COMPLETED: automatic 2km cluster escalation to Major Disaster & Critical priority]
 
 find the nearest shelters for disasters and hospitals for accidents
 

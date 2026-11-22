@@ -19,66 +19,66 @@ export default function AnalyticsPanel() {
   const openPath = `M 0 40 ${points}`;
 
   return (
-    <div className="flex flex-col h-full w-full bg-[#0A0B0E]/20 relative overflow-hidden  group">
+    <div className="flex flex-col h-full w-full bg-transparent relative overflow-hidden group">
       
       {/* Proper HUD Header */}
-      <div className="flex items-center justify-between px-8 py-5 border-b border-[#1F2937] bg-white/[0.01]">
+      <div className="flex items-center justify-between px-8 py-5 border-b border-slate-200 dark:border-[#1F2937] bg-slate-50/50 dark:bg-white/[0.01]">
         <div className="flex items-center gap-4">
-            <div className="w-8 h-8 border border-amber-500/20 bg-amber-500/5 flex items-center justify-center">
+            <div className="w-8 h-8 border border-amber-500/20 bg-amber-500/10 rounded-lg flex items-center justify-center">
                 <BarChart3 className="w-4 h-4 text-amber-500 group-hover:scale-110 transition-transform" />
             </div>
             <div>
-                <h4 className="font-poppins font-black text-sm tracking-tight text-white uppercase leading-none mb-1">SYSTEM ANALYTICS</h4>
+                <h4 className="font-poppins font-black text-sm tracking-tight text-slate-900 dark:text-white uppercase leading-none mb-1">SYSTEM ANALYTICS</h4>
                 <div className="flex items-center gap-2">
-                   <div className="w-1 h-1 bg-emerald-500 rounded-full animate-pulse" />
-                   <span className="font-mono text-[8px] font-bold tracking-[0.2em] text-[#6B7280] uppercase">LIVE SYNC ACTIVE</span>
+                   <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                   <span className="font-mono text-[8px] font-bold tracking-[0.2em] text-slate-500 dark:text-[#6B7280] uppercase">LIVE SYNC ACTIVE</span>
                 </div>
             </div>
         </div>
         <div className="flex gap-2">
-           {[1,2,3].map(i => <div key={i} className="w-1 h-3 bg-[#1F2937]" />)}
+           {[1,2,3].map(i => <div key={i} className="w-1 h-3 bg-slate-300 dark:bg-[#1F2937] rounded-full" />)}
         </div>
       </div>
 
       <div className="flex-1 flex flex-col gap-5 p-5 md:p-8 overflow-y-auto custom-scrollbar">
         
         {/* Tactical Bar Distribution */}
-        <div className="flex flex-col gap-5 bg-white/[0.01] border border-[#1F2937] p-5 hover:border-[#374151] transition-all duration-300 group/dist">
+        <div className="flex flex-col gap-5 bg-white dark:bg-white/[0.01] border border-slate-200 dark:border-[#1F2937] rounded-xl p-5 hover:border-slate-300 dark:hover:border-[#374151] shadow-xs transition-all duration-300 group/dist">
           <div className="flex items-center justify-between">
-             <span className="font-mono text-[9px] font-black tracking-widest text-white/30 uppercase">REPORTS BY REGION</span>
-             <Globe size={11} className="text-white/10" />
+             <span className="font-mono text-[9px] font-black tracking-widest text-slate-600 dark:text-white/40 uppercase">REPORTS BY REGION</span>
+             <Globe size={11} className="text-slate-400 dark:text-white/20" />
           </div>
           
           <div className="h-32 flex items-end justify-between gap-1.5 relative py-2">
             {D_BARS.map((b, i) => (
               <div key={i} className="flex-1 flex flex-col items-center gap-2 h-full justify-end group/bar">
                 <div className="w-full relative h-[60%] flex items-end">
-                   <div className="w-full bg-white/[0.02] absolute top-0 bottom-0" />
-                   <div className="w-full transition-all duration-700 group-hover/bar:brightness-150"
-                        style={{ height:`${b.val}%`, background: 'rgba(245, 158, 11, 0.7)' }}/>
+                   <div className="w-full bg-slate-100 dark:bg-white/[0.02] rounded-t-sm absolute top-0 bottom-0" />
+                   <div className="w-full rounded-t-sm transition-all duration-700 group-hover/bar:brightness-125"
+                        style={{ height:`${b.val}%`, background: 'rgba(245, 158, 11, 0.85)' }}/>
                 </div>
-                <span className="font-mono text-[7px] font-bold tracking-[0.1em] text-[#6B7280] uppercase truncate w-full text-center">{b.label}</span>
+                <span className="font-mono text-[7px] font-bold tracking-[0.1em] text-slate-600 dark:text-[#6B7280] uppercase truncate w-full text-center">{b.label}</span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Predictive Trend Line Line Chart */}
-        <div className="flex flex-col gap-5 bg-white/[0.01] border border-[#1F2937] p-5 hover:border-[#374151] transition-all duration-300 group/trend">
+        {/* Predictive Trend Line Chart */}
+        <div className="flex flex-col gap-5 bg-white dark:bg-white/[0.01] border border-slate-200 dark:border-[#1F2937] rounded-xl p-5 hover:border-slate-300 dark:hover:border-[#374151] shadow-xs transition-all duration-300 group/trend">
           <div className="flex items-center justify-between">
-             <span className="font-mono text-[9px] font-black tracking-widest text-white/30 uppercase">TREND OVER TIME</span>
-             <TrendingUp size={11} className="text-[#14B8A6]/20" />
+             <span className="font-mono text-[9px] font-black tracking-widest text-slate-600 dark:text-white/40 uppercase">TREND OVER TIME</span>
+             <TrendingUp size={11} className="text-teal-600 dark:text-[#14B8A6]/40" />
           </div>
           
           <div className="h-32 relative flex items-end pt-6 pb-2">
-             <div className="absolute inset-0 grid grid-cols-4 grid-rows-2 opacity-[0.02] pointer-events-none">
-                {Array.from({length: 8}).map((_, i) => <div key={i} className="border-t border-r border-white" />)}
+             <div className="absolute inset-0 grid grid-cols-4 grid-rows-2 opacity-10 pointer-events-none">
+                {Array.from({length: 8}).map((_, i) => <div key={i} className="border-t border-r border-slate-400 dark:border-white" />)}
              </div>
 
              <svg viewBox="0 0 100 40" className="w-full h-full preserve-3d">
                 <defs>
                    <linearGradient id="trendGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#00FFCC" stopOpacity="0.2" />
+                      <stop offset="0%" stopColor="#00FFCC" stopOpacity="0.3" />
                       <stop offset="100%" stopColor="#00FFCC" stopOpacity="0" />
                    </linearGradient>
                 </defs>
@@ -89,20 +89,20 @@ export default function AnalyticsPanel() {
                 <path
                    d={openPath}
                    fill="none"
-                   stroke="#00FFCC"
-                   strokeWidth="1"
+                   stroke="#0d9488"
+                   strokeWidth="1.5"
                    strokeLinecap="round"
                    strokeLinejoin="round"
                    className="animate-draw-line"
                 />
              </svg>
              
-             <div className="absolute top-0 right-0 p-1 bg-black/60 border border-[#374151] font-mono text-[8px] font-black">
-                <span className="text-[#14B8A6]">95.4%</span>
+             <div className="absolute top-0 right-0 p-1 bg-slate-100 dark:bg-black/60 border border-slate-300 dark:border-[#374151] rounded font-mono text-[8px] font-black">
+                <span className="text-teal-700 dark:text-[#14B8A6]">95.4%</span>
              </div>
           </div>
           
-          <div className="flex justify-between items-center text-[7px] font-mono text-white/10 uppercase tracking-[0.3em] mt-2">
+          <div className="flex justify-between items-center text-[7px] font-mono text-slate-400 dark:text-white/20 uppercase tracking-[0.3em] mt-2">
              <span>12 HOURS AGO</span>
              <span>RIGHT NOW</span>
           </div>
@@ -110,15 +110,15 @@ export default function AnalyticsPanel() {
       </div>
 
       {/* Analytics Footer HUD */}
-      <div className="px-8 py-4 border-t border-[#1F2937] bg-white/[0.01] flex items-center justify-between">
+      <div className="px-8 py-4 border-t border-slate-200 dark:border-[#1F2937] bg-slate-50/50 dark:bg-white/[0.01] flex items-center justify-between">
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
-               <Gauge size={10} className="text-[#6B7280]" />
-               <span className="font-mono text-[8px] font-bold text-white/30 uppercase tracking-[0.2em]">CAPACITY UTILIZATION: 42%</span>
+               <Gauge size={12} className="text-slate-400 dark:text-[#6B7280]" />
+               <span className="font-mono text-[8px] font-bold text-slate-500 dark:text-white/40 uppercase tracking-[0.2em]">CAPACITY UTILIZATION: 42%</span>
             </div>
             <div className="flex items-center gap-2">
-               <Target size={10} className="text-[#6B7280]" />
-               <span className="font-mono text-[8px] font-bold text-white/30 uppercase tracking-[0.2em]">ACCURACY: 98%</span>
+               <Target size={12} className="text-slate-400 dark:text-[#6B7280]" />
+               <span className="font-mono text-[8px] font-bold text-slate-500 dark:text-white/40 uppercase tracking-[0.2em]">ACCURACY: 98%</span>
             </div>
          </div>
       </div>

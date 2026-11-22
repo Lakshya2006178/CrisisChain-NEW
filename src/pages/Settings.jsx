@@ -35,25 +35,25 @@ const SETTINGS_ERROR_FALLBACK = (
 
 function SettingCard({ title, description, icon: Icon, children, accent = "#00FFCC", badge }) {
     return (
-        <div className="bg-[#0E1015]/95 border border-white/5 p-6 lg:p-8 flex flex-col h-full group hover:border-white/10 transition-all duration-500 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 blur-[80px] opacity-[0.02] pointer-events-none group-hover:opacity-[0.04] transition-opacity" style={{ backgroundColor: accent }} />
+        <div className="bg-white dark:bg-[#0E1015] border border-slate-200 dark:border-white/10 rounded-xl shadow-xs p-6 lg:p-8 flex flex-col h-full group hover:border-slate-300 dark:hover:border-white/20 transition-all duration-300 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 blur-[80px] opacity-[0.03] pointer-events-none group-hover:opacity-[0.06] transition-opacity" style={{ backgroundColor: accent }} />
             
             <div className="flex items-center justify-between mb-4 relative z-20">
-                <div className="flex items-center gap-4">
-                    <div className="p-2.5 bg-white/5 border border-white/5 text-white/40 group-hover:text-white transition-colors">
+                <div className="flex items-center gap-3.5">
+                    <div className="p-2.5 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5 text-slate-700 dark:text-white/60 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
                         {Icon && <Icon size={18} />}
                     </div>
                     <div>
-                        <h3 className="font-outfit font-black text-xl text-white uppercase tracking-tight leading-none">{title}</h3>
+                        <h3 className="font-outfit font-black text-xl text-slate-900 dark:text-white uppercase tracking-tight leading-none">{title}</h3>
                     </div>
                 </div>
                 {badge && (
-                    <span className="px-3 py-1 bg-white/5 border border-white/5 font-mono text-[8px] text-white/40 uppercase tracking-widest">{badge}</span>
+                    <span className="px-3 py-1 rounded bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/5 font-mono text-[9px] text-slate-600 dark:text-white/50 uppercase tracking-wider">{badge}</span>
                 )}
             </div>
 
             {description && (
-                <p className="font-mono text-[9px] text-white/20 uppercase tracking-[0.2em] mb-8 relative z-20 border-b border-white/5 pb-4">
+                <p className="font-mono text-[10px] text-slate-500 dark:text-white/40 uppercase tracking-wider mb-6 relative z-20 border-b border-slate-200 dark:border-white/5 pb-4">
                     {description}
                 </p>
             )}
@@ -67,13 +67,13 @@ function SettingCard({ title, description, icon: Icon, children, accent = "#00FF
 
 function Toggle({ enabled, onChange, label, subLabel }) {
     return (
-        <div className="flex items-center justify-between py-3 group/toggle cursor-pointer border-b border-white/[0.02] last:border-0" onClick={() => onChange(!enabled)}>
+        <div className="flex items-center justify-between py-3 group/toggle cursor-pointer border-b border-slate-200/60 dark:border-white/[0.02] last:border-0" onClick={() => onChange(!enabled)}>
             <div className="flex flex-col">
-                <span className="font-mono text-[10px] text-white/40 group-hover/toggle:text-white transition-colors uppercase tracking-widest">{label}</span>
-                {subLabel && <span className="text-[8px] font-mono text-white/10 uppercase mt-1">{subLabel}</span>}
+                <span className="font-mono text-xs text-slate-700 dark:text-white/60 group-hover/toggle:text-slate-950 dark:group-hover/toggle:text-white transition-colors uppercase tracking-wider">{label}</span>
+                {subLabel && <span className="text-[9px] font-mono text-slate-400 dark:text-white/20 uppercase mt-0.5">{subLabel}</span>}
             </div>
-            <div className={`w-10 h-5 relative flex items-center transition-all ${enabled ? 'bg-red-500/20' : 'bg-white/5'} border border-white/10 p-0.5`}>
-                <div className={`w-3.5 h-3.5 transition-all ${enabled ? 'translate-x-5 bg-red-500 shadow-[0_0_10px_#ef4444]' : 'translate-x-0 bg-white/20'}`} />
+            <div className={`w-10 h-5 relative flex items-center transition-all ${enabled ? 'bg-red-500/20' : 'bg-slate-200 dark:bg-white/5'} border border-slate-300 dark:border-white/10 p-0.5 rounded-full`}>
+                <div className={`w-4 h-4 rounded-full transition-all ${enabled ? 'translate-x-5 bg-red-600 dark:bg-red-500 shadow-sm' : 'translate-x-0 bg-white dark:bg-white/30 shadow-sm'}`} />
             </div>
         </div>
     );
@@ -82,11 +82,11 @@ function Toggle({ enabled, onChange, label, subLabel }) {
 function TableHeader({ columns }) {
     return (
         <thead>
-            <tr className="border-b border-white/5 text-[9px] font-mono text-white/20 uppercase tracking-[0.4em] text-left">
+            <tr className="border-b border-slate-200 dark:border-white/5 text-[10px] font-mono text-slate-500 dark:text-white/40 uppercase tracking-widest text-left bg-slate-50/50 dark:bg-transparent">
                 {columns.map((c, i) => (
-                    <th key={i} className="px-6 py-4 font-normal">{c}</th>
+                    <th key={i} className="px-6 py-3.5 font-bold">{c}</th>
                 ))}
-                <th className="px-6 py-4 font-normal text-right">ACTIONS</th>
+                <th className="px-6 py-3.5 font-bold text-right">ACTIONS</th>
             </tr>
         </thead>
     );
@@ -95,17 +95,17 @@ function TableHeader({ columns }) {
 const ConfirmationModal = ({ isOpen, title, message, onConfirm, onCancel }) => {
     if (!isOpen) return null;
     return (
-        <div className="fixed inset-0 z-[600] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md animate-fade-in">
-            <div className="w-full max-w-md bg-[#0E1015] border border-white/10 p-10 space-y-8 shadow-[0_0_50px_rgba(239,68,68,0.1)]">
-                <div className="space-y-4">
-                    <h3 className="font-outfit font-black text-2xl text-white uppercase tracking-tighter">{title}</h3>
-                    <p className="font-mono text-[10px] text-white/40 uppercase tracking-widest leading-relaxed">
+        <div className="fixed inset-0 z-[600] flex items-center justify-center p-6 bg-black/60 backdrop-blur-md animate-fade-in">
+            <div className="w-full max-w-md bg-white dark:bg-[#0E1015] border border-slate-200 dark:border-white/10 rounded-2xl p-8 space-y-6 shadow-2xl">
+                <div className="space-y-3">
+                    <h3 className="font-outfit font-black text-2xl text-slate-900 dark:text-white uppercase tracking-tight">{title}</h3>
+                    <p className="font-mono text-xs text-slate-600 dark:text-white/50 uppercase tracking-wider leading-relaxed">
                         {message}
                     </p>
                 </div>
-                <div className="flex gap-4">
-                    <button onClick={onCancel} className="flex-1 py-4 bg-white/5 border border-white/10 text-white font-mono text-[9px] font-black uppercase tracking-widest hover:bg-white/10 transition-all">Cancel</button>
-                    <button onClick={onConfirm} className="flex-1 py-4 bg-red-600 text-white font-mono text-[9px] font-black uppercase tracking-widest hover:brightness-110 transition-all">Confirm</button>
+                <div className="flex gap-3">
+                    <button onClick={onCancel} className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 border border-slate-300 dark:border-white/10 text-slate-800 dark:text-white rounded-lg font-mono text-xs font-bold uppercase tracking-wider transition-all">Cancel</button>
+                    <button onClick={onConfirm} className="flex-1 py-3 bg-red-600 text-white rounded-lg font-mono text-xs font-bold uppercase tracking-wider hover:bg-red-700 transition-all shadow-xs">Confirm</button>
                 </div>
             </div>
         </div>
@@ -115,98 +115,98 @@ const ConfirmationModal = ({ isOpen, title, message, onConfirm, onCancel }) => {
 const OrgModal = ({ isOpen, isEditing, formData, onChange, onSubmit, onCancel, isSubmitting }) => {
     if (!isOpen) return null;
     return (
-        <div className="fixed inset-0 z-[600] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md animate-fade-in">
-            <div className="w-full max-w-lg bg-[#0E1015] border border-white/10 p-8 space-y-6 shadow-[0_0_50px_rgba(239,68,68,0.15)] relative">
-                <div className="flex items-center justify-between border-b border-white/10 pb-4">
-                    <h3 className="font-outfit font-black text-2xl text-white uppercase tracking-tight">
+        <div className="fixed inset-0 z-[600] flex items-center justify-center p-6 bg-black/60 backdrop-blur-md animate-fade-in">
+            <div className="w-full max-w-lg bg-white dark:bg-[#0E1015] border border-slate-200 dark:border-white/10 rounded-2xl p-8 space-y-6 shadow-2xl relative">
+                <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-4">
+                    <h3 className="font-outfit font-black text-2xl text-slate-900 dark:text-white uppercase tracking-tight">
                         {isEditing ? 'Edit Organization' : 'Add Organization'}
                     </h3>
-                    <button onClick={onCancel} className="text-white/40 hover:text-white transition-colors">✕</button>
+                    <button onClick={onCancel} className="text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors text-xl">✕</button>
                 </div>
                 <form onSubmit={onSubmit} className="space-y-4">
                     <div className="space-y-1">
-                        <label className="text-[10px] font-mono uppercase tracking-widest text-white/40">Organization Name*</label>
+                        <label className="text-[10px] font-mono uppercase tracking-wider text-slate-600 dark:text-white/40 font-bold">Organization Name*</label>
                         <input
                             required
                             type="text"
                             value={formData.name}
                             onChange={e => onChange({ ...formData, name: e.target.value })}
                             placeholder="e.g. Mangaluru Central Hospital"
-                            className="w-full bg-white/5 border border-white/10 px-4 py-2.5 font-mono text-[11px] text-white outline-none focus:border-red-500/50"
+                            className="w-full bg-slate-50 dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-lg px-4 py-2.5 font-mono text-xs text-slate-900 dark:text-white outline-none focus:border-red-500/50"
                         />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1">
-                            <label className="text-[10px] font-mono uppercase tracking-widest text-white/40">Type*</label>
+                            <label className="text-[10px] font-mono uppercase tracking-wider text-slate-600 dark:text-white/40 font-bold">Type*</label>
                             <select
                                 value={formData.org_type}
                                 onChange={e => onChange({ ...formData, org_type: e.target.value })}
-                                className="w-full bg-[#111318] border border-white/10 px-4 py-2.5 font-mono text-[11px] text-white outline-none focus:border-red-500/50"
+                                className="w-full bg-slate-50 dark:bg-[#111318] border border-slate-300 dark:border-white/10 rounded-lg px-4 py-2.5 font-mono text-xs text-slate-900 dark:text-white outline-none focus:border-red-500/50"
                             >
-                                <option value="Hospital">Hospital</option>
-                                <option value="FireDept">Fire Dept</option>
-                                <option value="Police">Police</option>
-                                <option value="Military">Military</option>
-                                <option value="NGO">NGO</option>
-                                <option value="Other">Other</option>
+                                <option value="Hospital" className="bg-white dark:bg-[#111318]">Hospital</option>
+                                <option value="FireDept" className="bg-white dark:bg-[#111318]">Fire Dept</option>
+                                <option value="Police" className="bg-white dark:bg-[#111318]">Police</option>
+                                <option value="Military" className="bg-white dark:bg-[#111318]">Military</option>
+                                <option value="NGO" className="bg-white dark:bg-[#111318]">NGO</option>
+                                <option value="Other" className="bg-white dark:bg-[#111318]">Other</option>
                             </select>
                         </div>
                         <div className="space-y-1">
-                            <label className="text-[10px] font-mono uppercase tracking-widest text-white/40">Status*</label>
+                            <label className="text-[10px] font-mono uppercase tracking-wider text-slate-600 dark:text-white/40 font-bold">Status*</label>
                             <select
                                 value={formData.status}
                                 onChange={e => onChange({ ...formData, status: e.target.value })}
-                                className="w-full bg-[#111318] border border-white/10 px-4 py-2.5 font-mono text-[11px] text-white outline-none focus:border-red-500/50"
+                                className="w-full bg-slate-50 dark:bg-[#111318] border border-slate-300 dark:border-white/10 rounded-lg px-4 py-2.5 font-mono text-xs text-slate-900 dark:text-white outline-none focus:border-red-500/50"
                             >
-                                <option value="Active">Active</option>
-                                <option value="Inactive">Inactive</option>
+                                <option value="Active" className="bg-white dark:bg-[#111318]">Active</option>
+                                <option value="Inactive" className="bg-white dark:bg-[#111318]">Inactive</option>
                             </select>
                         </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1">
-                            <label className="text-[10px] font-mono uppercase tracking-widest text-white/40">Contact Number</label>
+                            <label className="text-[10px] font-mono uppercase tracking-wider text-slate-600 dark:text-white/40 font-bold">Contact Number</label>
                             <input
                                 type="text"
                                 value={formData.contact_number}
                                 onChange={e => onChange({ ...formData, contact_number: e.target.value })}
                                 placeholder="e.g. 08242225533"
-                                className="w-full bg-white/5 border border-white/10 px-4 py-2.5 font-mono text-[11px] text-white outline-none focus:border-red-500/50"
+                                className="w-full bg-slate-50 dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-lg px-4 py-2.5 font-mono text-xs text-slate-900 dark:text-white outline-none focus:border-red-500/50"
                             />
                         </div>
                         <div className="space-y-1">
-                            <label className="text-[10px] font-mono uppercase tracking-widest text-white/40">Capacity Note</label>
+                            <label className="text-[10px] font-mono uppercase tracking-wider text-slate-600 dark:text-white/40 font-bold">Capacity Note</label>
                             <input
                                 type="text"
                                 value={formData.capacity_note}
                                 onChange={e => onChange({ ...formData, capacity_note: e.target.value })}
                                 placeholder="e.g. 150 Beds"
-                                className="w-full bg-white/5 border border-white/10 px-4 py-2.5 font-mono text-[11px] text-white outline-none focus:border-red-500/50"
+                                className="w-full bg-slate-50 dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-lg px-4 py-2.5 font-mono text-xs text-slate-900 dark:text-white outline-none focus:border-red-500/50"
                             />
                         </div>
                     </div>
                     <div className="space-y-1">
-                        <label className="text-[10px] font-mono uppercase tracking-widest text-white/40">Address / Location</label>
+                        <label className="text-[10px] font-mono uppercase tracking-wider text-slate-600 dark:text-white/40 font-bold">Address / Location</label>
                         <input
                             type="text"
                             value={formData.address}
                             onChange={e => onChange({ ...formData, address: e.target.value })}
                             placeholder="e.g. Hampankatta, Mangaluru"
-                            className="w-full bg-white/5 border border-white/10 px-4 py-2.5 font-mono text-[11px] text-white outline-none focus:border-red-500/50"
+                            className="w-full bg-slate-50 dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-lg px-4 py-2.5 font-mono text-xs text-slate-900 dark:text-white outline-none focus:border-red-500/50"
                         />
                     </div>
-                    <div className="flex gap-4 pt-4">
+                    <div className="flex gap-3 pt-4">
                         <button
                             type="button"
                             onClick={onCancel}
-                            className="flex-1 py-3 bg-white/5 border border-white/10 text-white font-mono text-[9px] font-black uppercase tracking-widest hover:bg-white/10 transition-all"
+                            className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 border border-slate-300 dark:border-white/10 text-slate-800 dark:text-white rounded-lg font-mono text-xs font-bold uppercase tracking-wider transition-all"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="flex-1 py-3 bg-red-600 text-white font-mono text-[9px] font-black uppercase tracking-widest hover:brightness-110 transition-all disabled:opacity-50"
+                            className="flex-1 py-2.5 bg-red-600 text-white rounded-lg font-mono text-xs font-bold uppercase tracking-wider hover:bg-red-700 transition-all disabled:opacity-50 shadow-xs"
                         >
                             {isSubmitting ? 'Saving...' : isEditing ? 'Update Organization' : 'Create Organization'}
                         </button>
@@ -220,70 +220,70 @@ const OrgModal = ({ isOpen, isEditing, formData, onChange, onSubmit, onCancel, i
 const UserEditModal = ({ isOpen, user, role, is_active, onChangeRole, onChangeActive, onSubmit, onCancel, isSubmitting, isSelf }) => {
     if (!isOpen || !user) return null;
     return (
-        <div className="fixed inset-0 z-[600] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md animate-fade-in">
-            <div className="w-full max-w-md bg-[#0E1015] border border-white/10 p-8 space-y-6 shadow-[0_0_50px_rgba(245,158,11,0.15)] relative">
-                <div className="flex items-center justify-between border-b border-white/10 pb-4">
+        <div className="fixed inset-0 z-[600] flex items-center justify-center p-6 bg-black/60 backdrop-blur-md animate-fade-in">
+            <div className="w-full max-w-md bg-white dark:bg-[#0E1015] border border-slate-200 dark:border-white/10 rounded-2xl p-8 space-y-6 shadow-2xl relative">
+                <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/10 pb-4">
                     <div>
-                        <span className="text-[9px] font-mono uppercase tracking-[0.3em] text-[#f59e0b]">USER MANAGEMENT</span>
-                        <h3 className="font-outfit font-black text-2xl text-white uppercase tracking-tight mt-1">
+                        <span className="text-[10px] font-mono uppercase tracking-wider font-bold text-amber-600 dark:text-[#f59e0b]">USER MANAGEMENT</span>
+                        <h3 className="font-outfit font-black text-2xl text-slate-900 dark:text-white uppercase tracking-tight mt-0.5">
                             Edit User & Role
                         </h3>
                     </div>
-                    <button onClick={onCancel} className="text-white/40 hover:text-white transition-colors">✕</button>
+                    <button onClick={onCancel} className="text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors text-xl">✕</button>
                 </div>
-                <form onSubmit={onSubmit} className="space-y-5">
-                    <div className="p-4 bg-white/[0.02] border border-white/5 space-y-1">
-                        <div className="text-[10px] font-mono text-white/30 uppercase tracking-widest">User Profile</div>
-                        <div className="font-bold text-white text-sm">{user.name || user.full_name}</div>
-                        <div className="font-mono text-[10px] text-white/40">{user.email} • {user.phone_number}</div>
+                <form onSubmit={onSubmit} className="space-y-4">
+                    <div className="p-4 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 rounded-lg space-y-1">
+                        <div className="text-[10px] font-mono text-slate-500 dark:text-white/30 uppercase tracking-wider font-bold">User Profile</div>
+                        <div className="font-bold text-slate-900 dark:text-white text-sm">{user.name || user.full_name}</div>
+                        <div className="font-mono text-xs text-slate-500 dark:text-white/40">{user.email} • {user.phone_number}</div>
                     </div>
 
                     <div className="space-y-1">
-                        <label className="text-[10px] font-mono uppercase tracking-widest text-white/40">Role*</label>
+                        <label className="text-[10px] font-mono uppercase tracking-wider text-slate-600 dark:text-white/40 font-bold">Role*</label>
                         <select
                             value={role}
                             disabled={isSelf}
                             onChange={e => onChangeRole(e.target.value)}
-                            className="w-full bg-[#111318] border border-white/10 px-4 py-3 font-mono text-[11px] text-white outline-none focus:border-amber-500/50 disabled:opacity-50"
+                            className="w-full bg-slate-50 dark:bg-[#111318] border border-slate-300 dark:border-white/10 rounded-lg px-4 py-2.5 font-mono text-xs text-slate-900 dark:text-white outline-none focus:border-amber-500/50 disabled:opacity-50"
                         >
-                            <option value="admin">Admin</option>
-                            <option value="responder">Responder</option>
-                            <option value="hospital">Hospital Representative</option>
-                            <option value="citizen">Citizen</option>
+                            <option value="admin" className="bg-white dark:bg-[#111318]">Admin</option>
+                            <option value="responder" className="bg-white dark:bg-[#111318]">Responder</option>
+                            <option value="hospital" className="bg-white dark:bg-[#111318]">Hospital Representative</option>
+                            <option value="citizen" className="bg-white dark:bg-[#111318]">Citizen</option>
                         </select>
                         {isSelf && (
-                            <p className="text-[8px] font-mono text-amber-500/80 mt-1 uppercase">Cannot change your own admin role</p>
+                            <p className="text-[9px] font-mono text-amber-600 dark:text-amber-500/80 mt-1 uppercase font-bold">Cannot change your own admin role</p>
                         )}
                     </div>
 
                     <div className="space-y-1">
-                        <label className="text-[10px] font-mono uppercase tracking-widest text-white/40">Account Status*</label>
+                        <label className="text-[10px] font-mono uppercase tracking-wider text-slate-600 dark:text-white/40 font-bold">Account Status*</label>
                         <select
                             value={is_active ? '1' : '0'}
                             disabled={isSelf}
                             onChange={e => onChangeActive(e.target.value === '1')}
-                            className="w-full bg-[#111318] border border-white/10 px-4 py-3 font-mono text-[11px] text-white outline-none focus:border-amber-500/50 disabled:opacity-50"
+                            className="w-full bg-slate-50 dark:bg-[#111318] border border-slate-300 dark:border-white/10 rounded-lg px-4 py-2.5 font-mono text-xs text-slate-900 dark:text-white outline-none focus:border-amber-500/50 disabled:opacity-50"
                         >
-                            <option value="1">Active</option>
-                            <option value="0">Deactivated</option>
+                            <option value="1" className="bg-white dark:bg-[#111318]">Active</option>
+                            <option value="0" className="bg-white dark:bg-[#111318]">Deactivated</option>
                         </select>
                         {isSelf && (
-                            <p className="text-[8px] font-mono text-amber-500/80 mt-1 uppercase">Cannot deactivate your own account</p>
+                            <p className="text-[9px] font-mono text-amber-600 dark:text-amber-500/80 mt-1 uppercase font-bold">Cannot deactivate your own account</p>
                         )}
                     </div>
 
-                    <div className="flex gap-4 pt-3">
+                    <div className="flex gap-3 pt-3">
                         <button
                             type="button"
                             onClick={onCancel}
-                            className="flex-1 py-3 bg-white/5 border border-white/10 text-white font-mono text-[9px] font-black uppercase tracking-widest hover:bg-white/10 transition-all"
+                            className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 border border-slate-300 dark:border-white/10 text-slate-800 dark:text-white rounded-lg font-mono text-xs font-bold uppercase tracking-wider transition-all"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="flex-1 py-3 bg-amber-500 text-black font-mono text-[9px] font-black uppercase tracking-widest hover:brightness-110 transition-all disabled:opacity-50"
+                            className="flex-1 py-2.5 bg-amber-500 text-black rounded-lg font-mono text-xs font-black uppercase tracking-wider hover:bg-amber-400 transition-all disabled:opacity-50 shadow-xs"
                         >
                             {isSubmitting ? 'Saving...' : 'Save Changes'}
                         </button>
@@ -527,7 +527,7 @@ function SettingsContent() {
     };
 
     return (
-        <div className="flex h-screen w-full overflow-hidden bg-[#08080A] text-[#E5E5E7] font-inter">
+        <div className="flex h-screen w-full overflow-hidden bg-slate-100 dark:bg-[#08080A] text-slate-900 dark:text-[#E5E5E7] font-inter">
             <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-[0.03]">
                 <div className="absolute inset-0 bg-[linear-gradient(rgba(0,255,204,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(0,255,204,0.01)_1px,transparent_1px)] bg-[size:100px_100px]" />
                 <div 
@@ -548,17 +548,17 @@ function SettingsContent() {
             >
                 <div className="max-w-[1700px] mx-auto fluid-p">
 
-                    <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between border-b border-white/5 pb-8">
-                        <div className="space-y-2">
-                            <div className="flex items-center gap-3">
-                                <SettingsIcon size={14} className="text-red-500" />
-                                <span className="text-[10px] font-mono font-bold tracking-[0.4em] text-red-500 uppercase">SYSTEM SETTINGS</span>
+                    <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between border-b border-slate-200 dark:border-white/5 pb-6">
+                        <div className="space-y-1.5">
+                            <div className="flex items-center gap-2 text-red-600 dark:text-red-500">
+                                <SettingsIcon size={14} />
+                                <span className="text-[10px] font-mono font-bold tracking-wider uppercase">System Settings</span>
                             </div>
-                            <h1 className="font-outfit text-4xl lg:text-5xl font-black tracking-tighter uppercase text-white leading-none">
-                                SETTINGS<span className="text-white/20">://</span>PANEL
+                            <h1 className="font-outfit text-3xl lg:text-4xl font-black tracking-tight uppercase text-slate-900 dark:text-white leading-none">
+                                SETTINGS<span className="text-slate-400 dark:text-white/20">://</span>PANEL
                             </h1>
                         </div>
-                        <div className="flex items-center gap-4 mt-6 md:mt-0 px-4 py-2 bg-white/5 border border-white/10 font-mono text-[9px] uppercase tracking-widest text-white/40">
+                        <div className="flex items-center gap-3 mt-4 md:mt-0 px-4 py-2 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg font-mono text-[10px] uppercase tracking-wider text-slate-600 dark:text-white/50 shadow-xs">
                            <Activity size={12} className="text-blue-500" /> STATUS: OPERATIONAL
                         </div>
                     </div>
@@ -573,14 +573,14 @@ function SettingsContent() {
                                 icon={Building2} 
                                 accent="#3b82f6"
                             >
-                                <div className="flex justify-between items-center mb-6">
+                                <div className="flex justify-between items-center mb-6 gap-4">
                                     <div className="relative group flex-1 max-w-xs">
-                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-red-500 transition-colors" size={12} />
-                                        <input type="text" placeholder="Search entries..." value={orgSearch} onChange={e => setOrgSearch(e.target.value)} className="w-full bg-white/5 border border-white/5 px-10 py-2.5 font-mono text-[10px] uppercase tracking-widest outline-none focus:border-red-500/30 transition-all text-white" />
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/20 group-focus-within:text-red-500 transition-colors" size={12} />
+                                        <input type="text" placeholder="Search entries..." value={orgSearch} onChange={e => setOrgSearch(e.target.value)} className="w-full bg-slate-50 dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-lg px-8 py-2 font-mono text-xs uppercase tracking-wider outline-none focus:border-red-500/50 transition-all text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/20 shadow-xs" />
                                     </div>
                                     <button
                                         onClick={handleOpenAddOrg}
-                                        className="px-6 py-2.5 bg-red-600 text-white font-mono text-[9px] font-black uppercase tracking-widest hover:brightness-110 transition-all"
+                                        className="px-5 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-mono text-xs font-bold uppercase tracking-wider transition-all shadow-xs"
                                     >
                                         Add Organization
                                     </button>
@@ -588,58 +588,58 @@ function SettingsContent() {
                                 <div className="overflow-x-auto custom-scrollbar">
                                     <table className="w-full min-w-[900px]">
                                         <TableHeader columns={['NAME', 'TYPE', 'CONTACT', 'CAPACITY', 'STATUS']} />
-                                        <tbody className="font-mono text-[10px] uppercase tracking-widest text-white/60">
+                                        <tbody className="font-mono text-xs uppercase tracking-wider text-slate-700 dark:text-white/60">
                                             {isLoadingOrgs ? (
                                                 <tr>
-                                                    <td colSpan={6} className="px-6 py-12 text-center text-white/40">
+                                                    <td colSpan={6} className="px-6 py-12 text-center text-slate-400 dark:text-white/40">
                                                         <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2 text-red-500" />
-                                                        <span className="font-mono text-[9px] uppercase tracking-widest">Loading organizations from database...</span>
+                                                        <span className="font-mono text-xs uppercase tracking-wider">Loading organizations from database...</span>
                                                     </td>
                                                 </tr>
                                             ) : orgError ? (
                                                 <tr>
-                                                    <td colSpan={6} className="px-6 py-12 text-center text-red-400">
+                                                    <td colSpan={6} className="px-6 py-12 text-center text-red-600 dark:text-red-400">
                                                         <AlertCircle className="w-5 h-5 mx-auto mb-2 text-red-500" />
-                                                        <p className="font-mono text-[10px] uppercase tracking-widest mb-3">{orgError}</p>
-                                                        <button onClick={loadOrgs} className="px-4 py-1.5 bg-white/5 border border-white/10 text-white font-mono text-[8px] uppercase tracking-widest hover:bg-white/10">Retry</button>
+                                                        <p className="font-mono text-xs uppercase tracking-wider mb-3">{orgError}</p>
+                                                        <button onClick={loadOrgs} className="px-4 py-1.5 bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white font-mono text-xs uppercase tracking-wider hover:bg-slate-200 dark:hover:bg-white/10 rounded">Retry</button>
                                                     </td>
                                                 </tr>
                                             ) : filteredOrgs.length === 0 ? (
                                                 <tr>
-                                                    <td colSpan={6} className="px-6 py-12 text-center text-white/20 font-mono text-[10px] uppercase tracking-widest">
+                                                    <td colSpan={6} className="px-6 py-12 text-center text-slate-400 dark:text-white/20 font-mono text-xs uppercase tracking-widest">
                                                         No organizations found matching "{orgSearch}"
                                                     </td>
                                                 </tr>
                                             ) : (
                                                 filteredOrgs.map((org) => (
-                                                    <tr key={org.id || org.org_id} className="border-b border-white/[0.02] hover:bg-white/[0.02] transition-colors">
-                                                        <td className="px-6 py-5 font-black text-white">{org.name}</td>
-                                                        <td className="px-6 py-5">{org.type || org.org_type}</td>
-                                                        <td className="px-6 py-5 text-[9px]">{org.contact || org.contact_number || 'N/A'}</td>
-                                                        <td className="px-6 py-5 text-blue-400 font-bold">{org.capacity || org.capacity_note || 'N/A'}</td>
-                                                        <td className="px-6 py-5">
+                                                    <tr key={org.id || org.org_id} className="border-b border-slate-100 dark:border-white/[0.02] hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors">
+                                                        <td className="px-6 py-4 font-black text-slate-900 dark:text-white">{org.name}</td>
+                                                        <td className="px-6 py-4">{org.type || org.org_type}</td>
+                                                        <td className="px-6 py-4 text-xs">{org.contact || org.contact_number || 'N/A'}</td>
+                                                        <td className="px-6 py-4 text-blue-600 dark:text-blue-400 font-bold">{org.capacity || org.capacity_note || 'N/A'}</td>
+                                                        <td className="px-6 py-4">
                                                             <div className="flex items-center gap-2">
                                                                 <div className={`w-1.5 h-1.5 rounded-full ${org.status === 'Active' ? 'bg-emerald-500' : 'bg-red-500'}`} />
-                                                                <span className={org.status === 'Active' ? 'text-emerald-500' : 'text-red-500/60'}>
+                                                                <span className={org.status === 'Active' ? 'text-emerald-600 dark:text-emerald-500 font-bold' : 'text-red-600 dark:text-red-500/60'}>
                                                                     {org.status}
                                                                 </span>
                                                             </div>
                                                         </td>
-                                                        <td className="px-6 py-5 text-right">
-                                                            <div className="flex justify-end gap-4">
+                                                        <td className="px-6 py-4 text-right">
+                                                            <div className="flex justify-end gap-3">
                                                                 <button
                                                                     onClick={() => handleOpenEditOrg(org)}
-                                                                    className="text-white/20 hover:text-white transition-colors"
+                                                                    className="p-1.5 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
                                                                     title="Edit"
                                                                 >
-                                                                    <Edit2 size={12} />
+                                                                    <Edit2 size={13} />
                                                                 </button>
                                                                 <button
                                                                     onClick={() => openConfirm('delete_org', org)}
-                                                                    className="text-white/20 hover:text-red-500 transition-colors"
+                                                                    className="p-1.5 text-slate-400 hover:text-red-600 transition-colors"
                                                                     title="Delete"
                                                                 >
-                                                                    <Trash2 size={12} />
+                                                                    <Trash2 size={13} />
                                                                 </button>
                                                             </div>
                                                         </td>
@@ -661,49 +661,49 @@ function SettingsContent() {
                                 accent="#a855f7" 
                                 badge="LIVE"
                             >
-                                <div className="space-y-8">
-                                    <div className="flex items-center justify-between border-b border-white/5 pb-4">
+                                <div className="space-y-6">
+                                    <div className="flex items-center justify-between border-b border-slate-200 dark:border-white/5 pb-4">
                                         <div className="flex flex-col gap-1">
-                                            <span className="text-[8px] font-mono text-white/30 tracking-widest uppercase">Global Health</span>
+                                            <span className="text-[9px] font-mono text-slate-500 dark:text-white/40 tracking-wider uppercase font-bold">Global Health</span>
                                             <div className="flex items-center gap-2">
                                                 <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_#10b981]" />
-                                                <span className="font-outfit font-black text-xl text-white uppercase tracking-tight">OPERATIONAL</span>
+                                                <span className="font-outfit font-black text-xl text-slate-900 dark:text-white uppercase tracking-tight">OPERATIONAL</span>
                                             </div>
                                         </div>
                                         <div className="text-right">
-                                            <span className="block text-[8px] font-mono text-white/30 tracking-widest uppercase">Last Sync</span>
-                                            <span className="font-mono text-[10px] text-white/60 uppercase">Just now</span>
+                                            <span className="block text-[9px] font-mono text-slate-500 dark:text-white/40 tracking-wider uppercase">Last Sync</span>
+                                            <span className="font-mono text-xs text-slate-700 dark:text-white/70 uppercase font-bold">Just now</span>
                                         </div>
                                     </div>
-                                    <div className="space-y-6">
+                                    <div className="space-y-5">
                                         <div>
                                             <div className="flex justify-between items-end mb-2">
                                                 <div className="flex items-center gap-2">
-                                                    <Cpu size={12} className="text-blue-400" />
-                                                    <span className="font-mono text-[9px] text-white/40 uppercase tracking-widest">Server Load</span>
+                                                    <Cpu size={14} className="text-blue-500" />
+                                                    <span className="font-mono text-xs text-slate-600 dark:text-white/60 uppercase tracking-wider">Server Load</span>
                                                 </div>
-                                                <span className="font-outfit font-black text-sm text-white">42%</span>
+                                                <span className="font-outfit font-black text-sm text-slate-900 dark:text-white">42%</span>
                                             </div>
-                                            <div className="h-1 bg-white/5 w-full relative">
-                                                <div className="h-full bg-blue-500 transition-all duration-1000 shadow-[0_0_10px_#3b82f640]" style={{ width: '42%' }} />
+                                            <div className="h-1.5 bg-slate-200 dark:bg-white/5 rounded-full overflow-hidden w-full relative">
+                                                <div className="h-full bg-blue-500 rounded-full transition-all duration-1000 shadow-sm" style={{ width: '42%' }} />
                                             </div>
                                         </div>
                                         <div>
                                             <div className="flex justify-between items-end mb-2">
                                                 <div className="flex items-center gap-2">
-                                                    <Activity size={12} className="text-purple-400" />
-                                                    <span className="font-mono text-[9px] text-white/40 uppercase tracking-widest">Network Speed</span>
+                                                    <Activity size={14} className="text-purple-500" />
+                                                    <span className="font-mono text-xs text-slate-600 dark:text-white/60 uppercase tracking-wider">Network Speed</span>
                                                 </div>
-                                                <span className="font-outfit font-black text-sm text-white">892 Mbps</span>
+                                                <span className="font-outfit font-black text-sm text-slate-900 dark:text-white">892 Mbps</span>
                                             </div>
-                                            <div className="h-1 bg-white/5 w-full relative">
-                                                <div className="h-full bg-purple-500 transition-all duration-1000 shadow-[0_0_10px_#a855f740]" style={{ width: '78%' }} />
+                                            <div className="h-1.5 bg-slate-200 dark:bg-white/5 rounded-full overflow-hidden w-full relative">
+                                                <div className="h-full bg-purple-500 rounded-full transition-all duration-1000 shadow-sm" style={{ width: '78%' }} />
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="pt-4 flex items-center justify-between font-mono text-[8px] text-white/20 uppercase tracking-[0.2em] font-black">
-                                        <div className="flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10">UPTIME: 142 Days</div>
-                                        <div className="flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10">HEALTH: 100%</div>
+                                    <div className="pt-4 flex items-center justify-between font-mono text-[9px] text-slate-500 dark:text-white/40 uppercase tracking-wider font-bold">
+                                        <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded">UPTIME: 142 Days</div>
+                                        <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded">HEALTH: 100%</div>
                                     </div>
                                 </div>
                             </SettingCard>
@@ -722,49 +722,49 @@ function SettingsContent() {
                             >
                                 <div className="flex items-center gap-4 mb-6">
                                     <div className="relative group max-w-xs flex-1">
-                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20 group-focus-within:text-amber-500 transition-colors" size={12} />
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/20 group-focus-within:text-amber-500 transition-colors" size={12} />
                                         <input
                                             type="text"
                                             placeholder="Search users..."
                                             value={userSearch}
                                             onChange={e => setUserSearch(e.target.value)}
-                                            className="w-full bg-white/5 border border-white/5 px-10 py-2.5 font-mono text-[10px] uppercase tracking-widest outline-none focus:border-amber-500/30 transition-all text-white"
+                                            className="w-full bg-slate-50 dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-lg px-8 py-2 font-mono text-xs uppercase tracking-wider outline-none focus:border-amber-500/50 transition-all text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/20 shadow-xs"
                                         />
                                     </div>
-                                    <div className="flex items-center gap-2 px-3 py-2 bg-white/5 border border-white/10">
-                                         <Filter size={12} className="text-white/20" />
+                                    <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-lg shadow-xs">
+                                         <Filter size={12} className="text-slate-500 dark:text-white/30" />
                                          <select
                                             value={roleFilter}
                                             onChange={e => setRoleFilter(e.target.value)}
-                                            className="bg-transparent font-mono text-[8px] text-white/70 uppercase tracking-widest outline-none cursor-pointer"
+                                            className="bg-transparent font-mono text-xs text-slate-800 dark:text-white/70 uppercase tracking-wider outline-none cursor-pointer"
                                          >
-                                            <option value="All" className="bg-[#0b0d13] text-white">All Roles</option>
-                                            <option value="admin" className="bg-[#0b0d13] text-white">Admin</option>
-                                            <option value="responder" className="bg-[#0b0d13] text-white">Responder</option>
-                                            <option value="hospital" className="bg-[#0b0d13] text-white">Hospital</option>
-                                            <option value="citizen" className="bg-[#0b0d13] text-white">Citizen</option>
+                                            <option value="All" className="bg-white dark:bg-[#0b0d13] text-slate-900 dark:text-white">All Roles</option>
+                                            <option value="admin" className="bg-white dark:bg-[#0b0d13] text-slate-900 dark:text-white">Admin</option>
+                                            <option value="responder" className="bg-white dark:bg-[#0b0d13] text-slate-900 dark:text-white">Responder</option>
+                                            <option value="hospital" className="bg-white dark:bg-[#0b0d13] text-slate-900 dark:text-white">Hospital</option>
+                                            <option value="citizen" className="bg-white dark:bg-[#0b0d13] text-slate-900 dark:text-white">Citizen</option>
                                          </select>
                                     </div>
                                 </div>
                                 <div className="overflow-x-auto custom-scrollbar">
                                     <table className="w-full min-w-[700px]">
                                         <TableHeader columns={['NAME / CONTACT', 'ROLE', 'ORGANIZATION', 'STATUS', 'REGISTERED', 'ACTIONS']} />
-                                        <tbody className="font-mono text-[10px] uppercase tracking-widest text-white/60">
+                                        <tbody className="font-mono text-xs uppercase tracking-wider text-slate-700 dark:text-white/60">
                                             {isLoadingUsers ? (
                                                 <tr>
-                                                    <td colSpan={6} className="px-6 py-12 text-center text-white/40">
+                                                    <td colSpan={6} className="px-6 py-12 text-center text-slate-400 dark:text-white/40">
                                                         <Loader2 className="animate-spin inline-block mr-2" size={16} /> Loading users from database...
                                                     </td>
                                                 </tr>
                                             ) : userError ? (
                                                 <tr>
-                                                    <td colSpan={6} className="px-6 py-12 text-center text-red-400">
+                                                    <td colSpan={6} className="px-6 py-12 text-center text-red-600 dark:text-red-400">
                                                         {userError}
                                                     </td>
                                                 </tr>
                                             ) : filteredUsers.length === 0 ? (
                                                 <tr>
-                                                    <td colSpan={6} className="px-6 py-12 text-center text-white/30">
+                                                    <td colSpan={6} className="px-6 py-12 text-center text-slate-400 dark:text-white/30">
                                                         No users found matching query
                                                     </td>
                                                 </tr>
@@ -773,45 +773,45 @@ function SettingsContent() {
                                                     const userId = user.id || user.user_id;
                                                     const isSelf = (currentUser?.user_id || currentUser?.id) === userId;
                                                     const roleColor =
-                                                        user.role === 'admin' ? 'text-red-400 border-red-500/30 bg-red-500/10' :
-                                                        user.role === 'responder' ? 'text-amber-400 border-amber-500/30 bg-amber-500/10' :
-                                                        user.role === 'hospital' ? 'text-blue-400 border-blue-500/30 bg-blue-500/10' :
-                                                        'text-white/60 border-white/10 bg-white/5';
+                                                        user.role === 'admin' ? 'text-red-600 dark:text-red-400 border-red-300 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10' :
+                                                        user.role === 'responder' ? 'text-amber-700 dark:text-amber-400 border-amber-300 dark:border-amber-500/30 bg-amber-50 dark:bg-amber-500/10' :
+                                                        user.role === 'hospital' ? 'text-blue-700 dark:text-blue-400 border-blue-300 dark:border-blue-500/30 bg-blue-50 dark:bg-blue-500/10' :
+                                                        'text-slate-600 dark:text-white/60 border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5';
                                                     return (
-                                                        <tr key={userId} className="border-b border-white/[0.02] hover:bg-white/[0.02] transition-colors group/row">
+                                                        <tr key={userId} className="border-b border-slate-100 dark:border-white/[0.02] hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors group/row">
                                                             <td className="px-6 py-4">
                                                                 <div className="flex items-center gap-3">
-                                                                   <div className="w-7 h-7 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/40 text-[9px] font-black">
+                                                                   <div className="w-7 h-7 rounded-full bg-slate-200 dark:bg-white/5 border border-slate-300 dark:border-white/10 flex items-center justify-center text-slate-700 dark:text-white/40 text-[10px] font-black">
                                                                        {(user.name || user.full_name || 'U')[0].toUpperCase()}
                                                                    </div>
                                                                    <div>
-                                                                       <div className="font-black text-white flex items-center gap-2">
+                                                                       <div className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
                                                                            {user.name || user.full_name}
                                                                            {isSelf && (
-                                                                               <span className="text-[7px] px-1.5 py-0.2 bg-red-500/20 text-red-400 border border-red-500/30 font-mono tracking-tighter">YOU</span>
+                                                                               <span className="text-[8px] px-1.5 py-0.2 bg-red-50 dark:bg-red-500/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-500/30 font-mono font-bold">YOU</span>
                                                                            )}
                                                                        </div>
-                                                                       <div className="text-[9px] text-white/40 font-mono lowercase">{user.email}</div>
+                                                                       <div className="text-[10px] text-slate-500 dark:text-white/40 font-mono lowercase">{user.email}</div>
                                                                    </div>
                                                                 </div>
                                                             </td>
                                                             <td className="px-6 py-4">
-                                                                <span className={`px-2 py-0.5 rounded-sm border uppercase text-[8px] font-bold ${roleColor}`}>
+                                                                <span className={`px-2 py-0.5 rounded uppercase text-[9px] font-bold border ${roleColor}`}>
                                                                     {user.role}
                                                                 </span>
                                                             </td>
-                                                            <td className="px-6 py-4 text-white/50">{user.org_name || user.org || '—'}</td>
+                                                            <td className="px-6 py-4 text-slate-600 dark:text-white/50">{user.org_name || user.org || '—'}</td>
                                                             <td className="px-6 py-4">
-                                                                <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-sm border text-[8px] font-mono ${
+                                                                <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded border text-[9px] font-mono font-bold ${
                                                                     user.is_active
-                                                                        ? 'text-emerald-400 border-emerald-500/30 bg-emerald-500/10'
-                                                                        : 'text-red-400 border-red-500/30 bg-red-500/10'
+                                                                        ? 'text-emerald-700 dark:text-emerald-400 border-emerald-300 dark:border-emerald-500/30 bg-emerald-50 dark:bg-emerald-500/10'
+                                                                        : 'text-red-700 dark:text-red-400 border-red-300 dark:border-red-500/30 bg-red-50 dark:bg-red-500/10'
                                                                 }`}>
-                                                                    <div className={`w-1 h-1 rounded-full ${user.is_active ? 'bg-emerald-400' : 'bg-red-400'}`} />
+                                                                    <div className={`w-1.5 h-1.5 rounded-full ${user.is_active ? 'bg-emerald-500' : 'bg-red-500'}`} />
                                                                     {user.is_active ? 'ACTIVE' : 'DEACTIVATED'}
                                                                 </span>
                                                             </td>
-                                                            <td className="px-6 py-4 text-white/40 font-mono text-[9px]">
+                                                            <td className="px-6 py-4 text-slate-500 dark:text-white/40 font-mono text-[10px]">
                                                                 {user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}
                                                             </td>
                                                             <td className="px-6 py-4 text-right">
@@ -819,23 +819,23 @@ function SettingsContent() {
                                                                     <button
                                                                         onClick={() => handleOpenEditUser(user)}
                                                                         title="Edit Role / Status"
-                                                                        className="p-1.5 bg-white/5 hover:bg-amber-500/20 text-white/70 hover:text-amber-400 border border-white/10 transition-all"
+                                                                        className="p-1.5 bg-slate-100 hover:bg-amber-100 dark:bg-white/5 dark:hover:bg-amber-500/20 text-slate-700 hover:text-amber-800 dark:text-white/70 dark:hover:text-amber-400 border border-slate-300 dark:border-white/10 rounded transition-all"
                                                                     >
-                                                                        <Edit2 size={11} />
+                                                                        <Edit2 size={12} />
                                                                     </button>
                                                                     <button
                                                                         disabled={isSelf}
                                                                         onClick={() => handleToggleUserStatus(user)}
                                                                         title={isSelf ? 'Cannot deactivate self' : user.is_active ? 'Deactivate User' : 'Activate User'}
-                                                                        className={`p-1.5 border transition-all ${
+                                                                        className={`p-1.5 border rounded transition-all ${
                                                                             isSelf
-                                                                                ? 'opacity-20 cursor-not-allowed bg-white/5 border-white/10'
+                                                                                ? 'opacity-30 cursor-not-allowed bg-slate-100 dark:bg-white/5 border-slate-200 dark:border-white/10'
                                                                                 : user.is_active
-                                                                                    ? 'bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white border-red-500/20'
-                                                                                    : 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-white border-emerald-500/20'
+                                                                                    ? 'bg-red-50 text-red-600 hover:bg-red-600 hover:text-white border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500 dark:hover:text-white dark:border-red-500/20'
+                                                                                    : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:hover:bg-emerald-500 dark:hover:text-white dark:border-emerald-500/20'
                                                                         }`}
                                                                     >
-                                                                        <Power size={11} />
+                                                                        <Power size={12} />
                                                                     </button>
                                                                 </div>
                                                             </td>
@@ -877,23 +877,23 @@ function SettingsContent() {
                                     accent="#10b981"
                                 >
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                                        <div className="space-y-2">
-                                            <label className="font-mono text-[8px] text-white/20 uppercase tracking-widest pl-1">Target Response Time (minutes)</label>
+                                        <div className="space-y-1.5">
+                                            <label className="font-mono text-[9px] text-slate-600 dark:text-white/40 uppercase tracking-wider font-bold pl-1">Target Response Time (minutes)</label>
                                             <div className="relative">
-                                                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20" size={12} />
-                                                <input type="number" value={config.respTime} onChange={e => setConfig({...config, respTime: e.target.value})} className="w-full bg-[#0A0B0E] border border-white/5 py-3 pl-10 pr-4 font-mono text-[11px] text-white focus:border-red-500/30 outline-none" />
+                                                <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/30" size={14} />
+                                                <input type="number" value={config.respTime} onChange={e => setConfig({...config, respTime: e.target.value})} className="w-full bg-slate-50 dark:bg-[#0A0B0E] border border-slate-300 dark:border-white/10 rounded-lg py-2.5 pl-10 pr-4 font-mono text-xs text-slate-900 dark:text-white focus:border-red-500/50 outline-none shadow-xs" />
                                             </div>
                                         </div>
-                                        <div className="space-y-2">
-                                            <label className="font-mono text-[8px] text-white/20 uppercase tracking-widest pl-1">Alert Sensitivity</label>
+                                        <div className="space-y-1.5">
+                                            <label className="font-mono text-[9px] text-slate-600 dark:text-white/40 uppercase tracking-wider font-bold pl-1">Alert Sensitivity</label>
                                             <div className="relative">
-                                                <AlertCircle className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20" size={12} />
-                                                <select value={config.threshold} onChange={e => setConfig({...config, threshold: e.target.value})} className="w-full bg-[#0A0B0E] border border-white/5 py-3 pl-10 pr-4 font-mono text-[11px] text-white focus:border-red-500/30 outline-none cursor-pointer appearance-none">
-                                                    <option>High Priority</option>
-                                                    <option>Moderate</option>
-                                                    <option>All Signals</option>
+                                                <AlertCircle className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/30" size={14} />
+                                                <select value={config.threshold} onChange={e => setConfig({...config, threshold: e.target.value})} className="w-full bg-slate-50 dark:bg-[#0A0B0E] border border-slate-300 dark:border-white/10 rounded-lg py-2.5 pl-10 pr-4 font-mono text-xs text-slate-900 dark:text-white focus:border-red-500/50 outline-none cursor-pointer appearance-none shadow-xs">
+                                                    <option className="bg-white dark:bg-[#08080A]">High Priority</option>
+                                                    <option className="bg-white dark:bg-[#08080A]">Moderate</option>
+                                                    <option className="bg-white dark:bg-[#08080A]">All Signals</option>
                                                 </select>
-                                                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-white/20 pointer-events-none" size={12} />
+                                                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/30 pointer-events-none" size={14} />
                                             </div>
                                         </div>
                                     </div>
@@ -914,27 +914,27 @@ function SettingsContent() {
                                 icon={Shield} 
                                 accent="#ef4444"
                             >
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-                                    <div className="space-y-8">
-                                        <h4 className="font-mono text-[10px] font-black text-white uppercase tracking-[0.4em] mb-4 flex items-center gap-3">
-                                            <Lock size={12} className="text-red-500" /> CHANGE PASSWORD
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div className="space-y-4">
+                                        <h4 className="font-mono text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-2 flex items-center gap-2">
+                                            <Lock size={14} className="text-red-500" /> CHANGE PASSWORD
                                         </h4>
-                                        <div className="space-y-4">
-                                            <input type="password" placeholder="Current Password" className="w-full bg-white/5 border border-white/5 px-6 py-4 font-mono text-xs text-white outline-none focus:border-red-500/30 transition-all" />
-                                            <input type="password" placeholder="New Password" className="w-full bg-white/5 border border-white/5 px-6 py-4 font-mono text-xs text-white outline-none focus:border-red-500/30 transition-all" />
-                                            <button className="w-full py-4 bg-white/5 border border-white/10 text-white font-mono text-[9px] font-black uppercase tracking-widest hover:bg-white/10 transition-all">Update Password</button>
+                                        <div className="space-y-3">
+                                            <input type="password" placeholder="Current Password" className="w-full bg-slate-50 dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-lg px-4 py-2.5 font-mono text-xs text-slate-900 dark:text-white outline-none focus:border-red-500/50 transition-all shadow-xs" />
+                                            <input type="password" placeholder="New Password" className="w-full bg-slate-50 dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-lg px-4 py-2.5 font-mono text-xs text-slate-900 dark:text-white outline-none focus:border-red-500/50 transition-all shadow-xs" />
+                                            <button className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-300 dark:border-white/10 text-slate-800 dark:text-white font-mono text-xs font-bold uppercase tracking-wider rounded-lg transition-all shadow-xs">Update Password</button>
                                         </div>
                                     </div>
-                                    <div className="space-y-8">
-                                        <h4 className="font-mono text-[10px] font-black text-white uppercase tracking-[0.4em] mb-4 flex items-center gap-3">
-                                            <Smartphone size={12} className="text-blue-500" /> 2FA SETTINGS
+                                    <div className="space-y-4">
+                                        <h4 className="font-mono text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider mb-2 flex items-center gap-2">
+                                            <Smartphone size={14} className="text-blue-500" /> 2FA SETTINGS
                                         </h4>
-                                        <div className="p-6 bg-white/[0.02] border border-white/5 relative group">
-                                            <p className="text-[10px] font-mono text-white/40 mb-6 leading-relaxed uppercase tracking-widest">Two-factor authentication adds an extra layer of security to your account.</p>
+                                        <div className="p-4 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 rounded-lg relative group">
+                                            <p className="text-[11px] font-mono text-slate-600 dark:text-white/50 mb-3 leading-relaxed uppercase tracking-wider">Two-factor authentication adds an extra layer of security to your operational profile.</p>
                                             <Toggle label="Enable 2FA" enabled={tfa} onChange={setTfa} />
                                         </div>
-                                        <div className="pt-2">
-                                            <button className="font-mono text-[9px] text-blue-400 hover:text-blue-300 uppercase underline tracking-widest">View Recent Logins</button>
+                                        <div className="pt-1">
+                                            <button className="font-mono text-xs text-blue-600 dark:text-blue-400 hover:underline uppercase tracking-wider font-bold">View Recent Logins</button>
                                         </div>
                                     </div>
                                 </div>
@@ -943,24 +943,23 @@ function SettingsContent() {
 
                         {/* LOGOUT */}
                         <div className="col-span-12 lg:col-span-4 animate-slide-up" style={{ animationDelay: '0.7s' }}>
-                            <div className="bg-red-500/5 border border-red-500/20 p-10 h-full flex flex-col justify-between group overflow-hidden relative">
-                                <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/20 blur-[60px] opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <div className="bg-red-50/60 dark:bg-red-500/5 border border-red-200 dark:border-red-500/20 rounded-xl p-8 h-full flex flex-col justify-between group overflow-hidden relative shadow-xs">
                                 <div>
-                                    <h4 className="font-outfit font-black text-2xl text-white uppercase tracking-tight mb-4">Logout All Sessions</h4>
-                                    <p className="font-mono text-[10px] text-red-500/60 uppercase tracking-widest leading-relaxed mb-8">
+                                    <h4 className="font-outfit font-black text-2xl text-slate-900 dark:text-white uppercase tracking-tight mb-2">Logout All Sessions</h4>
+                                    <p className="font-mono text-xs text-red-700 dark:text-red-400 uppercase tracking-wider leading-relaxed mb-6">
                                         Log out of all devices and active sessions for this account.
                                     </p>
                                 </div>
-                                <div className="space-y-4">
+                                <div className="space-y-3">
                                     <button 
                                         onClick={() => openConfirm('logout_all', 'Log out of all devices?')}
-                                        className="w-full py-5 bg-white/5 border border-red-500/20 text-red-500 font-mono text-[10px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all flex items-center justify-center gap-4"
+                                        className="w-full py-3 bg-white hover:bg-slate-50 dark:bg-white/5 border border-red-300 dark:border-red-500/20 text-red-600 dark:text-red-400 font-mono text-xs font-bold uppercase tracking-wider rounded-lg transition-all flex items-center justify-center gap-2 shadow-xs"
                                     >
                                        LOG OUT OTHER DEVICES
                                     </button>
                                     <button 
                                         onClick={handleLogout}
-                                        className="w-full py-5 bg-red-600 text-white font-mono text-[10px] font-black uppercase tracking-widest shadow-[0_0_40px_rgba(239,68,68,0.3)] transition-all active:scale-95 flex items-center justify-center gap-4"
+                                        className="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-mono text-xs font-bold uppercase tracking-wider rounded-lg shadow-sm transition-all active:scale-95 flex items-center justify-center gap-2"
                                     >
                                        <LogOut size={16} /> LOGOUT
                                     </button>

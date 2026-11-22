@@ -304,36 +304,35 @@ export default function ReportIncident() {
   );
 
   return (
-    <div className="min-h-screen bg-[#08080A] text-[#E5E5E7] font-inter selection:bg-[#ef4444] selection:text-white">
+    <div className="min-h-screen bg-slate-100 dark:bg-[#08080A] text-slate-900 dark:text-[#E5E5E7] font-inter selection:bg-[#ef4444] selection:text-white">
       
       {/* ── AMBIENT MESH BACKGROUND ── */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         <div 
-          className="absolute w-[800px] h-[800px] rounded-full blur-[160px] opacity-[0.1] bg-red-600 transition-transform duration-1000 ease-out"
+          className="absolute w-[800px] h-[800px] rounded-full blur-[160px] opacity-[0.06] bg-red-600 transition-transform duration-1000 ease-out"
           style={{ transform: `translate(${mousePos.x - 400}px, ${mousePos.y - 400}px)` }}
         />
-        <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] rounded-full blur-[140px] opacity-[0.1] bg-red-700 animate-pulse" />
-        <div className="absolute inset-0 opacity-[0.03] contrast-150 brightness-150 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
+        <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] rounded-full blur-[140px] opacity-[0.06] bg-red-700 animate-pulse" />
       </div>
 
       {/* ── TACTICAL NAV ── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-black/40 backdrop-blur-3xl border-b border-white/5 py-4 sm:py-6 px-4 sm:px-8">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 dark:bg-black/40 backdrop-blur-3xl border-b border-slate-200 dark:border-white/5 py-4 sm:py-5 px-4 sm:px-8">
         <div className="max-w-[1400px] mx-auto flex items-center justify-between">
            <Link to="/" className="flex items-center gap-3 sm:gap-4 group">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 bg-white/5 border border-red-500/20 flex items-center justify-center group-hover:border-red-500/40 transition-all flex-shrink-0">
-              <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
+            <div className="w-9 h-9 sm:w-10 sm:h-10 bg-slate-100 dark:bg-white/5 border border-red-500/30 rounded-lg flex items-center justify-center group-hover:border-red-500/50 transition-all flex-shrink-0">
+              <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-red-600 dark:text-red-500" />
             </div>
             <div className="flex flex-col leading-none">
-              <span className="font-outfit font-black text-lg sm:text-xl tracking-tighter uppercase">CRISISCHAIN</span>
-              <span className="text-[8px] sm:text-[9px] font-mono text-red-400 tracking-[0.4em] opacity-60 uppercase">Emergency Help Portal</span>
+              <span className="font-outfit font-black text-lg sm:text-xl tracking-tight text-slate-900 dark:text-white uppercase">CRISISCHAIN</span>
+              <span className="text-[9px] font-mono text-red-600 dark:text-red-400 tracking-wider font-bold uppercase">Emergency Help Portal</span>
             </div>
           </Link>
-          <div className="flex items-center gap-4">
-             <div className="hidden md:flex items-center gap-3 px-4 py-2 bg-red-500/10 border border-red-500/20 text-red-500">
-                <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
-                <span className="text-[9px] font-mono tracking-widest uppercase font-bold">Priority Line Active</span>
+          <div className="flex items-center gap-3">
+             <div className="hidden md:flex items-center gap-2 px-3.5 py-1.5 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-700 dark:text-red-400 rounded-lg">
+                <div className="w-1.5 h-1.5 bg-red-600 dark:bg-red-500 rounded-full animate-pulse" />
+                <span className="text-[9px] font-mono tracking-wider uppercase font-bold">Priority Line Active</span>
              </div>
-             <button onClick={() => nav('/')} className="px-4 sm:px-6 py-2 border border-white/10 hover:bg-white/5 transition-all text-xs font-mono uppercase tracking-widest text-white/40">
+             <button onClick={() => nav('/')} className="px-4 sm:px-5 py-1.5 border border-slate-300 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/5 rounded-lg transition-all text-xs font-mono uppercase tracking-wider text-slate-700 dark:text-white/60">
                ← CANCEL
              </button>
           </div>
@@ -343,32 +342,31 @@ export default function ReportIncident() {
       <main className="relative z-10 pt-24 sm:pt-32 pb-40 px-4 sm:px-8">
         <div className="max-w-[1000px] mx-auto">
           
-          <div className="mb-12 sm:mb-20 text-center">
-             <span className="text-[10px] font-mono text-red-500 tracking-[0.8em] uppercase block mb-6 animate-pulse">Emergency Report Mode</span>
-             <h1 className="font-outfit text-4xl sm:text-5xl md:text-[80px] font-black leading-[0.85] tracking-tighter uppercase mb-6">
-               REPORT AN<br />
-               <span className="text-white/10 stroke-text outline-white/20">EMERGENCY</span>
+          <div className="mb-10 sm:mb-16 text-center">
+             <span className="text-[10px] font-mono text-red-600 dark:text-red-500 tracking-widest uppercase font-bold block mb-4 animate-pulse">Emergency Report Mode</span>
+             <h1 className="font-outfit text-3xl sm:text-5xl md:text-6xl font-black tracking-tight text-slate-900 dark:text-white uppercase mb-4">
+               REPORT AN EMERGENCY
              </h1>
-             <p className="text-white/40 text-base sm:text-lg md:text-xl font-light max-w-2xl mx-auto uppercase tracking-wide">
+             <p className="text-slate-600 dark:text-white/50 text-sm sm:text-base md:text-lg max-w-2xl mx-auto uppercase tracking-wide">
                Your report will be sent directly to local emergency responders.
              </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-12">
+          <form onSubmit={handleSubmit} className="space-y-10">
             
             {/* Section 1: Geo-location */}
-            <div className="space-y-8">
-              <div className="flex items-center gap-4">
-                <span className="text-[10px] font-mono text-[#00FFCC] uppercase tracking-widest">01_INCIDENT_LOCATION</span>
-                <div className="h-[1px] flex-1 bg-white/5" />
+            <div className="space-y-6">
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] font-mono text-teal-700 dark:text-[#00FFCC] uppercase tracking-wider font-bold">01_INCIDENT_LOCATION</span>
+                <div className="h-[1px] flex-1 bg-slate-200 dark:bg-white/10" />
               </div>
               <div className="space-y-4">
                 {/* Location Input & Action Controls */}
                 <div className="flex flex-col sm:flex-row gap-3">
                   <div className="relative flex-1 group">
-                    <MapPin className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-white/20 group-focus-within:text-red-500 transition-colors" />
+                    <MapPin className="absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-white/20 group-focus-within:text-red-500 transition-colors" />
                     <input
-                      className="w-full bg-white/5 border border-white/5 focus:border-red-500/40 px-12 sm:px-16 py-4 sm:py-6 font-mono text-sm tracking-widest focus:outline-none transition-all placeholder:text-white/10"
+                      className="w-full bg-white dark:bg-white/5 border border-slate-300 dark:border-white/10 focus:border-red-500/50 rounded-xl px-12 sm:px-14 py-3.5 sm:py-4 font-mono text-xs tracking-wider focus:outline-none transition-all text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/20 shadow-xs"
                       placeholder="ENTER ADDRESS OR COORDINATES (OR USE DEVICE LOCATION)"
                       value={form.location}
                       onChange={e => handleLocationChange(e.target.value)}
@@ -380,7 +378,7 @@ export default function ReportIncident() {
                       onClick={() => fetchDeviceLocation({ isAuto: false })}
                       disabled={locLoading}
                       title="Acquire high-accuracy device location"
-                      className="flex-1 sm:flex-none py-4 sm:py-0 px-5 sm:px-8 bg-white/5 border border-red-500/30 hover:bg-red-500/10 transition-all font-outfit font-black text-xs uppercase tracking-widest text-red-500 whitespace-nowrap flex items-center justify-center gap-2"
+                      className="flex-1 sm:flex-none py-3 sm:py-0 px-4 sm:px-6 bg-white dark:bg-white/5 border border-red-300 dark:border-red-500/30 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-all font-outfit font-bold text-xs uppercase tracking-wider text-red-600 dark:text-red-400 whitespace-nowrap flex items-center justify-center gap-2 shadow-xs"
                     >
                       <Compass size={14} className={locLoading && locationSource !== 'approximate-ip' ? 'animate-spin' : ''} />
                       {locLoading ? (locStatusMessage || 'LOCATING...') : 'USE DEVICE GPS'}
@@ -390,7 +388,7 @@ export default function ReportIncident() {
                       onClick={fetchApproximateIpLocation}
                       disabled={locLoading}
                       title="Fallback to approximate ISP network location"
-                      className="flex-1 sm:flex-none py-4 sm:py-0 px-4 sm:px-6 bg-teal-500/10 border border-teal-500/30 hover:bg-teal-500/20 transition-all font-outfit font-bold text-xs uppercase tracking-widest text-[#00FFCC] whitespace-nowrap flex items-center justify-center gap-1.5"
+                      className="flex-1 sm:flex-none py-3 sm:py-0 px-4 sm:px-5 bg-teal-50 dark:bg-teal-500/10 border border-teal-300 dark:border-teal-500/30 hover:bg-teal-100 dark:hover:bg-teal-500/20 rounded-xl transition-all font-outfit font-bold text-xs uppercase tracking-wider text-teal-700 dark:text-[#00FFCC] whitespace-nowrap flex items-center justify-center gap-1.5 shadow-xs"
                     >
                       <Globe size={14} />
                       <span className="hidden md:inline">APPROX</span> IP FALLBACK
@@ -400,8 +398,8 @@ export default function ReportIncident() {
 
                 {/* REAL-TIME PERMISSION ADVISORY IF BLOCKED */}
                 {permissionState === 'denied' && (
-                  <div className="p-3 bg-white/5 border border-white/10 rounded text-xs font-mono text-gray-300 flex items-center gap-2">
-                    <Info size={14} className="text-teal-400 flex-shrink-0" />
+                  <div className="p-3 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-xs font-mono text-slate-700 dark:text-gray-300 flex items-center gap-2 shadow-xs">
+                    <Info size={14} className="text-teal-600 dark:text-teal-400 flex-shrink-0" />
                     <span>Browser location access is blocked. You can type an address or tap directly on the map below to pinpoint the incident.</span>
                   </div>
                 )}
@@ -409,11 +407,11 @@ export default function ReportIncident() {
                 {/* PINNED LOCATION BADGE & SOURCE/ACCURACY METRICS */}
                 {coords && (
                   <div className="space-y-2">
-                    <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-mono bg-[#0B1220] border border-white/10 px-4 py-2.5 rounded-lg">
+                    <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-mono bg-white dark:bg-[#0B1220] border border-slate-200 dark:border-white/10 px-4 py-2.5 rounded-xl shadow-xs">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <CheckCircle2 size={14} className="text-[#00FFCC]" />
-                        <span className="text-white font-bold">COORDINATES:</span>
-                        <span className="text-[#00FFCC] tracking-wider">{coords.lat.toFixed(6)}, {coords.lng.toFixed(6)}</span>
+                        <CheckCircle2 size={14} className="text-teal-600 dark:text-[#00FFCC]" />
+                        <span className="text-slate-900 dark:text-white font-bold">COORDINATES:</span>
+                        <span className="text-teal-700 dark:text-[#00FFCC] tracking-wider font-bold">{coords.lat.toFixed(6)}, {coords.lng.toFixed(6)}</span>
                         
                         {/* Reported accuracy tolerance tag */}
                         {coords.accuracy != null && (
@@ -424,7 +422,7 @@ export default function ReportIncident() {
                       </div>
 
                       {/* Explicit location source label */}
-                      <span className="text-[10px] uppercase font-mono font-bold px-2 py-0.5 rounded bg-white/5 border border-white/10 text-gray-300">
+                      <span className="text-[10px] uppercase font-mono font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-gray-300">
                         SOURCE: {
                           locationSource === 'device' ? 'DEVICE GEOLOCATION' :
                           locationSource === 'approximate-ip' ? 'APPROXIMATE NETWORK (IP)' :
@@ -436,8 +434,8 @@ export default function ReportIncident() {
 
                     {/* POOR ACCURACY WARNING BANNER */}
                     {coords.accuracy != null && classifyAccuracy(coords.accuracy).isPoor && (
-                      <div className="p-3 bg-amber-500/10 border border-amber-500/40 rounded-lg flex items-start gap-2.5 text-xs font-mono text-amber-300">
-                        <AlertTriangle size={15} className="text-amber-400 flex-shrink-0 mt-0.5" />
+                      <div className="p-3 bg-amber-50 dark:bg-amber-500/10 border border-amber-300 dark:border-amber-500/40 rounded-xl flex items-start gap-2.5 text-xs font-mono text-amber-800 dark:text-amber-300 shadow-xs">
+                        <AlertTriangle size={15} className="text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
                         <div>
                           <span className="font-bold uppercase tracking-wider block mb-0.5">LOW POSITIONING ACCURACY (±{Math.round(coords.accuracy)}m)</span>
                           <span>Your device reported coarse positioning (typical of laptop Wi-Fi triangulation). Please tap or drag the red pin on the map below to confirm your exact location.</span>
@@ -447,8 +445,8 @@ export default function ReportIncident() {
 
                     {/* APPROXIMATE IP DISCLAIMER */}
                     {locationSource === 'approximate-ip' && (
-                      <div className="p-3 bg-teal-500/10 border border-teal-500/30 rounded-lg flex items-start gap-2.5 text-xs font-mono text-teal-300">
-                        <Globe size={15} className="text-[#00FFCC] flex-shrink-0 mt-0.5" />
+                      <div className="p-3 bg-teal-50 dark:bg-teal-500/10 border border-teal-300 dark:border-teal-500/30 rounded-xl flex items-start gap-2.5 text-xs font-mono text-teal-800 dark:text-teal-300 shadow-xs">
+                        <Globe size={15} className="text-teal-600 dark:text-[#00FFCC] flex-shrink-0 mt-0.5" />
                         <div>
                           <span className="font-bold uppercase tracking-wider block mb-0.5">APPROXIMATE REGIONAL NETWORK ESTIMATE</span>
                           <span>These coordinates represent your internet service provider's routing gateway and may be displaced from your actual street address. Please drag the pin on the map to adjust.</span>
@@ -460,11 +458,11 @@ export default function ReportIncident() {
 
                 {/* INTERACTIVE LEAFLET TACTICAL MAP PICKER */}
                 <div className="space-y-2 pt-2">
-                  <div className="flex items-center justify-between text-xs font-mono text-gray-400">
-                    <span className="flex items-center gap-1.5 text-[#00FFCC]">
+                  <div className="flex items-center justify-between text-xs font-mono text-slate-600 dark:text-gray-400">
+                    <span className="flex items-center gap-1.5 text-teal-700 dark:text-[#00FFCC] font-bold">
                       <MapPin size={13} /> INTERACTIVE TACTICAL PIN MAP
                     </span>
-                    <span className="text-white/40 text-[10px]">
+                    <span className="text-slate-500 dark:text-white/40 text-[10px]">
                       Tap map or drag pin to choose exact incident spot
                     </span>
                   </div>
@@ -477,77 +475,77 @@ export default function ReportIncident() {
                   />
                 </div>
 
-                {errors.location && <p className="text-[9px] font-mono text-red-500 uppercase tracking-widest ml-1">{errors.location}</p>}
+                {errors.location && <p className="text-[10px] font-mono text-red-600 uppercase tracking-wider font-bold ml-1">{errors.location}</p>}
               </div>
             </div>
 
             {/* Section 2: Event Intel */}
-            <div className="space-y-8">
-              <div className="flex items-center gap-4">
-                <span className="text-[10px] font-mono text-[#00FFCC] uppercase tracking-widest">02_EVENT_DETAILS</span>
-                <div className="h-[1px] flex-1 bg-white/5" />
+            <div className="space-y-6">
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] font-mono text-teal-700 dark:text-[#00FFCC] uppercase tracking-wider font-bold">02_EVENT_DETAILS</span>
+                <div className="h-[1px] flex-1 bg-slate-200 dark:bg-white/10" />
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="space-y-3">
-                  <label className="text-[9px] font-mono text-white/40 uppercase tracking-widest ml-1">What is happening?*</label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-mono text-slate-600 dark:text-white/40 uppercase tracking-wider font-bold ml-1">What is happening?*</label>
                   <div className="relative group">
-                    <select className="w-full bg-white/5 border border-white/5 focus:border-red-500/40 px-8 py-6 font-mono text-sm tracking-widest focus:outline-none transition-all text-white appearance-none cursor-pointer" value={form.disasterType} onChange={e => set('disasterType', e.target.value)}>
-                       <option value="" className="bg-[#08080A]">SELECT TYPE</option>
-                       {DISASTER_TYPES.map(type => <option key={type.value} value={type.value} className="bg-[#08080A] uppercase">{type.label}</option>)}
+                    <select className="w-full bg-white dark:bg-white/5 border border-slate-300 dark:border-white/10 focus:border-red-500/50 rounded-xl px-5 py-3.5 font-mono text-xs tracking-wider focus:outline-none transition-all text-slate-900 dark:text-white appearance-none cursor-pointer shadow-xs" value={form.disasterType} onChange={e => set('disasterType', e.target.value)}>
+                       <option value="" className="bg-white dark:bg-[#08080A]">SELECT TYPE</option>
+                       {DISASTER_TYPES.map(type => <option key={type.value} value={type.value} className="bg-white dark:bg-[#08080A] uppercase">{type.label}</option>)}
                     </select>
-                    <div className="absolute inset-y-0 right-6 flex items-center pointer-events-none text-white/20">▼</div>
+                    <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none text-slate-400">▼</div>
                   </div>
-                  {errors.disasterType && <p className="text-[9px] font-mono text-red-500 uppercase tracking-widest ml-1">{errors.disasterType}</p>}
+                  {errors.disasterType && <p className="text-[10px] font-mono text-red-600 uppercase tracking-wider font-bold ml-1">{errors.disasterType}</p>}
                 </div>
-                <div className="space-y-3">
-                  <label className="text-[9px] font-mono text-white/40 uppercase tracking-widest ml-1">Threat Level*</label>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-mono text-slate-600 dark:text-white/40 uppercase tracking-wider font-bold ml-1">Threat Level*</label>
                   <div className="grid grid-cols-4 gap-2">
                     {SEVERITIES.map(sev => (
-                      <button key={sev.id} type="button" onClick={() => set('severity', sev.id)} className={`py-6 border font-mono text-[8px] tracking-widest transition-all ${form.severity === sev.id ? 'bg-red-600 border-red-500 text-white' : 'bg-white/5 border-white/5 text-white/20 hover:border-white/20'}`}>
+                      <button key={sev.id} type="button" onClick={() => set('severity', sev.id)} className={`py-3.5 rounded-xl border font-mono text-[9px] font-bold tracking-wider transition-all shadow-xs ${form.severity === sev.id ? 'bg-red-600 border-red-500 text-white' : 'bg-white dark:bg-white/5 border-slate-300 dark:border-white/10 text-slate-700 dark:text-white/40 hover:border-slate-400'}`}>
                         {sev.label}
                       </button>
                     ))}
                   </div>
-                  {errors.severity && <p className="text-[9px] font-mono text-red-500 uppercase tracking-widest ml-1">{errors.severity}</p>}
+                  {errors.severity && <p className="text-[10px] font-mono text-red-600 uppercase tracking-wider font-bold ml-1">{errors.severity}</p>}
                 </div>
               </div>
 
-              <div className="space-y-3">
-                <label className="text-[9px] font-mono text-white/40 uppercase tracking-widest ml-1 flex justify-between">
+              <div className="space-y-2">
+                <label className="text-[10px] font-mono text-slate-600 dark:text-white/40 uppercase tracking-wider font-bold ml-1 flex justify-between">
                   <span>Describe what happened*</span>
                   <span>{form.description.length}_chars</span>
                 </label>
                 <div className="relative group">
-                  <MessageSquare className="absolute left-6 top-8 w-5 h-5 text-white/20 group-focus-within:text-red-500 transition-colors" />
-                  <textarea rows={6} className="w-full bg-white/5 border border-white/5 focus:border-red-500/40 px-16 py-8 font-mono text-sm tracking-widest focus:outline-none transition-all placeholder:text-white/10 resize-none" placeholder="DESCRIBE THE SITUATION IN DETAIL..." value={form.description} onChange={e => set('description', e.target.value)} />
+                  <MessageSquare className="absolute left-4 top-4 w-4 h-4 text-slate-400 dark:text-white/20 group-focus-within:text-red-500 transition-colors" />
+                  <textarea rows={4} className="w-full bg-white dark:bg-white/5 border border-slate-300 dark:border-white/10 focus:border-red-500/50 rounded-xl px-12 py-3.5 font-mono text-xs tracking-wider focus:outline-none transition-all text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-white/20 resize-none shadow-xs" placeholder="DESCRIBE THE SITUATION IN DETAIL..." value={form.description} onChange={e => set('description', e.target.value)} />
                 </div>
-                {errors.description && <p className="text-[9px] font-mono text-red-500 uppercase tracking-widest ml-1">{errors.description}</p>}
+                {errors.description && <p className="text-[10px] font-mono text-red-600 uppercase tracking-wider font-bold ml-1">{errors.description}</p>}
               </div>
             </div>
 
             {/* Section 3: Visuals */}
-            <div className="space-y-8">
-              <div className="flex items-center gap-4">
-                <span className="text-[10px] font-mono text-[#00FFCC] uppercase tracking-widest">03_EVIDENCE_UPLOAD</span>
-                <div className="h-[1px] flex-1 bg-white/5" />
+            <div className="space-y-6">
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] font-mono text-teal-700 dark:text-[#00FFCC] uppercase tracking-wider font-bold">03_EVIDENCE_UPLOAD</span>
+                <div className="h-[1px] flex-1 bg-slate-200 dark:bg-white/10" />
               </div>
-              <div className={`relative p-12 bg-white/5 border-2 border-dashed transition-all group ${drag ? 'border-red-500 bg-red-500/5' : 'border-white/5 hover:border-white/10'}`}>
+              <div className={`relative p-8 bg-white dark:bg-white/5 border-2 border-dashed rounded-xl transition-all group shadow-xs ${drag ? 'border-red-500 bg-red-50 dark:bg-red-500/5' : 'border-slate-300 dark:border-white/10 hover:border-slate-400'}`}>
                 <input type="file" accept="image/*,video/*" multiple className="absolute inset-0 opacity-0 cursor-pointer" onChange={e => handleFiles(e.target.files)} />
-                <div className="text-center space-y-4">
-                  <Camera className={`w-12 h-12 mx-auto transition-colors ${drag ? 'text-red-500' : 'text-white/20 group-hover:text-white/40'}`} />
-                  <p className="text-[10px] font-mono text-white/40 uppercase tracking-[0.2em]">
-                    Drag_Evidence_Here OR <span className="text-red-500">Attach_Files</span>
+                <div className="text-center space-y-3">
+                  <Camera className={`w-10 h-10 mx-auto transition-colors ${drag ? 'text-red-500' : 'text-slate-400 dark:text-white/20 group-hover:text-red-500'}`} />
+                  <p className="text-xs font-mono text-slate-700 dark:text-white/40 uppercase tracking-wider font-bold">
+                    Drag Evidence Here OR <span className="text-red-600 dark:text-red-500">Attach Files</span>
                   </p>
-                  <p className="text-[8px] font-mono text-white/20 uppercase">JPG_PNG_MP4 // LIMIT_5_FILES</p>
+                  <p className="text-[9px] font-mono text-slate-400 dark:text-white/20 uppercase">JPG, PNG, MP4 // LIMIT 5 FILES</p>
                 </div>
               </div>
               {files.length > 0 && (
-                <div className="grid grid-cols-5 gap-4">
+                <div className="grid grid-cols-5 gap-3">
                   {files.map((f, i) => (
-                    <div key={i} className="aspect-square bg-white/5 border border-white/5 relative group">
-                       <img src={URL.createObjectURL(f)} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" alt="preview" />
-                       <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100">
-                          <button onClick={() => setFiles(files.filter((_, idx) => idx !== i))} className="text-red-500 text-[8px] font-mono bg-black/80 px-2 py-1">PURGE</button>
+                    <div key={i} className="aspect-square bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg overflow-hidden relative group">
+                       <img src={URL.createObjectURL(f)} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" alt="preview" />
+                       <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/40">
+                          <button onClick={() => setFiles(files.filter((_, idx) => idx !== i))} className="text-white text-[9px] font-mono bg-red-600 px-2 py-1 rounded">PURGE</button>
                        </div>
                     </div>
                   ))}
@@ -555,24 +553,20 @@ export default function ReportIncident() {
               )}
             </div>
 
-            <div className="p-8 bg-red-600/5 border border-red-600/20 flex gap-6 items-start">
-               <Info className="w-6 h-6 text-red-600 flex-shrink-0 mt-1" />
-               <p className="text-xs font-mono text-red-600 uppercase tracking-widest leading-relaxed">
-                 PLEASE NOTE: Only report real emergencies. Accurate information helps our rescue teams save lives faster.
+            <div className="p-5 bg-red-50 dark:bg-red-600/5 border border-red-200 dark:border-red-600/20 rounded-xl flex gap-4 items-start shadow-xs">
+               <Info className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+               <p className="text-xs font-mono text-red-700 dark:text-red-400 uppercase tracking-wider leading-relaxed">
+                 PLEASE NOTE: Only report real emergencies. Accurate information helps rescue teams save lives faster.
                </p>
             </div>
 
             <button 
               type="submit" 
               disabled={loading}
-              className="w-full group relative overflow-hidden px-10 py-8 bg-red-600 border border-red-500 hover:bg-red-700 transition-all duration-700 disabled:opacity-50"
+              className="w-full group relative overflow-hidden py-4 bg-red-600 hover:bg-red-700 text-white rounded-xl font-outfit font-black text-lg uppercase tracking-wider shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-3"
             >
-              <div className="relative z-10 flex items-center justify-center gap-6">
-                <Zap className={`w-8 h-8 text-white ${loading ? 'animate-pulse' : ''}`} />
-                <span className="text-2xl font-outfit font-black uppercase tracking-widest text-white">
-                  {loading ? 'SENDING REPORT...' : 'SEND REPORT NOW'}
-                </span>
-              </div>
+              <Zap className={`w-6 h-6 text-white ${loading ? 'animate-pulse' : ''}`} />
+              <span>{loading ? 'SENDING REPORT...' : 'SEND REPORT NOW'}</span>
             </button>
           </form>
 
