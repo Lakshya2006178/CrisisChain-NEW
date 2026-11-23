@@ -39,3 +39,8 @@ server/.env.*
 scratch/
 
 server/uploads/
+
+# Local backups and build scripts
+backup_*.sql
+docs/_structure_render.html
+server/_struct_build_pdf.mjs

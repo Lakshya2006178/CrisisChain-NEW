@@ -3,8 +3,9 @@
 --  Copied from your real mock arrays (alertController.js / resourceController.js)
 --  so the website looks the same once it reads from MySQL.
 --
---  DEMO LOGIN for every seeded user:  password = CrisisDemo@123
---  (stored below only as a bcrypt hash). Change it before any public demo.
+--  DEMO LOGIN: admin@crisischain.com uses password "admin123"; every other
+--  seeded user uses password "password123" (stored below only as a bcrypt
+--  hash, salt rounds = 10). Change these before any public demo.
 --
 --  ORDER MATTERS: parents first, because a foreign key needs something to point at.
 -- ============================================================================
@@ -51,13 +52,15 @@ INSERT INTO resource (resource_id, center_id, resource_type, quantity_available)
 
 -- 5. USERS (login = email + password) -------------------------------------------
 -- admin: admin123  |  other demo users: password123
+-- Hashes regenerated 2026-11-23 (bcrypt, 10 salt rounds) and verified live against
+-- these exact plaintext passwords via bcrypt.compare() -- see verification report.
 INSERT INTO users (user_id, full_name, email, phone_number, password_hash, role) VALUES
- (1,'System Admin','admin@crisischain.com','9000000001','$2a$10$TJxwrIgJx10QNluoEYkjte3acrYvpfMqEP1r/JBz/vqXNRpt1P.B2','admin'),
- (2,'Asha Rao','asha@example.com','9000000002','$2a$10$GRXwKj/vVGbrVHjqTFTk0.ibVnf/ngziPK2EQXEQKkNM7RwgiIBGO','citizen'),
- (3,'Ravi Kumar','ravi.paramedic@example.com','9000000003','$2a$10$GRXwKj/vVGbrVHjqTFTk0.ibVnf/ngziPK2EQXEQKkNM7RwgiIBGO','responder'),
- (4,'Meera Shetty','meera.fire@example.com','9000000004','$2a$10$GRXwKj/vVGbrVHjqTFTk0.ibVnf/ngziPK2EQXEQKkNM7RwgiIBGO','responder'),
- (5,'Dr. Anil Hegde','anil.kmc@example.com','9000000005','$2a$10$GRXwKj/vVGbrVHjqTFTk0.ibVnf/ngziPK2EQXEQKkNM7RwgiIBGO','hospital'),
- (6,'Inspector Dsouza','dsouza.police@example.com','9000000006','$2a$10$GRXwKj/vVGbrVHjqTFTk0.ibVnf/ngziPK2EQXEQKkNM7RwgiIBGO','responder');
+ (1,'System Admin','admin@crisischain.com','9000000001','$2a$10$7f7UeTOKVObBWekl8zgWw.w2ZsyN14C1UhfknOR9mtbOZnBsCSGeO','admin'),
+ (2,'Asha Rao','asha@example.com','9000000002','$2a$10$QC.eIbttjQn590OyQIxTIuRzqxQj34kt32Zp0FOmE.fNa4tdnAwQW','citizen'),
+ (3,'Ravi Kumar','ravi.paramedic@example.com','9000000003','$2a$10$QC.eIbttjQn590OyQIxTIuRzqxQj34kt32Zp0FOmE.fNa4tdnAwQW','responder'),
+ (4,'Meera Shetty','meera.fire@example.com','9000000004','$2a$10$QC.eIbttjQn590OyQIxTIuRzqxQj34kt32Zp0FOmE.fNa4tdnAwQW','responder'),
+ (5,'Dr. Anil Hegde','anil.kmc@example.com','9000000005','$2a$10$QC.eIbttjQn590OyQIxTIuRzqxQj34kt32Zp0FOmE.fNa4tdnAwQW','hospital'),
+ (6,'Inspector Dsouza','dsouza.police@example.com','9000000006','$2a$10$QC.eIbttjQn590OyQIxTIuRzqxQj34kt32Zp0FOmE.fNa4tdnAwQW','responder');
 
 -- 6. AUTHORITY PROFILES (responders and hospital staff, linked to organizations) -
 INSERT INTO authority_profile (authority_id, user_id, org_id, authority_type, credential_id, availability_status) VALUES

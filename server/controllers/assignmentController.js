@@ -383,6 +383,7 @@ export const updateAssignmentStatus = async (req, res) => {
                 ia.incident_id,
                 ia.authority_id,
                 ia.assignment_status,
+                ia.assigned_by,
                 ia.accepted_at,
                 ia.arrived_at,
                 ia.completed_at,
@@ -658,8 +659,8 @@ export const getAvailableResponders = async (req, res) => {
             FROM authority_profile ap
             JOIN users u ON ap.user_id = u.user_id
             JOIN organization o ON ap.org_id = o.org_id
-            WHERE u.is_active = 1
-            ORDER BY 
+            WHERE u.is_active = 1 AND o.status = 'Active'
+            ORDER BY
                 CASE WHEN ap.availability_status = 'Available' THEN 0 
                      WHEN ap.availability_status = 'Busy' THEN 1 
                      ELSE 2 END,

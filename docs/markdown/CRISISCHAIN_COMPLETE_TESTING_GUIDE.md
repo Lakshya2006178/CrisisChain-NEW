@@ -75,7 +75,7 @@ npm run dev
 | Role | Email | Password | Assigned Organization | Primary Workspace |
 | :--- | :--- | :--- | :--- | :--- |
 | **System Admin** | `admin@crisischain.com` | `admin123` | Crisis Command HQ | `/dashboard`, `/alerts`, `/resources`, `/analytics`, `/settings` |
-| **Civilian Citizen** | `citizen@crisischain.com` | `password123` | N/A | `/report`, `/alerts` |
+| **Civilian Citizen** | `asha@example.com` | `password123` | N/A | `/report`, `/alerts` |
 | **First Responder** | `ravi.paramedic@example.com` | `password123` | KMC Hospital Mangaluru | `/org`, `/alerts` |
 | **First Responder (Fire)**| `meera.fire@example.com` | `password123` | Mangaluru Fire Services | `/org`, `/alerts` |
 | **Hospital Representative** | `anil.kmc@example.com` | `password123` | KMC Hospital Mangaluru | `/hospital-resources`, `/alerts` |

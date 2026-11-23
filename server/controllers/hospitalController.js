@@ -59,6 +59,21 @@ async function resolveOrgId(req) {
     return 1;
 }
 
+// Coerces each present numeric field to a non-negative number in place.
+// Returns an error message string on the first invalid field, or null if all are valid.
+function validateNonNegativeFields(obj, fields, label) {
+    for (const field of fields) {
+        if (obj[field] !== undefined) {
+            const parsed = Number(obj[field]);
+            if (!Number.isFinite(parsed) || parsed < 0) {
+                return `${label}${field} must be a non-negative number.`;
+            }
+            obj[field] = parsed;
+        }
+    }
+    return null;
+}
+
 async function syncToResourceTable(orgId, data) {
     try {
         const [centers] = await pool.query('SELECT center_id FROM resource_center WHERE org_id = ?', [orgId]);
@@ -147,6 +162,18 @@ export const updateHospitalResources = async (req, res) => {
             staff: staff || (typeof current.staff === 'string' ? JSON.parse(current.staff) : current.staff)
         };
 
+        // Only validate categories actually supplied in this request -- the carried-over
+        // current/default data for untouched categories is already trusted.
+        for (const category of ['beds', 'ambulances', 'kits', 'staff']) {
+            if (req.body[category] === undefined || !Array.isArray(updatedData[category])) continue;
+            for (const item of updatedData[category]) {
+                const validationError = validateNonNegativeFields(item, ['total', 'available', 'qty'], `${category}: `);
+                if (validationError) {
+                    return res.status(400).json({ error: validationError });
+                }
+            }
+        }
+
         await pool.query(`
             INSERT INTO hospital_resources (org_id, beds, ambulances, kits, staff)
             VALUES (?, ?, ?, ?, ?)
@@ -208,9 +235,10 @@ export const updateHospitalItem = async (req, res) => {
         const existingItem = list[targetIndex];
         const updatedItem = { ...existingItem, ...req.body, id: existingItem.id };
 
-        if (updatedItem.total !== undefined) updatedItem.total = Number(updatedItem.total);
-        if (updatedItem.available !== undefined) updatedItem.available = Number(updatedItem.available);
-        if (updatedItem.qty !== undefined) updatedItem.qty = Number(updatedItem.qty);
+        const validationError = validateNonNegativeFields(updatedItem, ['total', 'available', 'qty'], '');
+        if (validationError) {
+            return res.status(400).json({ error: validationError });
+        }
 
         list[targetIndex] = updatedItem;
         fullData[category] = list;

@@ -3,10 +3,12 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import pool from '../config/db.js';
 
+// Public self-registration must never be able to mint an admin account --
+// admin is intentionally absent from this mapping (admins only come from
+// seed data / direct DB provisioning, not this endpoint).
 const mapRole = (inputRole) => {
     if (!inputRole) return 'citizen';
     const r = String(inputRole).toLowerCase().trim();
-    if (r.includes('admin') || r.includes('government')) return 'admin';
     if (r.includes('responder') || r.includes('officer')) return 'responder';
     if (r.includes('hospital') || r.includes('medic')) return 'hospital';
     return 'citizen';
@@ -202,20 +204,7 @@ export const login = async (req, res) => {
             return res.status(403).json({ error: 'Account is deactivated. Please contact an administrator.' });
         }
 
-        let isMatch = await bcrypt.compare(password, user.password_hash);
-        // Support both documented demo passwords (CrisisDemo@123) and role-specific testing credentials
-        if (!isMatch) {
-            const normalizedPwd = String(password).trim().toLowerCase();
-            if (user.role === 'admin' && (normalizedPwd === 'admin123' || password === 'Admin@123' || password === 'CrisisDemo@123')) {
-                isMatch = true;
-            } else if (user.role === 'responder' && (normalizedPwd === 'password123' || password === 'Responder@123' || password === 'CrisisDemo@123')) {
-                isMatch = true;
-            } else if (user.role === 'hospital' && (normalizedPwd === 'password123' || password === 'Hospital@123' || password === 'CrisisDemo@123')) {
-                isMatch = true;
-            } else if (normalizedPwd === 'password123' || password === 'CrisisDemo@123') {
-                isMatch = true;
-            }
-        }
+        const isMatch = await bcrypt.compare(password, user.password_hash);
 
         if (!isMatch) {
             return res.status(401).json({ error: 'Invalid email or password.' });

@@ -142,7 +142,7 @@ SHOW TABLES;
 mysql -u root -p crisischain_db < server/db/seed.sql
 ```
 
-Verify:
+Verify (these exact counts only hold for a freshly-imported database — an actively-used install will show higher numbers, which is expected and fine):
 ```sql
 SELECT COUNT(*) FROM incident;        -- expects 7
 SELECT COUNT(*) FROM resource_center; -- expects 7
@@ -151,8 +151,8 @@ SELECT COUNT(*) FROM organization;    -- expects 8
 ```
 
 **Demo login for all seeded users:**
-- Password: `CrisisDemo@123`
-- Admin email: `admin@crisischain.com`
+- Admin (`admin@crisischain.com`): password `admin123`
+- Every other seeded user (`asha@example.com`, `ravi.paramedic@example.com`, `meera.fire@example.com`, `anil.kmc@example.com`, `dsouza.police@example.com`): password `password123`
 
 ---
 
@@ -366,4 +366,4 @@ Or change `PORT=5001` in `server/.env` to another port (e.g., `5002`) and restar
 
 ---
 
-*Last updated: Phase 1 (Database Setup). Backend controllers and frontend API integration are Phase 2.*
+*Last updated: 2026-11-23, after a full verification pass. Backend controllers and frontend API integration are complete, not Phase 2 — see `DEMO_SCRIPT.md` and the verification report in `docs/markdown/` for what was actually confirmed working.*

@@ -7,6 +7,7 @@
 **Mentor:** Anwitha Nellikunje  
 **Audit Status:** 28 / 28 Automated Tests Passed (100% Operational)  
 **Date:** November 22, 2026  
+**Correction notice (November 23, 2026):** Section 3.2 below originally described a password-fallback mechanism as a safe "resilient" convenience. A follow-up verification pass determined this was a genuine authentication bypass and a separate, more severe self-registration privilege-escalation issue (public sign-up could mint new admin accounts). Both were fixed and re-verified the same day; see the corrected section 3.2 for details. The 28/28 test suite was re-run against the fixed code and still passes 28/28.
 
 ---
 
@@ -44,18 +45,13 @@ Fresh, valid bcrypt hashes (salt rounds = 10) were generated and applied directl
 - **Admin Account (`admin@crisischain.com`):** `$2a$10$TJxwrIgJx10QNluoEYkjte3acrYvpfMqEP1r/JBz/vqXNRpt1P.B2` (matches `admin123`)
 - **Operational Accounts (`asha@...`, `ravi.paramedic@...`, `meera.fire@...`, `anil.kmc@...`, `dsouza.police@...`):** `$2a$10$GRXwKj/vVGbrVHjqTFTk0.ibVnf/ngziPK2EQXEQKkNM7RwgiIBGO` (matches `password123`)
 
-### 3.2 Controller Layer (`server/controllers/authController.js`)
-Hardened `login()` with resilient fallback matching to ensure seamless demonstration flexibility without compromising production password policies:
-```javascript
-const normalizedPwd = String(password).trim().toLowerCase();
-if (user.role === 'admin' && (normalizedPwd === 'admin123' || password === 'Admin@123' || password === 'CrisisDemo@123')) {
-    isMatch = true;
-} else if (user.role === 'responder' && (normalizedPwd === 'password123' || password === 'CrisisDemo@123')) {
-    isMatch = true;
-} else if (user.role === 'hospital' && (normalizedPwd === 'password123' || password === 'CrisisDemo@123')) {
-    isMatch = true;
-}
-```
+### 3.2 Controller Layer (`server/controllers/authController.js`) — CORRECTED 2026-11-23
+
+**The "resilient fallback matching" described in the original version of this section was a genuine authentication bypass, not a safe convenience, and has been removed.** It accepted a hardcoded list of literal password strings (`admin123`, `Admin@123`, `CrisisDemo@123`, `password123`, etc.) for *any* account whenever the real bcrypt comparison failed, with the final branch applying to every role with no restriction at all. This meant any account — including ones self-registered by a stranger through the public sign-up form — could be logged into without knowing its real password. A follow-up verification pass (2026-11-23) confirmed this live against the running server and removed it entirely; `login()` now authenticates using `bcrypt.compare(password, user.password_hash)` only.
+
+The root cause this fallback had been papering over — the seeded `password_hash` values not matching their documented plaintext passwords — was fixed properly instead: fresh bcrypt hashes (10 salt rounds) were generated for `admin123` (admin) and `password123` (every other seeded role), written to the database via a parameterized `UPDATE`, and to `server/db/seed.sql`. The full 28-test suite in section 4 below was re-run against the corrected, fallback-free `login()` and passed 28/28, including the no-enumeration check (wrong-password and unknown-user attempts return byte-identical error messages).
+
+A second, related issue was found and fixed in the same pass: the public `POST /api/auth/register` endpoint's role-mapping helper (`mapRole`) allowed a caller to self-assign the `admin` role with no authorization check — confirmed live, a stranger could register a brand-new account with `role: "admin"` and receive a fully valid admin JWT. `mapRole` is fixed to never produce `'admin'`; admin accounts are now only ever provisioned via seed data / direct database access, never through public self-registration.
 
 ### 3.3 Security Middleware (`server/middleware/security.js`)
 The in-memory rate limiter `authLimiter` was capping requests at 25 per 15 minutes per IP. Multi-account testing and automated test execution triggered HTTP 429 lockouts. This was updated to scale dynamically based on environment:
@@ -118,25 +114,38 @@ Following authentication resolution, the complete incident command and logistics
 
 ## 6. DBMS Mentor & Viva Demonstration Guide
 
-The 4 deliberate constraint demonstration queries in `server/db/practice_queries.sql` are ready for MySQL Workbench demonstration:
+**Corrected 2026-11-23:** `server/db/practice_queries.sql` actually contains **6** deliberate "break it on purpose" queries (B1–B6), not 4, and all 6 were re-run live against the database with the exact error codes recorded below (the RESTRICT-delete code below was also corrected — it is **1451**, not 1452; 1452 is specifically for inserting a child row with a missing parent, 1451 is for deleting a parent row that still has children referencing it — two distinct, correctly-named MySQL error codes):
 
-1. **Foreign Key Violation:**
+1. **Foreign Key Violation (B1):**
    ```sql
-   INSERT INTO incident (reporter_id, type_id, title) VALUES (1, 999, 'Test');
-   -- Blocked by MySQL: Error 1452 (fk_incident_type)
+   INSERT INTO incident (type_id, title, incident_status, priority_level) VALUES (99, 'Test', 'Reported', 'Low');
+   -- Blocked by MySQL: Error 1452, ER_NO_REFERENCED_ROW_2 (fk_incident_type)
    ```
-2. **CHECK Constraint:**
+2. **CHECK Constraint (B2):**
    ```sql
-   UPDATE resource SET quantity_available = -5 WHERE resource_id = 1;
-   -- Blocked by MySQL: Error 3819 (resource_chk_1)
+   UPDATE resource SET quantity_available = -1 WHERE resource_id = 1;
+   -- Blocked by MySQL: Error 3819, ER_CHECK_CONSTRAINT_VIOLATED (chk_resource_qty)
    ```
-3. **Duplicate UNIQUE Key:**
+3. **ENUM Rejection (B3):**
    ```sql
-   INSERT INTO incident_assignment (incident_id, authority_id) VALUES (1001, 1);
-   -- Blocked by MySQL: Error 1062 (uq_assign_pair)
+   UPDATE incident SET incident_status = 'Responding' WHERE incident_id = 1001;
+   -- Blocked by MySQL: Error 1265, WARN_DATA_TRUNCATED (MySQL 8's default strict sql_mode
+   -- turns an invalid ENUM value into a hard error instead of a silent-truncation warning)
    ```
-4. **Duplicate Email:**
+4. **RESTRICT on DELETE (B4):**
    ```sql
-   INSERT INTO users (full_name, email, phone_number, password_hash) VALUES ('Dup', 'admin@crisischain.com', '999', 'hash');
-   -- Blocked by MySQL: Error 1062 (uq_users_email)
+   DELETE FROM organization WHERE org_id = 1;
+   -- Blocked by MySQL: Error 1451, ER_ROW_IS_REFERENCED_2 (fk_authority_org / resource centers still reference it)
    ```
+5. **Duplicate UNIQUE Key — assignment pair (B5):**
+   ```sql
+   INSERT INTO incident_assignment (incident_id, authority_id) VALUES (1003, 1);
+   -- Blocked by MySQL: Error 1062, ER_DUP_ENTRY (uq_assign_pair)
+   ```
+6. **Duplicate UNIQUE Key — email (B6):**
+   ```sql
+   INSERT INTO users (full_name, email, phone_number, password_hash) VALUES ('Dup', 'asha@example.com', '9', 'x');
+   -- Blocked by MySQL: Error 1062, ER_DUP_ENTRY (uq_users_email)
+   ```
+
+All 6 were confirmed to mutate zero rows (row counts identical before/after running all 6).

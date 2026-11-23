@@ -142,10 +142,11 @@ sequenceDiagram
 
 ---
 
-## ⚡ Current Configuration: "Pure Mock Mode"
-To ensure the application remains functional even without a local MySQL instance, the `DashboardContext.jsx` is currently set to **Mock Mode**.
--   **Immediate Access**: The Login/Signup portals accept any credentials for demonstration.
--   **Session Memory**: Reports submitted in the portal are saved to local state for the duration of the session.
--   **Auth Persistence**: User roles and sessions are maintained in LocalStorage via the `AuthContext` logic.
+## ⚡ Current Configuration: Live MySQL Mode (corrected 2026-11-23)
+This section previously described a "Pure Mock Mode" where login accepted any credentials and reports were only saved to local state. **That description is stale and was contradicted by the actual code even before this correction** — `DashboardContext.jsx` calls the real `/api/auth/login`, `/api/auth/register`, and `/api/alerts` endpoints, backed by a live MySQL database (see `README.md`'s Development Status table and `DEMO_SCRIPT.md` for what was actually verified).
+-   **Real Auth**: Login/Signup call the real backend; credentials are checked against bcrypt-hashed passwords in MySQL (see Demo Credentials in `README.md`).
+-   **Real Persistence**: Incident reports are written to the `incident` table via `POST /api/alerts`, not just held in local state.
+-   **Auth Persistence**: The JWT and user object are kept in `localStorage` so a session survives a page refresh; they are not themselves the source of truth, the database is.
+-   **Known gaps**: a few secondary screens are still local-only (not backend-wired) — see the "Partial" row in `README.md`'s Development Status table for the current list.
 
 © 2026 CrisisChain // THE_SOVEREIGN_OBSERVER

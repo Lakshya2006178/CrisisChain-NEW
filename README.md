@@ -162,7 +162,7 @@ npm run dev
 Health check:
 ```bash
 curl http://localhost:5001/api/health/db
-# → {"status":"ok","message":"MySQL connected"}
+# → {"status":"ok","now":"2026-11-23T04:05:50.000Z"}
 ```
 
 ---
@@ -171,24 +171,27 @@ curl http://localhost:5001/api/health/db
 
 | Role | Email | Password |
 |------|-------|----------|
-| Admin | `admin@crisischain.com` | `CrisisDemo@123` |
-| Citizen | `asha@example.com` | `CrisisDemo@123` |
-| Responder | `ravi.paramedic@example.com` | `CrisisDemo@123` |
-| Hospital | `anil.kmc@example.com` | `CrisisDemo@123` |
+| Admin | `admin@crisischain.com` | `admin123` |
+| Citizen | `asha@example.com` | `password123` |
+| Responder | `ravi.paramedic@example.com` | `password123` |
+| Responder | `meera.fire@example.com` | `password123` |
+| Responder | `dsouza.police@example.com` | `password123` |
+| Hospital | `anil.kmc@example.com` | `password123` |
 
 ---
 
 ## Development Status
 
+*(Updated 2026-11-23 after a full verification pass — see `DEMO_SCRIPT.md` and the verification report in `docs/markdown/` for details.)*
+
 | Layer | Status |
 |-------|--------|
-| Database schema (12 tables) | ✅ Complete |
+| Database schema (13 tables — 12 in `schema.sql` plus `hospital_resources`, which is self-provisioned by `hospitalController.js` on first use) | ✅ Complete |
 | Seed data | ✅ Complete |
-| Backend — Auth | 🔄 In progress (Phase 2) |
-| Backend — Incidents / Alerts | 🔄 In progress (Phase 2) |
-| Backend — Resources | 🔄 In progress (Phase 2) |
-| Backend — Organizations | 🔄 In progress (Phase 2) |
-| Frontend pages | ⚠️ Built with mock data (Phase 3 wiring) |
+| Backend — Auth, Incidents/Alerts, Resources, Allocations, Assignments, Notifications, Analytics, Organizations, Users, Hospital resources | ✅ Complete — all 10 controllers implemented, transactional, and verified live |
+| Frontend — citizen reporting, live alerts map, assignment workflow, resource/allocation core, analytics page, org/user admin | ✅ Complete — wired to the live backend, verified live |
+| Frontend — secondary screens (Resource Inventory's "Add Stock"/Fleet tab, Responder Org's Fleet/Equipment/Personnel tabs, Settings' Security card, dashboard-home decorative panels) | ⚠️ Partial — still local-only mock, not backend-wired (see verification report for the full list) |
+| Responder GPS live-tracking screen | ❌ Not implemented — the `authority_live_location` table and seed rows exist for Workbench demos only; no API route or frontend screen reads/writes it |
 
 ---
 
