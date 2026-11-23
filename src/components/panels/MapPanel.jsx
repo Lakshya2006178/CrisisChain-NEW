@@ -6,7 +6,7 @@ import AlertsMapView from '../AlertsMap';
 
 export default function MapPanel() {
     const navigate = useNavigate();
-    const { addToast, alerts } = useDashboard();
+    const { addToast, alerts, liveResponders, fetchLiveResponders } = useDashboard();
 
     // Map alerts to include color for markers
     const mapAlerts = (alerts || []).map(a => ({
@@ -31,10 +31,15 @@ export default function MapPanel() {
                 
                 <div className="flex gap-3">
                     <button
-                        onClick={() => addToast('Recalibrating GPS...', 'info')}
-                        className="w-9 h-9 border border-slate-200 dark:border-white/10 rounded-lg flex items-center justify-center text-slate-600 dark:text-white/40 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-all shadow-xs"
+                        onClick={() => {
+                            fetchLiveResponders?.();
+                            addToast(`Telemetry Synced: ${(liveResponders || []).length} Live Responders Online`, 'success');
+                        }}
+                        title="Sync Live Responder Telemetry"
+                        className="h-9 px-3 border border-slate-200 dark:border-white/10 rounded-lg flex items-center gap-1.5 text-xs font-mono text-slate-600 dark:text-emerald-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-all shadow-xs"
                     >
-                        <Crosshair className="w-4 h-4" />
+                        <Crosshair className="w-4 h-4 text-emerald-500 animate-pulse" />
+                        <span className="hidden sm:inline">SYNC GPS ({(liveResponders || []).length})</span>
                     </button>
                     <button
                         onClick={() => addToast('Engaging Drone Uplink...', 'info')}
@@ -81,7 +86,8 @@ export default function MapPanel() {
                         { label: 'CRITICAL_HIT', color: '#ef4444' },
                         { label: 'THREAT_WARN', color: '#f59e0b' },
                         { label: 'ACTIVE_SYNK', color: '#3b82f6' },
-                        { label: 'SECURE_ZONE', color: '#10b981' }
+                        { label: 'SECURE_ZONE', color: '#10b981' },
+                        { label: 'LIVE_RESPONDER', color: '#00ffcc' }
                     ].map(item => (
                         <div key={item.label} className="flex items-center gap-3">
                             <div className="w-2 h-2 rounded-full shadow-[0_0_8px_currentColor]" style={{ backgroundColor: item.color, color: item.color }} />

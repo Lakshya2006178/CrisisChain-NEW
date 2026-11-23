@@ -7,7 +7,7 @@ import { SZ } from '../constants';
 import {
     Truck, Wrench, Users, ClipboardList, Plus, Trash2,
     Clock, MapPin, Search, Loader2, CheckCircle, Navigation, AlertCircle,
-    Shield, ShieldAlert, Activity
+    Shield, ShieldAlert, Activity, Radio, Play, RefreshCw, Compass
 } from 'lucide-react';
 import { Badge, CrudModal } from '../components/CrudModal';
 
@@ -42,12 +42,15 @@ const TABS = [
 ];
 
 export default function ResponderOrg() {
-    const { isSidebarOpen, user, addToast } = useDashboard();
+    const { isSidebarOpen, user, addToast, fetchLiveResponders } = useDashboard();
     const [activeTab, setActiveTab] = useState('fleet');
     const [search, setSearch] = useState('');
     const [assignments, setAssignments] = useState([]);
     const [isLoadingAssignments, setIsLoadingAssignments] = useState(false);
     const [updatingAssignmentId, setUpdatingAssignmentId] = useState(null);
+    const [isBroadcasting, setIsBroadcasting] = useState(false);
+    const [isSimulating, setIsSimulating] = useState(false);
+    const [telemetry, setTelemetry] = useState(null);
     const [data, setData] = useState(() => {
         try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || DEFAULT_DATA; }
         catch { return DEFAULT_DATA; }
@@ -74,6 +77,95 @@ export default function ResponderOrg() {
             loadAssignments();
         }
     }, [activeTab]);
+
+    const handleBroadcastGPS = async (targetIncidentId) => {
+        setIsBroadcasting(true);
+
+        const sendCoords = async (lat, lng) => {
+            try {
+                const targetId = targetIncidentId || assignments[0]?.incident?.incident_id || null;
+                await api.recordLiveLocation({
+                    latitude: lat,
+                    longitude: lng,
+                    incident_id: targetId
+                });
+                setTelemetry({
+                    latitude: lat,
+                    longitude: lng,
+                    time: new Date().toLocaleTimeString(),
+                    status: 'TRANSMITTED'
+                });
+                if (addToast) addToast(`Live GPS Broadcasted: ${lat.toFixed(4)}, ${lng.toFixed(4)}`, 'success');
+                if (fetchLiveResponders) fetchLiveResponders();
+            } catch (err) {
+                const msg = err.response?.data?.error || err.message || 'Failed to broadcast coordinates';
+                if (addToast) addToast(msg, 'error');
+            } finally {
+                setIsBroadcasting(false);
+            }
+        };
+
+        if (typeof navigator !== 'undefined' && navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (pos) => sendCoords(pos.coords.latitude, pos.coords.longitude),
+                (err) => {
+                    console.warn('Physical GPS unavailable, using base coordinates:', err.message);
+                    sendCoords(12.8719, 74.8422);
+                },
+                { timeout: 7000 }
+            );
+        } else {
+            sendCoords(12.8719, 74.8422);
+        }
+    };
+
+    const handleSimulateStep = async (targetAssignment) => {
+        setIsBroadcasting(true);
+        try {
+            const assign = targetAssignment || assignments[0];
+            const targetLat = assign?.incident?.latitude ? Number(assign.incident.latitude) : 12.8719;
+            const targetLng = assign?.incident?.longitude ? Number(assign.incident.longitude) : 74.8422;
+            
+            const currentLat = telemetry?.latitude || (targetLat - 0.015);
+            const currentLng = telemetry?.longitude || (targetLng - 0.015);
+            const nextLat = currentLat + (targetLat - currentLat) * 0.35 + (Math.random() - 0.5) * 0.001;
+            const nextLng = currentLng + (targetLng - currentLng) * 0.35 + (Math.random() - 0.5) * 0.001;
+
+            const authId = assign?.responder?.authority_id || 1;
+            const incId = assign?.incident?.incident_id || 1001;
+
+            await api.simulateTelemetry({
+                authority_id: authId,
+                incident_id: incId,
+                latitude: nextLat,
+                longitude: nextLng
+            });
+
+            setTelemetry({
+                latitude: nextLat,
+                longitude: nextLng,
+                time: new Date().toLocaleTimeString(),
+                status: 'SIMULATED STEP'
+            });
+
+            if (addToast) addToast(`Telemetry ping: ${nextLat.toFixed(4)}, ${nextLng.toFixed(4)}`, 'info');
+            if (fetchLiveResponders) fetchLiveResponders();
+        } catch (err) {
+            if (addToast) addToast('Failed to simulate GPS movement', 'error');
+        } finally {
+            setIsBroadcasting(false);
+        }
+    };
+
+    useEffect(() => {
+        let interval;
+        if (isSimulating) {
+            interval = setInterval(() => {
+                handleSimulateStep();
+            }, 3500);
+        }
+        return () => clearInterval(interval);
+    }, [isSimulating, telemetry, assignments]);
 
     const handleUpdateAssignmentStatus = async (assignmentId, nextStatus) => {
         try {
@@ -342,6 +434,75 @@ export default function ResponderOrg() {
                     {/* ── INCIDENTS & ASSIGNMENTS TAB ── */}
                     {activeTab === 'incidents' && (
                         <div className="space-y-4">
+                            {/* GPS Telemetry Uplink HUD Banner */}
+                            <div className="bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 border border-teal-500/30 rounded-xl p-5 shadow-lg relative overflow-hidden">
+                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 rounded-xl bg-teal-500/10 border border-teal-500/30 flex items-center justify-center flex-shrink-0">
+                                            <Radio className={`w-6 h-6 ${isBroadcasting || isSimulating ? 'text-teal-400 animate-pulse' : 'text-slate-400'}`} />
+                                        </div>
+                                        <div>
+                                            <div className="flex items-center gap-2">
+                                                <h3 className="font-outfit font-black text-lg text-white uppercase tracking-wider">
+                                                    Live Responder GPS Telemetry
+                                                </h3>
+                                                <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider ${
+                                                    isSimulating ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40' :
+                                                    telemetry ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' :
+                                                    'bg-slate-700 text-slate-300'
+                                                }`}>
+                                                    {isSimulating ? 'Auto-Route Active' : telemetry ? 'Broadcasting Live' : 'Ready / Standby'}
+                                                </span>
+                                            </div>
+                                            <p className="text-xs text-slate-400 font-mono mt-0.5">
+                                                {telemetry ? (
+                                                    <>Pos: <strong className="text-white">{telemetry.latitude.toFixed(4)}°N, {telemetry.longitude.toFixed(4)}°E</strong> • Last Sync: {telemetry.time} ({telemetry.status})</>
+                                                ) : (
+                                                    'Continuous uplink to Command Center Tactical Map via authority_live_location'
+                                                )}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                        <button
+                                            type="button"
+                                            onClick={() => handleBroadcastGPS()}
+                                            disabled={isBroadcasting}
+                                            className="px-3.5 py-2 bg-teal-600 hover:bg-teal-500 disabled:opacity-50 text-white rounded-lg text-xs font-semibold flex items-center gap-2 transition-all shadow-sm"
+                                            title="Broadcast current GPS coordinates to Command Center map"
+                                        >
+                                            {isBroadcasting ? <Loader2 size={14} className="animate-spin" /> : <Navigation size={14} />}
+                                            <span>Broadcast GPS</span>
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            onClick={() => handleSimulateStep()}
+                                            disabled={isBroadcasting}
+                                            className="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white rounded-lg text-xs font-semibold flex items-center gap-2 transition-all shadow-sm"
+                                            title="Advance vehicle position 1 step toward the incident"
+                                        >
+                                            <Compass size={14} className="text-teal-400" />
+                                            <span>Simulate Step</span>
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsSimulating(prev => !prev)}
+                                            className={`px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all shadow-sm ${
+                                                isSimulating
+                                                    ? 'bg-amber-600 hover:bg-amber-500 text-white animate-pulse'
+                                                    : 'bg-purple-600 hover:bg-purple-500 text-white'
+                                            }`}
+                                            title="Toggle continuous simulation loop for testing"
+                                        >
+                                            {isSimulating ? <RefreshCw size={14} className="animate-spin" /> : <Play size={14} />}
+                                            <span>{isSimulating ? 'Stop Auto-Drive' : 'Auto-Drive Demo'}</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                             {isLoadingAssignments ? (
                                 <div className="p-12 text-center text-slate-400 dark:text-gray-500 flex items-center justify-center gap-3 bg-white dark:bg-[#111827] border border-slate-200 dark:border-[#1F2937] rounded-xl">
                                     <Loader2 size={18} className="animate-spin text-teal-600 dark:text-[#00FFCC]" />
@@ -439,13 +600,25 @@ export default function ResponderOrg() {
                                                                 </button>
                                                             )}
                                                             {a.assignment_status === 'EnRoute' && (
-                                                                <button
-                                                                    onClick={() => handleUpdateAssignmentStatus(a.assignment_id, 'Arrived')}
-                                                                    disabled={updatingAssignmentId === a.assignment_id}
-                                                                    className="px-3 py-1.5 bg-teal-600 hover:bg-teal-500 text-white rounded-lg text-xs font-semibold transition-colors disabled:opacity-50"
-                                                                >
-                                                                    Mark Arrived 📍
-                                                                </button>
+                                                                <>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => handleSimulateStep(a)}
+                                                                        disabled={isBroadcasting}
+                                                                        className="px-2.5 py-1.5 bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/40 dark:hover:bg-purple-900/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/50 rounded-lg text-xs font-mono flex items-center gap-1.5 transition-colors disabled:opacity-50"
+                                                                        title="Transmit simulated movement ping toward this incident"
+                                                                    >
+                                                                        <Navigation size={12} className="text-purple-500 animate-pulse" />
+                                                                        <span>Ping GPS</span>
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => handleUpdateAssignmentStatus(a.assignment_id, 'Arrived')}
+                                                                        disabled={updatingAssignmentId === a.assignment_id}
+                                                                        className="px-3 py-1.5 bg-teal-600 hover:bg-teal-500 text-white rounded-lg text-xs font-semibold transition-colors disabled:opacity-50"
+                                                                    >
+                                                                        Mark Arrived 📍
+                                                                    </button>
+                                                                </>
                                                             )}
                                                             {a.assignment_status === 'Arrived' && (
                                                                 <button

@@ -14,6 +14,7 @@ import assignmentRoutes from './routes/assignments.js';
 import allocationRoutes from './routes/allocations.js';
 import notificationRoutes from './routes/notifications.js';
 import hospitalRoutes from './routes/hospital.js';
+import trackingRoutes from './routes/tracking.js';
 import pool, { testConnection } from './config/db.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -51,6 +52,7 @@ app.use('/api/assignments',   assignmentRoutes);
 app.use('/api/allocations',   allocationRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/hospital',      hospitalRoutes);
+app.use('/api/tracking',      trackingRoutes);
 
 // Health check
 app.get('/', (req, res) => res.json({ status: 'CrisisChain API running' }));

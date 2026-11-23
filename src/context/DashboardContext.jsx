@@ -62,6 +62,7 @@ export function DashboardProvider({ children }) {
     }, []);
 
     const [alerts, setAlerts] = useState([]);
+    const [liveResponders, setLiveResponders] = useState([]);
     const [resources, setResources] = useState([]);
     const [stats, setStats] = useState({ total: 0, active: 0, resolved: 0, avgResponseTime: 0 });
     const [notifications, setNotifications] = useState([]);
@@ -177,8 +178,17 @@ export function DashboardProvider({ children }) {
         }
     };
 
+    const fetchLiveResponders = async () => {
+        try {
+            const { data } = await api.fetchLiveResponders();
+            setLiveResponders(Array.isArray(data) ? data : []);
+        } catch (err) {
+            console.warn('Live responder tracking unavailable');
+        }
+    };
+
     const refreshData = async () => {
-        await Promise.all([fetchLiveAlerts(), fetchStats(), fetchResources(), fetchNotificationsList()]);
+        await Promise.all([fetchLiveAlerts(), fetchStats(), fetchResources(), fetchNotificationsList(), fetchLiveResponders()]);
     };
 
     const advanceWorkflow = () => {
@@ -189,8 +199,12 @@ export function DashboardProvider({ children }) {
         if (user) {
             refreshData();
             captureLocation();
-            const interval = setInterval(fetchNotificationsList, 20000);
-            return () => clearInterval(interval);
+            const notifInterval = setInterval(fetchNotificationsList, 20000);
+            const trackingInterval = setInterval(fetchLiveResponders, 10000);
+            return () => {
+                clearInterval(notifInterval);
+                clearInterval(trackingInterval);
+            };
         }
     }, [user]);
 
@@ -252,7 +266,7 @@ export function DashboardProvider({ children }) {
     return (
         <DashboardContext.Provider value={{
             theme, setTheme, toggleTheme,
-            user, alerts, actions, messages, resources, stats, workflowId, toasts,
+            user, alerts, liveResponders, fetchLiveResponders, actions, messages, resources, stats, workflowId, toasts,
             notifications, unreadNotifCount, fetchNotificationsList, markNotificationRead, markAllNotificationsRead, deleteNotificationItem,
             isSidebarOpen, isMobileMenuOpen, toggleSidebar, openSidebar, closeSidebar, login, signup, logout, addAlert,
             getIcon, searchQuery, setSearchQuery, addToast, refreshData,

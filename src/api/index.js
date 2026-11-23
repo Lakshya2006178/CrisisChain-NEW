@@ -118,4 +118,9 @@ export const fetchHospitalResources = () => API.get('/hospital/resources');
 export const updateHospitalResources = (data) => API.put('/hospital/resources', data);
 export const updateHospitalItem = (category, id, item) => API.patch(`/hospital/resources/${category}/${id}`, item);
 
+// Live Responder GPS Tracking
+export const fetchLiveResponders = () => API.get('/tracking/live');
+export const recordLiveLocation = (data) => API.post('/tracking/location', data);
+export const simulateTelemetry = (data) => API.post('/tracking/simulate', data);
+
 export default API;

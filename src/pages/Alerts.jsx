@@ -231,7 +231,7 @@ function NewEmergencyModal({ alert, onClose }) {
 function AlertsContent() {
     const [searchParams, setSearchParams] = useSearchParams();
     const queryIncidentId = searchParams.get('id') || searchParams.get('selected');
-    const { isSidebarOpen, addToast, alerts: liveAlerts, fetchLiveAlerts, addAlert, user, fetchResources } = useDashboard();
+    const { isSidebarOpen, addToast, alerts: liveAlerts, fetchLiveAlerts, addAlert, user, fetchResources, liveResponders } = useDashboard();
     const [selectedAlert, setSelectedAlert] = useState(null);
     const [filterType, setFilterType] = useState('All');
     const [isBroadcastOpen, setIsBroadcastOpen] = useState(false);
@@ -507,7 +507,7 @@ function AlertsContent() {
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                         <StatCard label="Total Alerts" value={alerts.length} icon={Bell} color="#0D9488" sub="Live Database Feed" />
                         <StatCard label="Critical Disasters" value={alerts.filter(a => a.severity === 'Critical').length} icon={ShieldAlert} color="#dc2626" sub="Urgent Response" />
-                        <StatCard label="Units Responding" value={alerts.filter(a => a.status === 'Responding').length} icon={Truck} color="#2563eb" sub="Active Field Units" />
+                        <StatCard label="Units Responding" value={alerts.filter(a => a.status === 'Responding').length} icon={Truck} color="#2563eb" sub={`${liveResponders?.length || 0} GPS Units Online`} />
                         <StatCard label="Resolved" value={alerts.filter(a => a.status === 'Resolved').length} icon={CheckCircle2} color="#16a34a" sub="Mission Restored" />
                     </div>
 
